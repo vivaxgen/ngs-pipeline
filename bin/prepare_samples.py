@@ -117,6 +117,8 @@ def prepare_samples(args):
                 dest = sample_path / f'raw-{idx}_R{no}.fastq.gz'
                 dest.symlink_to(source_dir / fastq_file)
 
+    cerr(f'Finished preparing {len(samples)} sample(s).')
+
 
 if __name__ == '__main__':
     run_main(init_argparser, prepare_samples)
