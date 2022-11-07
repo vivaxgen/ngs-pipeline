@@ -37,12 +37,11 @@ rule optical_dedup:
 
 
 rule adapter_trimming:
-    if config['optical_dedup']:
-        input:
+    input:
+        if config['optical_dedup']:
             read1 = "reads/dedup-{idx}_R1.fastq.gz",
             read2 = "reads/dedup-{idx}_R2.fastq.gz"
-    else:
-        input:
+        else:
             read1 = "reads/raw-{idx}_R1.fastq.gz",
             read2 = "reads/raw-{idx}.R2.fastq.gz"
     output:
