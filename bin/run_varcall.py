@@ -33,6 +33,7 @@ from ngsutils import cerr, cexit, run_main, arg_parser
 def init_argparser():
     p = arg_parser(desc='run varcalling pipeline')
     p.add_argument('-j', type=int, default=1)
+    p.add_argument('--dryrun', default=False, action='store_true')
     p.add_argument('target')
     return p
 
@@ -53,17 +54,23 @@ def run_varcall(args):
     configfiles = []
 
     # for each config directory, check config file existence
-    for config_path in [cwd, cwd.parent.parent, cwd.parent.parent.parent.parent]:
+    config_dirs = [cwd, cwd.parent.parent, cwd.parent.parent.parent.parent]
+    for config_path in config_dirs:
         configfile = config_path / 'config.yaml'
         if configfile.is_file():
             configfiles.append(configfile)
+
+    if not any(configfiles):
+        cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
+
     configfiles.reverse()
 
     # run smk
 
     snakemake.snakemake(
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'var_call.smk',
-        configfiles=configfiles
+        configfiles=configfiles,
+        dryrun=args.dryrun,
     )
 
 
