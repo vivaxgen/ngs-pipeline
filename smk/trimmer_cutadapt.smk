@@ -7,7 +7,7 @@ adapters = {
     'ultraiifs': ['AGATCGGAAGAGCACACGTCTGAACTCCAGTCA', 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'],
     'dnaprep': ['CTGTCTCTTATACACATCT+ATGTGTATAAGAGACA', 'CTGTCTCTTATACACATCT+ATGTGTATAAGAGACA'],
 }
-minlen = int(config['minlen']) if 'minlen' in config else (int(config['read_length']) / 3)
+minlen = int(config['minlen']) if 'minlen' in config else int(config['read_length'] / 3)
 maxlen = int(config['maxlen']) if 'maxlen' in config else 0
 
 
@@ -47,15 +47,13 @@ rule reads_trimming:
         trimmed1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         trimmed2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
     log: "logs/reads_trimming-{idx}.log"
-    run:
-        shell("cutadapt %s -j 18 %s -m %d -q %d -O 3 %s -o %s -p %s %s %s > %s"
-              % ('--nextseq-trim 20' if is_nextseq() else '',
-                 ('--length %d' % maxlen) if maxlen > 0 else '',
-                 minlen,
-                 config['min_read_qual'],
-                 adapter_arguments(config['libprep'].lower()),
-                 output.trimmed1, output.trimmed2, input.read1, input.read2,
-                 log
-                 ))
+    params:
+        nextseq_arg = '--nextseq-trim 20' if is_nextseq() else '',
+        length_arg = f'--length {maxlen}' if maxlen > 0 else '',
+        minlen_arg = f'-m {minlen}',
+        qual_arg = f"-q {config['min_read_qual']}",
+        adapter_arg = '' if config['libprep'] == 'generic' else adapter_arguments(config['libprep'].lower())
+    shell:
+        "cutadapt {params.nextseq_arg} -j 16 {params.length_arg} {params.minlen_arg} {params.qual_arg} -O 3 {params.adapter_arg} -o {output.trimmed1} -p {output.trimmed2} {input.read1} {input.read2} > {log}"
 
 # EOF
