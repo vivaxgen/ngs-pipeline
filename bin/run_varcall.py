@@ -32,8 +32,11 @@ from ngsutils import cerr, cexit, run_main, arg_parser
 
 def init_argparser():
     p = arg_parser(desc='run varcalling pipeline')
-    p.add_argument('-j', type=int, default=1)
+    p.add_argument('-j', type=int, default=72)
     p.add_argument('--dryrun', default=False, action='store_true')
+    p.add_argument('--showcmds', default=False, action='store_true')
+    p.add_argument('--unlock', default=False, action='store_true')
+    p.add_argument('--rerun', default=False, action='store_true')
     p.add_argument('target')
     return p
 
@@ -71,6 +74,14 @@ def run_varcall(args):
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'var_call.smk',
         configfiles=configfiles,
         dryrun=args.dryrun,
+        printshellcmds=args.showcmds,
+        unlock=args.unlock,
+        force_incomplete=args.rerun,
+        cores=args.j,
+        cluster=os.environ.get('JOBCMD', ''),
+#        cluster="sbatch --cpus-per-task={threads} --job-name=smk-{rule}-{sample}",
+        cluster_cancel="scancel",
+        targets=[args.target],
     )
 
 
