@@ -1,10 +1,11 @@
 
 
 rule gatk_haplotypecaller:
+    threads: 1
     input:
-        "maps/mapped-dedup.bam"
+        "maps/mapped-dedup-recal.bam"
     output:
-        "gvcf/{sample}.g.vcf"
+        "gvcf/{sample}-{reg}.g.vcf"
     shell:
-        "gatk HaplotypeCaller --native-pair-hmm-threads 8 -R {refseq} -I {input} -ERC GVCF -O {output}"
+        "gatk HaplotypeCaller --native-pair-hmm-threads 1 -R {refseq} -I {input} -L {wildcards.reg} -ERC GVCF -O {output}"
 

@@ -1,5 +1,6 @@
 
 rule reads_mapping:
+    threads: 8
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
@@ -10,7 +11,7 @@ rule reads_mapping:
         log1 = "logs/minimap2-{idx}.log",
         log2 = "logs/unique_pairs-{idx}.log"
     shell:
-        "minimap2 -ax sr -t 16 --secondary=no {refmap} {input.read1} {input.read2} 2> {log.log1}"
+        "minimap2 -ax sr -t {threads} --secondary=no {refmap} {input.read1} {input.read2} 2> {log.log1}"
         " | {ngs_pipeline_basedir}/bin/filter_uniquepair.py --min_match_len 23 --max_nm 0.29 --outstat {output.stat} -o - - 2> {log.log2}"
         " | samtools fixmate -r -m - {output.bam}"
 

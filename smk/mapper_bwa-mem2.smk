@@ -9,6 +9,7 @@
 
 
 rule reads_mapping:
+    threads: 8
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
@@ -19,7 +20,7 @@ rule reads_mapping:
     params:
         rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'"
     shell:
-        "bwa-mem2 mem -M -t 16 {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
+        "bwa-mem2 mem -M -t 8 {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
         " | samtools fixmate -r -m - {output.bam}"
 
 # EOF
