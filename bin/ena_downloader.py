@@ -104,11 +104,14 @@ def ena_downloader(args):
     for idx, r in df.iterrows():
 
         sample = r[sample_column]
-        cerr(f'[Fetching for sample: {sample}]')
+        ena_accs = r[ena_column]
+        if not ena_accs:
+            continue
 
+        cerr(f'[Fetching for sample: {sample}]')
         url_list = []
         filename_list = []
-        for ena_acc in r[ena_column].split(','):
+        for ena_acc in ena_accs.split(','):
             cerr(f'[Fetching urls for accession: {ena_acc}]')
             urls, filenames = get_urls(ena_acc)
             url_list += urls
