@@ -113,7 +113,12 @@ def ena_downloader(args):
         filename_list = []
         for ena_acc in ena_accs.split(','):
             cerr(f'[Fetching urls for accession: {ena_acc}]')
-            urls, filenames = get_urls(ena_acc)
+            ena_acc = ena_acc.strip()
+            try:
+                urls, filenames = get_urls(ena_acc)
+            except ValueError:
+                cerr(f'[WARN: ENA {ena_acc} not found]')
+                continue
             url_list += urls
             filename_list.append(','.join(filenames))
 
