@@ -1,32 +1,19 @@
 
-# prepare necessary parameters
-
-import os
-
-ngs_pipeline_basedir = os.environ['NGS_PIPELINE_BASE']
-ngsenv_basedir = os.environ['NGSENV_BASEDIR']
-
-refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
-refseq = ngsenv_basedir + '/' + config['refseq_file']
-knownsites_file = ngsenv_basedir + '/' + config.get('knownsites_file', '')
-
-java_opts = ''
-
-# check available read files
-
-wildcard_constraints:
-    idx = '\\d+'
-
-IDXS, = glob_wildcards('reads/raw-{idx}_R1.fastq.gz')
-
-# prepare global params
+# prepare necessary global parameters
 
 include: "global_params.smk"
+
+# prepare sample-related parameters
+
+sample = pathlib.Path.cwd().name
+IDXS, = glob_wildcards('reads/raw-{idx}_R1.fastq.gz')
+
 
 # final output of this workflow
 
 def get_final_file(w):
-    return [ f"gvcf/{sample}-{reg}.g.vcf" for reg in REGIONS ]
+    return [f"gvcf/{sample}-{reg}.g.vcf" for reg in REGIONS]
+
 
 rule all:
     input:
