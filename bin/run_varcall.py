@@ -47,11 +47,12 @@ def run_varcall(args):
     import snakemake
 
     # directory structure:
-    #  [DATA_BASEPATH]/sets/[BATCH]/samples/[SAMPLE]
+    #  [NGSENV_BASEDIR]/sets/[BATCH]/samples/[SAMPLE]
+    #
     # possible configfiles:
-    #  [DATA_BASEPATH]/sets/[BATCH]/samples/[SAMPLE]/config.yaml
-    #  [DATA_BASEPATH]/sets/[BATCH]/config.yaml
-    #  [DATA_BASEPATH]/config.yaml
+    #  [NGSENV_BASEDIR]/sets/[BATCH]/samples/[SAMPLE]/config.yaml
+    #  [NGSENV_BASEDIR]/sets/[BATCH]/config.yaml
+    #  [NGSENV_BASEDIR]/config.yaml
 
     cwd = pathlib.Path.cwd()
     configfiles = []
