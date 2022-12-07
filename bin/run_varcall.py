@@ -38,6 +38,7 @@ def init_argparser():
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
     p.add_argument('target')
+    p.add_argument('sample')
     return p
 
 
