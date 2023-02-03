@@ -10,6 +10,7 @@ echo "${_mydir}"
 
 # JOBCMD='srun -N 1 -t 48:00:00'
 
-parallel --eta -j 16 --workdir $PWD/{} "${JOBCMD} ${_mydir}/run_varcall.py" ::: `ls`
+## -j should be taken from ENV for flexibility
+parallel --eta -j 32 --workdir $PWD/{} "${_mydir}/run_varcall.py -j 32 all" ::: `ls`
 
 # EOF
