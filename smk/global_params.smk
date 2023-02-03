@@ -18,6 +18,7 @@ platform = 'ILLUMINA' if config.get('instrument', '').lower() in ['miseq', 'next
 REGIONS = config.get('regions', [])
 
 wildcard_constraints:
-    idx = '\\d+'
+    idx = '\\d+',
+    sample = '[\\w-]+'
 
 # EOF
