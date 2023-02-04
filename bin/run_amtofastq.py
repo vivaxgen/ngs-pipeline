@@ -38,6 +38,8 @@ def init_argparser():
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
     p.add_argument('--target', default='all')
+    p.add_argument('--srcdir', default='.',
+                   help="Set source directory, where all the source files reside")
     p.add_argument('-s', default=None,
                    help='Sample code, to be used for prefix of fastq filenames')
     p.add_argument('-i', default=None,
@@ -51,19 +53,21 @@ def run_amtofastq(args):
 
     import pathlib
     import snakemake
+    from pathlib import Path
 
     # set SOURCE data
+
     if args.s:
         if not args.i:
             cexit('Please provide -i if you use -s')
-        sources = {args.s: args.i}
+        sources = {args.s: (Path(args.srcdir) / args.i).as_posix()}
 
     elif args.infile:
         import pandas as pd
         df = pd.read_table(args.infile)
         sources = {}
-        for idx, row in df.iterrows:
-            sources[row['SAMPLE']] = row['SOURCE']
+        for idx, row in df.iterrows():
+            sources[row['SAMPLE']] = (Path(args.srcdir) / row['SOURCE']).as_posix()
 
     else:
         cexit('Please either provide INFILE or use -s & -i')

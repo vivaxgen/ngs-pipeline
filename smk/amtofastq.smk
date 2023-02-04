@@ -4,6 +4,8 @@
 
 SOURCES = config['SOURCES']
 
+# to satisfy jobname in batch scripts (eg. sbatch)
+sample='GENERIC'
 
 def get_fastq_files():
     return [f"{sample}_R1.fastq.gz" for sample in SOURCES.keys()]
@@ -41,8 +43,11 @@ rule create_manifest_file:
         lambda w: get_fastq_files()
     output:
         "manifest.tsv"
-    shell:
+    run:
         # write sample codes and their corresponding fastq files to manifest file
-        "touch {output}"
+        with open(output[0], 'w') as fout:
+            fout.write('SAMPLE\tFASTQ\n')
+            for k in SOURCES.keys():
+                fout.write(f'{k}\t{k}_R1.fastq.gz,{k}_R2.fastq.gz\n')
 
 # EOF
