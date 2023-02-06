@@ -30,6 +30,8 @@ from ngsutils import cerr, cexit, run_main, arg_parser
 
 def init_argparser():
     p = arg_parser(desc='prepare directory structure for sample processing')
+    p.add_argument('--resampling', type=int, default=-1,
+                   help='randomly take a number of samples')
     p.add_argument('-o', '--outdir', default='analysis',
                    help='the name of the output directory')
     p.add_argument('-i', '--infile', default='-',
@@ -54,7 +56,7 @@ def prepare_samples(args):
 
     # read manifest file
     in_stream = sys.stdin if args.infile == '-' else args.infile
-    manifest_df = pd.read_table(in_stream, sep=None)
+    manifest_df = pd.read_table(in_stream, sep=None, engine='python')
 
     # get absolute path for indir and outdir, without resolving symlinks
     indir = pathlib.Path(args.indir).absolute()
@@ -76,6 +78,9 @@ def prepare_samples(args):
     link_path = ['..'] * (idx + 3) + [rel_path]
     source_dir = pathlib.Path(*link_path)
     dest_dir = outdir.relative_to(common_parent)
+
+    if args.resampling > 0:
+       manifest_df = manifest_df.sample(n=args.resampling)
 
     # iterating over manifest file and check ooccurence of each fastq file
     counter = 0
