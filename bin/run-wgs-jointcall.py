@@ -59,6 +59,11 @@ def run_pipeline(args):
     import snakemake
     import datetime
 
+    # sanity check for all directory
+    for srcdir in args.source_dirs:
+        if not pathlib.Path(srcdir).is_dir():
+            cexit(f'ERROR: directory {srcdir} does not exist!')
+
     cerr('[Step: joint variant calling]')
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
