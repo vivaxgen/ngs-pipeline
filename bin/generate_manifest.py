@@ -33,7 +33,9 @@ def init_argparser():
     p.add_argument('-o', '--outfile', default='outfile.tsv')
     p.add_argument('-s', '--single', default=False, action='store_true',
                    help='fastq files are single (non-paired) such as ONT reads')
-    p.add_argument('-u', '--underline', type=int, default=0)
+    p.add_argument('-u', '--underline', type=int, default=0,
+                   help='no of consecutive underlines to be stripped from filenames '
+                   'to form sample code, counted in reverse')
     p.add_argument('infiles', nargs='+')
     return p
 
@@ -47,6 +49,8 @@ def generate_manifest(args):
 
     # import heavy modules here if required
     import pandas as pd
+
+    cerr(f'[Receiving {len(args.infiles)} source files]')
 
     if not args.single:
         if (len(args.infiles) % 2) != 0:
@@ -79,6 +83,8 @@ def generate_manifest(args):
 
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     df.to_csv(args.outfile, sep='\t', index=False)
+
+    cerr(f'[Writing {len(df)} sample manifest to {args.outfile}]')
 
 
 if __name__ == '__main__':
