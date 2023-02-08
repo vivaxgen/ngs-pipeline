@@ -7,6 +7,7 @@ include: "global_params.smk"
 # source directories would be provided using config=dict() args of snakemake()
 
 srcdirs = config['srcdirs']
+destdir = config.get('destdir', 'vcfs')
 
 # get all samples and sample directories
 
@@ -21,7 +22,7 @@ for a_dir in srcdirs:
 # final output of this workflow
 
 def get_final_file(w):
-    return [f"vcfs/joint-{reg}.vcf.gz" for reg in REGIONS]
+    return [f"{destdir}/joint-{reg}.vcf.gz" for reg in REGIONS]
 
 
 def get_gvcf_files(region):
@@ -47,7 +48,7 @@ rule prepare_gvcf_files:
     input:
         lambda w: get_gvcf_files(w.reg)
     output:
-        "vcfs/maps/{reg}.tsv"
+        f"{destdir}/maps/{{reg}}.tsv"
     run:
         # write {input} to tab-delimited map file: sample\tgvcf_path
         if len(SAMPLES) != len(input):
@@ -58,11 +59,11 @@ rule prepare_gvcf_files:
 
 
 rule combine_gvcf:
-    threads: 6
+    threads: 8
     input:
-        "vcfs/maps/{reg}.tsv"
+        f"{destdir}/maps/{{reg}}.tsv"
     output:
-        directory("vcfs/dbs/{reg}")
+        directory(f"{destdir}/dbs/{{reg}}")
     shell:
         #"touch {output}"
         "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} --sample-name-map {input} -L {wildcards.reg}"
@@ -71,9 +72,9 @@ rule combine_gvcf:
 rule jointvarcall_gatk:
     threads: 3
     input:
-        directory("vcfs/dbs/{reg}")
+        f"{destdir}/dbs/{{reg}}"
     output:
-        "vcfs/joint-{reg}.vcf.gz"
+        f"{destdir}/joint-{{reg}}.vcf.gz"
     shell:
         #"touch {output}"
         "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output}"
