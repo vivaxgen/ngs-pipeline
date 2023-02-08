@@ -33,7 +33,7 @@ def init_argparser():
     p.add_argument('--resampling', type=int, default=-1,
                    help='randomly take a number of samples')
     p.add_argument('-o', '--outdir', default='analysis',
-                   help='the name of the output directory')
+                   help='the name of the output directory, default to "analysis"')
     p.add_argument('-i', '--infile', default='-',
                    help='the name of file containing sample and read manifest, '
                         'default to stdin')
@@ -109,6 +109,18 @@ def prepare_samples(args):
     # preparing directory structure
 
     outdir.mkdir(exist_ok=True)
+
+    # sanity check for duplicate sample (directory) name
+    duplicated =  []
+    for (sample, fastq_list) in samples:
+        sample_path = dest_dir / sample
+        if sample_path.exists():
+            duplicated.append(sample)
+    if any(duplicated):
+        cerr('ERROR: the directories for the following samples already exist:')
+        for c in duplicated:
+            cerr(f'  {c}')
+        cexit('Please either remove the directories or remove the sample from manifest file!')
 
     # for each samples, create a directory reads
     for (sample, fastq_list) in samples:
