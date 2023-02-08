@@ -36,8 +36,10 @@ rule map_dedup:
         "maps/mapped-{idx}.bam"
     output:
         "maps/mapped-dedup-{idx}.bam"
+    log:
+        "logs/markdup-{idx}.log"
     shell:
-        "samtools sort -@4 {input} | samtools markdup -r - {output}"
+        "samtools sort -@4 {input} | samtools markdup -r - {output} 2> {log}"
 
 rule map_merging:
     threads: 8
