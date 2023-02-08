@@ -38,7 +38,7 @@ from ngsutils import cerr, cexit, run_main, arg_parser
 
 def init_argparser():
     p = arg_parser(desc='run WGS varcalling pipeline')
-    p.add_argument('-j', type=int, default=72)
+    p.add_argument('-j', type=int, default=196)
     p.add_argument('--dryrun', default=False, action='store_true')
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
@@ -47,6 +47,8 @@ def init_argparser():
                    default='sbatch --cpus-per-task={threads} --job-name=smk-{rule}-{wildcards.reg} --output=.slurm-%j.out')
     p.add_argument('--nocluster', default=False, action='store_true',
                    help='run without cluster support (eg. only on local node')
+    p.add_argument('-o', '--outdir', default='vcfs',
+                   help='directory ouput, default to "vcfs"')
     p.add_argument('--target', default='all')
     p.add_argument('source_dirs', nargs='+',
                    help='source directories containing sample directories')
@@ -69,7 +71,7 @@ def run_pipeline(args):
     status = snakemake.snakemake(
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'jointvarcall_gatk.smk',
         configfiles=[pathlib.Path(os.environ['NGSENV_BASEDIR']) / 'config.yaml'],
-        config=dict(srcdirs=args.source_dirs),
+        config=dict(srcdirs=args.source_dirs, destdir=args.outdir),
         printshellcmds=args.showcmds,
         dryrun=args.dryrun,
         unlock=args.unlock,
