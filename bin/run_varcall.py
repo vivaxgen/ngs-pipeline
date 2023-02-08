@@ -56,6 +56,15 @@ def run_varcall(args):
     #  [NGSENV_BASEDIR]/config.yaml
 
     cwd = pathlib.Path.cwd()
+
+    # sanity check
+    if (cwd_part := cwd.parts[-1]) != args.sample:
+        cexit(f'ERROR: sample argument {args.sample} is not identical with '
+              f'last part of current directory name {cwd_part}!')
+
+    if not (cwd / 'reads').is_dir():
+        cexit('ERROR: current directory does not have "reads" directory!')
+
     configfiles = []
 
     # for each config directory, check config file existence
