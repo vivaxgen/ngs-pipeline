@@ -65,6 +65,7 @@ def get_urls(ena_accid, query):
         raise ValueError(f'ENA accession does not have {query} entry.')
 
     urls = query_resp.split(';')
+
     filenames = [pathlib.Path(url).name for url in urls]
     print(urls, filenames)
     return [quote(url) for url in urls], filenames
@@ -106,6 +107,8 @@ def init_argparser():
                    help='ftp list file that can be used by eg. wget, default to url-manifest.txt')
     p.add_argument('--outerr', default='err-log.txt',
                    help='default to err-log.txt')
+    p.add_argument('--wait', default=0, type=int,
+                   help='waiting time (seconds) between requests to lighten the remote server')
     p.add_argument('infile',
                    help='tab-separated file to get sample and ENA accession, use colon to '
                    'notation to indicate the columns to be used, eg: FILE.TSV:SAMPLE,ENA')
@@ -116,6 +119,7 @@ def ena_downloader(args):
 
     import pandas as pd
     import pathlib
+    import time
 
     # put all output files to out directory
     args.outfile = f'{args.outdir}/{args.outfile}'
@@ -181,6 +185,9 @@ def ena_downloader(args):
 
         sample_manifest.append(sample)
         fastq_manifest.append(';'.join(','.join(paired_file) for paired_file in filename_list))
+
+        if args.wait > 0:
+            time.sleep(args.wait)
 
     out_df = pd.DataFrame({'SAMPLE': sample_manifest, 'FASTQ': fastq_manifest})
     out_df.to_csv(args.outfile, sep='\t', index=False)
