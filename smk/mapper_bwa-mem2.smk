@@ -14,7 +14,7 @@ rule reads_mapping:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
     output:
-        bam = "maps/mapped-{idx}.bam",
+        bam = temp("maps/mapped-{idx}.bam"),
     log:
         log1 = "logs/bwa-mem2-{idx}.log",
     params:
