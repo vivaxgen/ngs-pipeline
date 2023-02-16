@@ -8,6 +8,7 @@ ngsenv_basedir = os.environ['NGSENV_BASEDIR']
 refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
 refseq = ngsenv_basedir + '/' + config['refseq_file']
 knownsites_file = ngsenv_basedir + '/' + config.get('knownsites_file', '')
+ploidy = int(config.get('ploidy', 2))
 
 java_opts = ''
 
