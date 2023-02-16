@@ -12,8 +12,11 @@ IDXS, = glob_wildcards('reads/raw-{idx}_R1.fastq.gz')
 # final output of this workflow
 
 def get_final_file(w):
-    return [f"gvcf/{sample}-{reg}.g.vcf" for reg in REGIONS]
+    return [f"gvcf/{sample}-{reg}.g.vcf.gz" for reg in REGIONS]
 
+
+# define local rules
+localrules: all, clean
 
 rule all:
     input:
@@ -35,7 +38,7 @@ rule map_dedup:
     input:
         "maps/mapped-{idx}.bam"
     output:
-        "maps/mapped-dedup-{idx}.bam"
+        temp("maps/mapped-dedup-{idx}.bam")
     log:
         "logs/markdup-{idx}.log"
     shell:
@@ -51,7 +54,7 @@ rule map_merging:
         if len(IDXS) > 1:
             shell('samtools merge -@8 {output} {input}')
         else:
-            shell('ln -sr {input} {output}')
+            shell('cp {input} {output}')
         shell('samtools index {output}')
 
 include: "varcall_gatk.smk"
