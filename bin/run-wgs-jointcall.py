@@ -62,16 +62,42 @@ def run_pipeline(args):
     import datetime
 
     # sanity check for all directory
-    for srcdir in args.source_dirs:
+    source_dirs = [srcdir.removesuffix('/') for srcdir in args.source_dirs]
+    for srcdir in source_dirs:
         if not pathlib.Path(srcdir).is_dir():
             cexit(f'ERROR: directory {srcdir} does not exist!')
+
+    # merge config.yaml
+
+    configfiles = []
+    ngsenv_basedir = pathlib.Path(os.environ['NGSENV_BASEDIR'])
+    cwd = pathlib.Path.cwd()
+    paths = [cwd]
+
+    while True:
+        configfile = cwd / 'config.yaml'
+        if configfile.is_file():
+            configfiles.append(configfile)
+        if cwd == ngsenv_basedir:
+            break
+        cwd = cwd.parent
+        paths.append(cwd)
+
+    if not any(configfiles):
+        cexit('ERROR: cannot find any config.yaml in the folowing directories:\n'
+              + '\n'.join(str(x) for x in paths) + '\n')
+
+    configfiles.reverse()
+
+    cerr('[Config files to be used are:\n'
+         + '\n'.join(str(x) for x in configfiles) + ']\n')
 
     cerr('[Step: joint variant calling]')
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'jointvarcall_gatk.smk',
-        configfiles=[pathlib.Path(os.environ['NGSENV_BASEDIR']) / 'config.yaml'],
-        config=dict(srcdirs=args.source_dirs, destdir=args.outdir),
+        configfiles=configfiles,
+        config=dict(srcdirs=source_dirs, destdir=args.outdir),
         printshellcmds=args.showcmds,
         dryrun=args.dryrun,
         unlock=args.unlock,
