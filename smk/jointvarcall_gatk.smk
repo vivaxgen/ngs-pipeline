@@ -15,7 +15,7 @@ SAMPLES = []
 SAMPLE_DIRS = []
 for a_dir in srcdirs:
     S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
-    SAMPLES += S
+    SAMPLES += [s for s in S if s != 'config.yaml']
     SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
 
 
@@ -27,7 +27,7 @@ def get_final_file(w):
 
 def get_gvcf_files(region):
     # traversing on all source directories
-    return [f'{a_dir}/gvcf/{s}-{region}.g.vcf' for (a_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
+    return [f'{a_dir}/gvcf/{s}-{region}.g.vcf.gz' for (a_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
 
 
 # define local rules
