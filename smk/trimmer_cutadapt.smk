@@ -45,8 +45,8 @@ rule reads_trimming:
         read1 = "trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "reads/raw-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "reads/raw-{idx}_R2.fastq.gz"
     output:
-        trimmed1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
-        trimmed2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
+        trimmed1 = temp("trimmed-reads/trimmed-{idx}_R1.fastq.gz"),
+        trimmed2 = temp("trimmed-reads/trimmed-{idx}_R2.fastq.gz")
     log: "logs/reads_trimming-{idx}.log"
     params:
         nextseq_arg = '--nextseq-trim 20' if is_nextseq() else '',
