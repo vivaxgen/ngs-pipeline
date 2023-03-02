@@ -49,6 +49,8 @@ def init_argparser():
                    help='run without cluster support (eg. only on local node')
     p.add_argument('-o', '--outdir', default='vcfs',
                    help='directory ouput, default to "vcfs"')
+    p.add_argument('--snakefile', default='jointvarcall_gatk.smk',
+                   choices=['jointvarcall_freebayes.smk'])
     p.add_argument('--target', default='all')
     p.add_argument('source_dirs', nargs='+',
                    help='source directories containing sample directories')
@@ -95,7 +97,7 @@ def run_pipeline(args):
     cerr('[Step: joint variant calling]')
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'jointvarcall_gatk.smk',
+        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / args.snakefile,
         configfiles=configfiles,
         config=dict(srcdirs=source_dirs, destdir=args.outdir),
         printshellcmds=args.showcmds,
