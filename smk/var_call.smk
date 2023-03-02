@@ -1,4 +1,6 @@
 
+from time import sleep
+
 # prepare necessary global parameters
 
 include: "global_params.smk"
@@ -55,6 +57,8 @@ rule map_merging:
             shell('samtools merge -@8 {output} {input}')
         else:
             shell('cp {input} {output}')
+        # to make index file newer by 1-sec to bam file
+        sleep(1)
         shell('samtools index {output}')
 
 include: "varcall_gatk.smk"
