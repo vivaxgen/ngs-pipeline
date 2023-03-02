@@ -77,7 +77,9 @@ rule jointvarcall_gatk:
         f"{destdir}/joint-{{reg}}.vcf.gz"
     shell:
         #"touch {output}"
-        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output}"
+        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output} && "
+        "sleep 1 && "
+        "bcftools index {output}"
 
 # EOF
 
