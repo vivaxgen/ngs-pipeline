@@ -32,12 +32,16 @@ from ngsutils import cerr, cexit, run_main, arg_parser
 
 def init_argparser():
     p = arg_parser(desc='run WGS mapping & genotyping pipeline')
-    p.add_argument('-j', type=int, default=-1)
+    p.add_argument('-j', type=int, default=-1,
+                   help='number of samples to be processed in parallel, will override '
+                   'JOBS environment, default = 32')
     p.add_argument('--dryrun', default=False, action='store_true')
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('target', choices=['all', 'map_merging'])
+    p.add_argument('target', choices=['all', 'map_merging'],
+                   help="target of snakemake module, use 'all' for GATK joint variant "
+                   "or 'map_merging' for FreeBayes joitn variant call")
     return p
 
 
