@@ -50,7 +50,8 @@ def init_argparser():
     p.add_argument('-o', '--outdir', default='vcfs',
                    help='directory ouput, default to "vcfs"')
     p.add_argument('--snakefile', default='jointvarcall_gatk.smk',
-                   choices=['jointvarcall_freebayes.smk'])
+                   choices=['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk'],
+                   help='snakemake file to be called [jointvarcall_gatk.smk]')
     p.add_argument('--target', default='all')
     p.add_argument('source_dirs', nargs='+',
                    help='source directories containing sample directories')
