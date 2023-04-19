@@ -77,7 +77,7 @@ rule map_merging:
         else:
             shell('cp {input} {output}')
         # to make index file newer by 1-sec to bam file
-        sleep(1)
+        sleep(2)
         shell('samtools index {output}')
 
 include: "varcall_gatk.smk"
