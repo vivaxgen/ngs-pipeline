@@ -19,8 +19,8 @@ def adapter_arguments(libprep):
     return ' '.join(arguments)
 
 
-def is_nextseq():
-    return config['instrument'].lower().startswith('nextseq')
+def is_nextseq_or_novaseq():
+    return config['instrument'].lower().startswith('nextseq') or config['instrument'].lower().startswith('novaseq')
 
 
 optdedup = config.get('optical_dedup', False)
@@ -36,7 +36,7 @@ rule optical_dedup:
     log: "logs/optical_dedup-{idx}.log"
     shell:
         "clumpify.sh in={input.read1} in2={input.read2} out1={output.dedup1} out2={output.dedup2} dedupe optical %s 2> {log}"
-        % ('spany adjacent' if is_nextseq() else '')
+        % ('spany adjacent' if is_nextseq_or_novaseq() else '')
 
 
 rule reads_trimming:
@@ -49,7 +49,7 @@ rule reads_trimming:
         trimmed2 = temp("trimmed-reads/trimmed-{idx}_R2.fastq.gz")
     log: "logs/reads_trimming-{idx}.log"
     params:
-        nextseq_arg = '--nextseq-trim 20' if is_nextseq() else '',
+        nextseq_arg = '--nextseq-trim 20' if is_nextseq_or_novaseq() else '',
         length_arg = f'--length {maxlen}' if maxlen > 0 else '',
         minlen_arg = f'-m {minlen}',
         qual_arg = f"-q {config['min_read_qual']}",
