@@ -1,0 +1,3 @@
+SAMPLE	FASTQ
+Sample-1	S01-B1_R1.fastq.gz,S01-B1_R2.fastq.gz;S01-B2_R1.fastq.gz,S01-B2_R2.fastq.gz
+
