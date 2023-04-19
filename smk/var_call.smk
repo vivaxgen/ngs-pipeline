@@ -18,16 +18,24 @@ def get_final_file(w):
 
 
 # define local rules
-localrules: all, clean
+localrules: all, clean, mapping
 
 rule all:
     input:
-        get_final_file
+        get_final_file,
+        'logs/mapped-dedup.stats.txt',
+        'logs/stats.tsv'
 
 
 rule clean:
     shell:
-        "rm -rf maps/ logs/ trimmed-reads/ gvcf/ .snakemake"
+        "rm -rf maps/ logs/ trimmed-reads/ gvcf/ .snakemake/*"
+
+
+rule mapping:
+    input:
+        'maps/mapped-dedup.bam',
+        'logs/stats.tsv'
 
 
 include: config.get('reads_trimmer_wf', 'trimmer_cutadapt.smk')
@@ -46,6 +54,17 @@ rule map_dedup:
     shell:
         "samtools sort -@4 {input} | samtools markdup -r - {output} 2> {log}"
 
+
+rule map_stats:
+    threads: 1
+    input:
+        "maps/mapped-{idx}.bam"
+    output:
+        "logs/mapped-{idx}.stats.txt"
+    shell:
+        "samtools stats {input} > {output}"
+
+
 rule map_merging:
     threads: 8
     input:
@@ -62,5 +81,33 @@ rule map_merging:
         shell('samtools index {output}')
 
 include: "varcall_gatk.smk"
+
+
+rule dedup_stats:
+    threads: 1
+    input:
+        'maps/mapped-dedup.bam'
+    output:
+        'logs/mapped-dedup.stats.txt',
+        'logs/mapped-dedup.depths.txt.gz'
+    shell:
+        'samtools stats {input} > {output[0]} && samtools depth {input} | gzip > {output[1]}'
+
+
+rule stats:
+    threads: 1
+    input:
+        trims = expand('logs/reads_trimming-{idx}.log', idx=IDXS),
+        maps = expand('logs/mapped-{idx}.stats.txt', idx=IDXS),
+        dedup = 'logs/mapped-dedup.stats.txt',
+        depth = 'logs/mapped-dedup.depths.txt.gz'
+    params:
+        trimmed = lambda wildcards, input: '--trimmed ' + ' --trimmed '.join(input.trims),
+        mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps)
+    output:
+        'logs/stats.tsv'
+    shell:
+        'collect_stats.py -o {output} {params.trimmed} {params.mapped} --dedup {input.dedup} --depth {input.depth} {sample}'
+
 
 # EOF
