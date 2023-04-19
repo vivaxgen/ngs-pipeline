@@ -39,9 +39,9 @@ def init_argparser():
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('target', choices=['all', 'map_merging'],
+    p.add_argument('target', choices=['all', 'mapping'],
                    help="target of snakemake module, use 'all' for GATK joint variant "
-                   "or 'map_merging' for FreeBayes joitn variant call")
+                   "or 'mapping' for FreeBayes joint variant call")
     return p
 
 
