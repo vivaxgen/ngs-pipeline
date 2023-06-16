@@ -2,7 +2,7 @@
 # PYTHON_ARGCOMPLETE_OK
 
 __copyright__ = '''
-prepare_samples.py - ngs-pipeline command line
+run_varcall.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
 (c) 2022 Hidayat Trimarsanto <trimarsanto@gmail.com>
