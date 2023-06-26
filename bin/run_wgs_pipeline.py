@@ -39,9 +39,11 @@ def init_argparser():
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('target', choices=['all', 'mapping'],
+    p.add_argument('--target', choices=['all', 'mapping'],
                    help="target of snakemake module, use 'all' for GATK joint variant "
                    "or 'mapping' for FreeBayes joint variant call")
+    p.add_argument('indirs', nargs='+',
+                   help="directory(ies) containing the sample directory")
     return p
 
 
@@ -61,8 +63,16 @@ def run_wgs_pipeline(args):
 
     # look for sample directories
 
-    samples = [s.name for s in cwd.iterdir() if s.is_dir()]
+    samples = []
+    for indir in args.indirs:
+        indir = pathlib.Path(indir)
+        curr_samples = [s.as_posix() for s in indir.iterdir() if s.is_dir()]
+        cerr(f'[Collecting {len(curr_samples)} directories from {indir}]')
+        samples += curr_samples
+    cerr(f'[Collectin total of {len(samples)} sample directories from '
+         f'{len(args.indirs)} input directories]')
 
+    # import IPython; IPython.embed()
 
     cmds = ['parallel',
             '--eta',
