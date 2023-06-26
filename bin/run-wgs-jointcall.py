@@ -52,6 +52,8 @@ def init_argparser():
     p.add_argument('--snakefile', default='jointvarcall_gatk.smk',
                    choices=['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk'],
                    help='snakemake file to be called [jointvarcall_gatk.smk]')
+    p.add_argument('-c', '--config', default=[], action='append',
+                   help='config file(s) to append')
     p.add_argument('--target', default='all')
     p.add_argument('source_dirs', nargs='+',
                    help='source directories containing sample directories')
@@ -91,6 +93,9 @@ def run_pipeline(args):
               + '\n'.join(str(x) for x in paths) + '\n')
 
     configfiles.reverse()
+
+    if any(args.config):
+        configfiles += args.config
 
     cerr('[Config files to be used are:\n'
          + '\n'.join(str(x) for x in configfiles) + ']\n')
