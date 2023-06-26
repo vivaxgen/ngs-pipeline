@@ -24,7 +24,8 @@ rule all:
     input:
         get_final_file,
         'logs/mapped-dedup.stats.txt',
-        'logs/stats.tsv'
+        'logs/stats.tsv',
+        'logs/depths.png'
 
 
 rule clean:
@@ -108,6 +109,18 @@ rule stats:
         'logs/stats.tsv'
     shell:
         'collect_stats.py -o {output} {params.trimmed} {params.mapped} --dedup {input.dedup} --depth {input.depth} {sample}'
+
+
+rule depth_plot:
+    threads: 1
+    input:
+        "logs/mapped-dedup.depths.txt.gz"
+    params:
+        chroms = ('--chrom ' + ','.join(REGIONS)) if any(REGIONS) else ''
+    output:
+        'logs/depths.png'
+    shell:
+        'plot_depth.py --outplot {output} {params.chroms} --sort --infile {input} {sample}'
 
 
 # EOF
