@@ -38,7 +38,7 @@ def init_argparser():
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
     p.add_argument('target')
-    p.add_argument('sample')
+    p.add_argument('sampledir')
     return p
 
 
@@ -58,9 +58,10 @@ def run_varcall(args):
     cwd = pathlib.Path.cwd()
 
     # sanity check
-    if (cwd_part := cwd.parts[-1]) != args.sample:
-        cexit(f'ERROR: sample argument {args.sample} is not identical with '
-              f'last part of current directory name {cwd_part}!')
+    #if (cwd_part := cwd.parts[-1]) != args.sample:
+    #    cexit(f'ERROR: sample argument {args.sample} is not identical with '
+    #          f'last part of current directory name {cwd_part}!')
+    sample = cwd.parts[-1]
 
     if not (cwd / 'reads').is_dir():
         cexit('ERROR: current directory does not have "reads" directory!')
