@@ -18,6 +18,13 @@ for a_dir in srcdirs:
     SAMPLES += [s for s in S if s != 'config.yaml']
     SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
 
+# additional settings and parameters
+
+if 'variant_file' in config:
+    variant_file = config['variant_file']
+else:
+    variant_file = None
+
 
 # final output of this workflow
 
@@ -75,10 +82,12 @@ rule jointvarcall_gatk:
         f"{destdir}/dbs/{{reg}}"
     output:
         f"{destdir}/joint-{{reg}}.vcf.gz"
+    params:
+        bedfile = f'--variant {variant_file}' if variant_file else ''
     shell:
         #"touch {output}"
-        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output} && "
-        "sleep 1 && "
+        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output} {params.bedfile} && "
+        "sleep 2 && "
         "bcftools index {output}"
 
 # EOF
