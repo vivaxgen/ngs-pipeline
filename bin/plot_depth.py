@@ -60,10 +60,13 @@ def plot_depth(args):
         chroms = sorted(chroms)
 
     cerr(f'Reading file {args.infile}')
-    df = pd.read_table(args.infile, header=None)
-    df.rename(columns={0: 'CHROM', 1: 'POS', 2: 'DEPTH'}, inplace=True)
+    try:
+        df = pd.read_table(args.infile, header=None)
+        df.rename(columns={0: 'CHROM', 1: 'POS', 2: 'DEPTH'}, inplace=True)
+    except pd.errors.EmptyDataError:
+        df = pd.DataFrame({'CHROM': [], 'POS': [], 'DEPTH': []})
 
-    cerr(f'Plotting depths...')
+    cerr('Plotting depths...')
     if chroms == ['*']:
         chroms = list(sorted(df.CHROM.unique()))
 
@@ -74,10 +77,9 @@ def plot_depth(args):
         axs = [axs]
 
     for ax, chrom in zip(axs, chroms):
-
         current_df = df[df.CHROM == chrom]
         ax.fill_between(current_df.POS, current_df.DEPTH, facecolor=color, color=color)
-        q995 = np.quantile(current_df.DEPTH, 0.995)
+        q995 = np.quantile(current_df.DEPTH, 0.995) if len(current_df) > 0 else 1
         if current_df.DEPTH.max() > q995 * 5:
             ax.set_ylim([0, q995 * 5])
         ax.set_ylabel(chrom, fontsize=18)
