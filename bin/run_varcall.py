@@ -52,6 +52,7 @@ def run_varcall(args):
     #
     # possible configfiles:
     #  [NGSENV_BASEDIR]/sets/[BATCH]/samples/[SAMPLE]/config.yaml
+    #  [NGSENV_BASEDIR]/sets/[BATCH]/samples/config.yaml
     #  [NGSENV_BASEDIR]/sets/[BATCH]/config.yaml
     #  [NGSENV_BASEDIR]/config.yaml
 
@@ -69,7 +70,7 @@ def run_varcall(args):
     configfiles = []
 
     # for each config directory, check config file existence
-    config_dirs = [cwd, cwd.parent.parent, cwd.parent.parent.parent.parent]
+    config_dirs = [cwd, cwd.parent, cwd.parent.parent, cwd.parent.parent.parent.parent]
     for config_path in config_dirs:
         configfile = config_path / 'config.yaml'
         if configfile.is_file():
