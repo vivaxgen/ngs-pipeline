@@ -34,12 +34,14 @@ def init_argparser():
     p = arg_parser(desc='run WGS mapping & genotyping pipeline')
     p.add_argument('-j', type=int, default=-1,
                    help='number of samples to be processed in parallel, will override '
-                   'JOBS environment, default = 32')
+                   'JOBS environment [32]')
     p.add_argument('--dryrun', default=False, action='store_true')
+    p.add_argument('--count', type=int, default=-1,
+                   help='number of samples to be processed, useful to check initial run [-1]')
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('--target', choices=['all', 'mapping'],
+    p.add_argument('--target', choices=['all', 'mapping', 'clean'],
                    help="target of snakemake module, use 'all' for GATK joint variant "
                    "or 'mapping' for FreeBayes joint variant call")
     p.add_argument('indirs', nargs='+',
@@ -71,6 +73,10 @@ def run_wgs_pipeline(args):
         samples += curr_samples
     cerr(f'[Collectin total of {len(samples)} sample directories from '
          f'{len(args.indirs)} input directories]')
+
+    if args.count > 0:
+        samples = samples[:args.count]
+        cerr(f'[Limiting processing to {args.count} sample(s)]')
 
     # import IPython; IPython.embed()
 
