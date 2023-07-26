@@ -111,7 +111,7 @@ def prepare_samples(args):
     outdir.mkdir(exist_ok=True)
 
     # sanity check for duplicate sample (directory) name
-    duplicated =  []
+    duplicated = []
     for (sample, fastq_list) in samples:
         sample_path = dest_dir / sample
         if sample_path.exists():
