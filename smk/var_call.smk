@@ -1,4 +1,7 @@
 
+# this is main snakemake module to perform sample variant calling producing
+# individual GVCF file per sample
+
 from time import sleep
 
 # prepare necessary global parameters
@@ -19,6 +22,7 @@ def get_final_file(w):
 
 # define local rules
 localrules: all, clean, mapping
+
 
 rule all:
     input:
@@ -43,7 +47,9 @@ include: config.get('reads_trimmer_wf', 'trimmer_cutadapt.smk')
 include: config.get('reads_mapper_wf', 'mapper_minimap2.smk')
 include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
 
+
 # for wgs variant calling, we perform deduplication on mapped reads
+
 rule map_dedup:
     threads: 4
     input:
@@ -98,7 +104,7 @@ rule dedup_stats:
 rule stats:
     threads: 1
     input:
-        trims = expand('logs/reads_trimming-{idx}.log', idx=IDXS),
+        trims = expand('logs/trimming_stat-{idx}.json', idx=IDXS),
         maps = expand('logs/mapped-{idx}.stats.txt', idx=IDXS),
         dedup = 'logs/mapped-dedup.stats.txt',
         depth = 'logs/mapped-dedup.depths.txt.gz'
