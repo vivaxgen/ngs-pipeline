@@ -18,9 +18,11 @@ rule reads_mapping:
     log:
         log1 = "logs/bwa-mem2-{idx}.log",
     params:
-        rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'"
+        rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'",
+        regions = ' '.join(REGIONS)
     shell:
         "bwa-mem2 mem -M -t {threads} {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
+        " | filter_reads.py {params.regions}"
         " | samtools fixmate -r -m - {output.bam}"
 
 # EOF
