@@ -46,26 +46,18 @@ def init_argparser():
 def parse_read_trimming(infiles):
     """ return (no_of_original_reads, no_of_filtered_reads) """
 
-    #from snakemake.io import glob_wildcards
+    # this will read a json file with the following specs:
+    # {'original_reads': int, 'filtered_reads': int}
 
-    #wc = glob_wildcards('logs/reads_trimming-{idx}.log')
+    import json
     original_reads = 0
     filtered_reads = 0
 
-    #for idx in wc.idx:
     for infile in infiles:
         with open(infile, 'r') as f_in:
-        #lines = open(f'logs/reads_trimming-{idx}.log').read().split('\n')
-        #for line in lines:
-            for line in f_in:
-
-                if line.startswith('Total read pairs processed'):
-                    original_reads += parse_number(line) * 2
-                    continue
-
-                if line.startswith('Pairs written'):
-                    filtered_reads += parse_number(line) * 2
-                    break
+            d = json.load(f_in)
+            original_reads += d['original_reads']
+            filtered_reads += d['filtered_reads']
 
     return (original_reads, filtered_reads)
 
@@ -146,7 +138,7 @@ def calculate_depth(infile, mindepth=5):
     total = sum(depths)
     L = len(depths)
     if total == 0:
-        average = median = 0
+        average = q1 = 0
     else:
         average = total / len(depths)
         q1 = statistics.quantiles(depths, n=4)[0]
@@ -162,16 +154,19 @@ def collect_stats(args):
     trimmed_r = trimmed_reads / initial_reads
 
     mapped_reads, proper_mapped_reads = parse_mapping_stats(args.mapped)[:2]
-    mapped_r = mapped_reads / trimmed_reads
-    proper_r = proper_mapped_reads / mapped_reads
+    mapped_r = (mapped_reads / trimmed_reads) if trimmed_reads > 0 else 0
+    proper_r = (proper_mapped_reads / mapped_reads) if mapped_reads > 0 else 0
 
     _, proper_dedup_reads, insert_size, insert_size_sd, avg_qual, inward, outward, other, trans = parse_mapping_stats([args.dedup, ])
-    dedup_r = proper_dedup_reads / proper_mapped_reads
-    final_r = proper_dedup_reads / trimmed_reads
-    inward_r = inward / proper_dedup_reads
-    outward_r = outward / proper_dedup_reads
-    other_r = other / proper_dedup_reads
-    trans_r = trans / proper_dedup_reads
+    dedup_r = proper_dedup_reads / proper_mapped_reads if proper_mapped_reads > 0 else 0
+    final_r = proper_dedup_reads / trimmed_reads if trimmed_reads > 0 else 0
+    if proper_dedup_reads > 0:
+        inward_r = inward / proper_dedup_reads
+        outward_r = outward / proper_dedup_reads
+        other_r = other / proper_dedup_reads
+        trans_r = trans / proper_dedup_reads
+    else:
+        inward_r = outward_r = other_r = trans_r = 0
 
     basepairs, avg, q1 = calculate_depth(args.depth, args.mindepth)
 
