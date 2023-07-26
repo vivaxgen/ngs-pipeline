@@ -23,6 +23,11 @@ def is_nextseq_or_novaseq():
     return config['instrument'].lower().startswith('nextseq') or config['instrument'].lower().startswith('novaseq')
 
 
+def parse_number(line, func=int):
+    # read number after colon
+    return func(line.split(':')[-1].strip().split()[0].replace(',',''))
+
+
 optdedup = config.get('optical_dedup', False)
 
 
@@ -56,5 +61,28 @@ rule reads_trimming:
         adapter_arg = '' if config['libprep'] == 'generic' else adapter_arguments(config['libprep'].lower())
     shell:
         "cutadapt {params.nextseq_arg} -j {threads} {params.length_arg} {params.minlen_arg} {params.qual_arg} -O 3 {params.adapter_arg} -o {output.trimmed1} -p {output.trimmed2} {input.read1} {input.read2} > {log}"
+
+rule trimming_stat:
+    localrule: True
+    input:
+        "logs/reads_trimming-{idx}.log"
+    output:
+        "logs/trimming_stat-{idx}.json"
+    run:
+        import json
+
+        d = dict(original_reads=0, filtered_reads=0)
+        with open(input[0], 'r') as f_in:
+            for line in f_in:
+
+                if line.startswith('Total read pairs processed'):
+                    d['original_reads'] = parse_number(line) * 2
+                    continue
+
+                if line.startswith('Pairs written'):
+                    d['filtered_reads'] = parse_number(line) * 2
+                    break
+
+        json.dump(d, open(output[0], 'w'))
 
 # EOF
