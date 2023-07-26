@@ -34,7 +34,7 @@ def get_final_file(w):
 
 def get_gvcf_files(region):
     # traversing on all source directories
-    return [f'{a_dir}/gvcf/{s}-{region}.g.vcf.gz' for (a_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
+    return [f'{s_dir}/gvcf/{s}-{region}.g.vcf.gz' for (s_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
 
 
 # define local rules
