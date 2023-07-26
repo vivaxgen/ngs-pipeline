@@ -25,6 +25,7 @@ if 'NGS_PIPELINE_BASE' not in os.environ:
           file=sys.stderr)
     sys.exit(1)
 
+import pathlib
 from ngsutils import cexit, cerr, run_main, arg_parser
 
 
@@ -41,8 +42,10 @@ def init_argparser():
 
 
 def get_sample_name(filename, underline=0):
+    filename = pathlib.Path(filename)
     if underline != 0:
-        return filename.rsplit('_', underline)[0]
+        return filename.name.rsplit('_', underline)[0]
+    return filename.stem
 
 
 def generate_manifest(args):
