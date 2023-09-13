@@ -1,4 +1,7 @@
 
+# parameters needed:
+# keep_paired_bam = True/False
+
 # BWA-MEM2 mapper
 #
 # RG: read groups needs to be defined for proper GATK operation
@@ -9,12 +12,13 @@
 
 
 rule reads_mapping:
+    # this rule provides a bam file with only mapped paired reads in regions stated in REGIONS
     threads: 16
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
     output:
-        bam = temp("maps/mapped-{idx}.bam"),
+        bam = "maps/mapped-{idx}.bam" if keep_paired_bam else temp("maps/mapped-{idx}.bam"),
     log:
         log1 = "logs/bwa-mem2-{idx}.log",
     params:
