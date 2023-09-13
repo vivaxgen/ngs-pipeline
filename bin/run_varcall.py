@@ -57,6 +57,11 @@ def run_varcall(args):
     #  [NGSENV_BASEDIR]/config.yaml
 
     cwd = pathlib.Path.cwd()
+    NGSENV_BASEDIR = pathlib.Path(os.environ['NGSENV_BASEDIR'])
+
+    # check sanity
+    if not cwd.is_relative_to(NGSENV_BASEDIR):
+        cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
 
     # sanity check
     #if (cwd_part := cwd.parts[-1]) != args.sample:
@@ -65,16 +70,21 @@ def run_varcall(args):
     sample = cwd.parts[-1]
 
     if not (cwd / 'reads').is_dir():
-        cexit('ERROR: current directory does not have "reads" directory!')
+        cexit(f'ERROR: current directory {cwd} does not have "reads" directory!')
 
     configfiles = []
 
     # for each config directory, check config file existence
-    config_dirs = [cwd, cwd.parent, cwd.parent.parent, cwd.parent.parent.parent.parent]
-    for config_path in config_dirs:
+    #config_dirs = [cwd, cwd.parent, cwd.parent.parent, cwd.parent.parent.parent.parent]
+    config_dirs = []
+    config_path = cwd
+    #for config_path in config_dirs:
+    while config_path.is_relative_to(NGSENV_BASEDIR):
+        config_dirs.append(config_path)
         configfile = config_path / 'config.yaml'
         if configfile.is_file():
             configfiles.append(configfile)
+        config_path = config_path.parent
 
     if not any(configfiles):
         cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
