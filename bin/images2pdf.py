@@ -7,7 +7,8 @@ from PIL import Image
 def init_argparser():
 
     p = argparse.ArgumentParser()
-    p.add_argument('-n', type=int, default=1)
+    p.add_argument('-n', type=int, default=1,
+                   help='number of sample(s) per page')
     p.add_argument('-o', '--outfile', default='outplot.pdf')
     p.add_argument('infiles', nargs='+')
 
