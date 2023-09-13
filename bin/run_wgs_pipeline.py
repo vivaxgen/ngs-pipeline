@@ -25,6 +25,7 @@ if 'NGS_PIPELINE_BASE' not in os.environ:
           file=sys.stderr)
     sys.exit(1)
 
+
 from ngsutils import cerr, cexit, run_main, arg_parser
 
 
@@ -61,17 +62,34 @@ def run_wgs_pipeline(args):
         else:
             args.j = 32
 
+    # get NGS_PIPELINE_BASE
+    NGS_PIPELINE_BASE = os.environ["NGS_PIPELINE_BASE"]
+
+    # get NGSENV_BASEDIR
+    NGSENV_BASEDIR = os.environ["NGSENV_BASEDIR"]
+
     cwd = pathlib.Path.cwd()
 
     # look for sample directories
 
     samples = []
     for indir in args.indirs:
-        indir = pathlib.Path(indir)
+        indir = pathlib.Path(indir).resolve()
+
+        #import IPython; IPython.embed()
+
+        # check whether indir is a directory
+        if not indir.is_dir():
+            cexit(f'[ERROR: directory {indir} does not exist]')
+
+        # check whether indir is under NGS_PIPELINE_BASE
+        if not indir.resolve().is_relative_to(NGSENV_BASEDIR):
+            cexit(f'[ERROR: {indir} is not relative to {NGSENV_BASEDIR}]')
+
         curr_samples = [s.as_posix() for s in indir.iterdir() if s.is_dir()]
         cerr(f'[Collecting {len(curr_samples)} directories from {indir}]')
         samples += curr_samples
-    cerr(f'[Collectin total of {len(samples)} sample directories from '
+    cerr(f'[Collecting total of {len(samples)} sample directories from '
          f'{len(args.indirs)} input directories]')
 
     if args.count > 0:
@@ -84,8 +102,8 @@ def run_wgs_pipeline(args):
             '--eta',
             '-j', str(args.j),
             '--workdir',
-            f'{cwd.as_posix()}/{{}}',
-            f'{os.environ["NGS_PIPELINE_BASE"]}/bin/run_varcall.py -j 32 '
+            '{}',
+            f'{NGS_PIPELINE_BASE}/bin/run_varcall.py -j 32 '
             f'{"--unlock" if args.unlock else ""} {"--rerun" if args.rerun else ""} '
             f'{args.target}',
             ':::'
@@ -98,6 +116,7 @@ def run_wgs_pipeline(args):
     subprocess.call(cmds)
 
     cwd = pathlib.Path.cwd()
+
 
 if __name__ == '__main__':
     run_main(init_argparser, run_wgs_pipeline)
