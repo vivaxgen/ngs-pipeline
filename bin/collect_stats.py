@@ -34,8 +34,8 @@ def init_argparser():
                    help='output filename [stdout]')
     p.add_argument('--trimmed', action='append')
     p.add_argument('--mapped', action='append')
-    p.add_argument('--dedup')
-    p.add_argument('--depth', default=None)
+    p.add_argument('--dedup', action='append')
+    p.add_argument('--depth', action='append')
     p.add_argument('--mindepth', default=5, type=int,
                    help='min depth to be stats [5]')
     p.add_argument('sample',
@@ -146,6 +146,46 @@ def calculate_depth(infile, mindepth=5):
     return (L, average, q1)
 
 
+def calculate_depths(infiles, mindepth=5):
+
+    import gzip
+    import statistics
+
+    depths = {}
+    for infile in infiles:
+        with gzip.open(infile, 'r') as fin:
+            cerr(f'[Reading depth file: {infile}]')
+            for line in fin:
+                tokens = line.strip().split()
+                try:
+                    chr_d = depths[tokens[0]]
+                except KeyError:
+                    chr_d = depths[tokens[0]] = {}
+
+                d = int(tokens[-1])
+                try:
+                    chr_d[tokens[1]] += d
+                except KeyError:
+                    chr_d[tokens[1]] = d
+
+    depth_values = []
+
+    for chr_d in depths.values():
+        for d in chr_d.values():
+            if d >= mindepth:
+                depth_values.append(d)
+
+    total = sum(depth_values)
+    L = len(depth_values)
+    if total == 0:
+        average = q1 = 0
+    else:
+        average = total / L
+        q1 = statistics.quantiles(depth_values, n=4)[0]
+
+    return (L, average, q1)
+
+
 def collect_stats(args):
 
     # import heavy modules here if required
@@ -157,7 +197,7 @@ def collect_stats(args):
     mapped_r = (mapped_reads / trimmed_reads) if trimmed_reads > 0 else 0
     proper_r = (proper_mapped_reads / mapped_reads) if mapped_reads > 0 else 0
 
-    _, proper_dedup_reads, insert_size, insert_size_sd, avg_qual, inward, outward, other, trans = parse_mapping_stats([args.dedup, ])
+    _, proper_dedup_reads, insert_size, insert_size_sd, avg_qual, inward, outward, other, trans = parse_mapping_stats(args.dedup)
     dedup_r = proper_dedup_reads / proper_mapped_reads if proper_mapped_reads > 0 else 0
     final_r = proper_dedup_reads / trimmed_reads if trimmed_reads > 0 else 0
     if proper_dedup_reads > 0:
@@ -168,27 +208,24 @@ def collect_stats(args):
     else:
         inward_r = outward_r = other_r = trans_r = 0
 
-    basepairs, avg, q1 = calculate_depth(args.depth, args.mindepth)
+    basepairs, avg, q1 = calculate_depths(args.depth, args.mindepth)
 
     outfile = sys.stdout if args.outfile == '-' else open(args.outfile, 'w')
-    headers = ['SAMPLE', 'RAW',
-               'TRIMMED', 'TRIMMED_R',
-               'MAPPED', 'MAPPED_R',
-               'PROPER', 'PROPER_R',
-               'DEDUP', 'DEDUP_R',
-               'FINAL_R',
-               'INWARD', 'INWARD_R',
-               'OUTWARD', 'OUTWARD_R',
-               'OTHER', 'OTHER_R',
-               'TRANS', 'TRANS_R',
-               'INSERT_SIZE', 'INSERT_SIZE_SD', 'AVG_QUAL',
-               'BASEPAIRS', 'AVG_DEPTH', 'Q1_DEPTH'
+    headers = [
+        'SAMPLE', 'RAW',
+        'TRIMMED', 'TRIMMED_R',
+        'MAPPED', 'MAPPED_R',
+        'PROPER', 'PROPER_R',
+        'DEDUP', 'DEDUP_R',
+        'FINAL_R',
+        'INWARD', 'INWARD_R',
+        'OUTWARD', 'OUTWARD_R',
+        'OTHER', 'OTHER_R',
+        'TRANS', 'TRANS_R',
+        'INSERT_SIZE', 'INSERT_SIZE_SD', 'AVG_QUAL',
+        'BASEPAIRS', 'AVG_DEPTH', 'Q1_DEPTH'
     ]
-#'OP_DEDUP', 'OP_DEDUP_R', 'ADAPTER', 'ADAPTER_R',
-#                'PROP_PAIR', 'PROP_PAIR_R', 'PCR_DEDUP', 'PCR_DEDUP_R', 'PRIMAL', 'PRIMAL_R',
-#                'MEAN_IS', 'MED_IS', 'SD_IS', 'AVGDEPTH', 'BASE', 'LENGTH', 'N_BASE',
-#                'POINTMUT', 'INFRAME', 'OOFRAME' ]
-    outfile.write('%s\n' % '\t'.join( headers ))
+    outfile.write('%s\n' % '\t'.join(headers))
 
     outfile.write(
         f'{args.sample}\t'
@@ -204,13 +241,7 @@ def collect_stats(args):
         f'{trans}\t{trans_r:5.3f}\t'
         f'{insert_size}\t{insert_size_sd}\t{avg_qual}\t'
         f'{basepairs}\t{avg:5.2f}\t{q1:5.2f}'
-#                    f'{properly_mapped_reads}\t{prop_pair_r:5.3f}\t'
-#                    f'{pcr_dedup_reads}\t{pcr_dedup_r:5.3f}\t'
-#                    f'{primer_trimmed_reads}\t{primal_r:5.3f}\t'
-#                    f'{mean_is}\t{med_is}\t{sd_is}\t'
-#                    f'{depth}\t{bases}\t{seqlength}\t{n_bases}\t'
-#                    f'{point_mutations}\t{inframe_gaps}\t{ooframe_gaps}\n'
-                    '\n'
+        '\n'
     )
 
 
