@@ -47,13 +47,25 @@ include: config.get('reads_trimmer_wf', 'trimmer_cutadapt.smk')
 include: config.get('reads_mapper_wf', 'mapper_minimap2.smk')
 include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
 
+# the mapping process in this snakemake file is:
+# paired-maps -> proper-maps -> deduped-maps -> merged-maps
 
 # for wgs variant calling, we perform deduplication on mapped reads
+
+rule map_proper:
+    # this rule filter input BAM file for only mapped, properly paired, hiqh-quality reads
+    threads: 3
+    input:
+        "maps/mapped-{idx}.bam"
+    output:
+        "maps/mapped-proper-{idx}.bam" if keep_proper_bam else temp("maps/mapped-proper-{idx}.bam")
+    shell:
+        "samtools view -F 0x4 -f 0x2 -q 15 -o  {output} {input}"
 
 rule map_dedup:
     threads: 4
     input:
-        "maps/mapped-{idx}.bam"
+        "maps/mapped-proper-{idx}.bam"
     output:
         temp("maps/mapped-dedup-{idx}.bam")
     log:
@@ -65,19 +77,20 @@ rule map_dedup:
 rule map_stats:
     threads: 1
     input:
-        "maps/mapped-{idx}.bam"
+        "maps/{filename}.bam"
     output:
-        "logs/mapped-{idx}.stats.txt"
+        "logs/{filename}.stats.txt"
     shell:
         "samtools stats {input} > {output}"
 
 
-rule map_merging:
+rule map_merging_dedup:
+    # this rule merges dedup input BAM
     threads: 8
     input:
         expand('maps/mapped-dedup-{idx}.bam', idx=IDXS)
     output:
-        'maps/mapped-dedup.bam'
+        'maps/mapped-dedup.bam' if keep_deduplicated_bam else temp('maps/mapped-dedup.bam')
     run:
         if len(IDXS) > 1:
             shell('samtools merge -@8 {output} {input}')
@@ -87,34 +100,37 @@ rule map_merging:
         sleep(2)
         shell('samtools index {output}')
 
+
 include: "varcall_gatk.smk"
 
 
-rule dedup_stats:
+rule map_depth:
+    # this rule creates stats and depths of any .bam file using samtools stats
     threads: 1
     input:
-        'maps/mapped-dedup.bam'
+        'maps/{filename}.bam'
     output:
-        'logs/mapped-dedup.stats.txt',
-        'logs/mapped-dedup.depths.txt.gz'
+        'logs/{filename}.depths.txt.gz'
     shell:
-        'samtools stats {input} > {output[0]} && samtools depth {input} | gzip > {output[1]}'
+        'samtools depth {input} | gzip > {output}'
 
 
-rule stats:
+rule collect_stats:
     threads: 1
     input:
         trims = expand('logs/trimming_stat-{idx}.json', idx=IDXS),
         maps = expand('logs/mapped-{idx}.stats.txt', idx=IDXS),
-        dedup = 'logs/mapped-dedup.stats.txt',
-        depth = 'logs/mapped-dedup.depths.txt.gz'
+        dedups = expand('logs/mapped-dedup-{idx}.stats.txt', idx=IDXS),
+        depths = expand('logs/mapped-dedup-{idx}.depths.txt.gz', idx=IDXS),
     params:
         trimmed = lambda wildcards, input: '--trimmed ' + ' --trimmed '.join(input.trims),
-        mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps)
+        mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps),
+        deduped = lambda wildcards, input: '--dedup ' + ' --dedup '.join(input.dedups),
+        depthed = lambda wildcards, input: '--depth ' + ' --depth '.join(input.depths),
     output:
         'logs/stats.tsv'
     shell:
-        'collect_stats.py -o {output} {params.trimmed} {params.mapped} --dedup {input.dedup} --depth {input.depth} {sample}'
+        'collect_stats.py -o {output} {params.trimmed} {params.mapped} {params.deduped} {params.depthed} {sample}'
 
 
 rule depth_plot:
