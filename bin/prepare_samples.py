@@ -80,7 +80,7 @@ def prepare_samples(args):
     dest_dir = outdir.relative_to(common_parent)
 
     if args.resampling > 0:
-       manifest_df = manifest_df.sample(n=args.resampling)
+        manifest_df = manifest_df.sample(n=args.resampling)
 
     # iterating over manifest file and check ooccurence of each fastq file
     counter = 0
