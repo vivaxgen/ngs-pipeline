@@ -37,6 +37,9 @@ def init_argparser():
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
+    p.add_argument('--touch', default=False, action='store_true',
+                   help='touch all output files, to avoid re-running the ngs-pipeline '
+                   'such as after modifying/debugging snakemake file')
     p.add_argument('target')
     p.add_argument('sampledir')
     return p
@@ -97,6 +100,7 @@ def run_varcall(args):
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'var_call.smk',
         configfiles=configfiles,
         dryrun=args.dryrun,
+        touch=args.touch,
         printshellcmds=args.showcmds,
         unlock=args.unlock,
         force_incomplete=args.rerun,
