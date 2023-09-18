@@ -2,6 +2,7 @@
 # prepare global params
 
 include: "global_params.smk"
+include: "utilities.smk"
 
 
 # source directories would be provided using config=dict() args of snakemake()
@@ -29,7 +30,7 @@ else:
 # final output of this workflow
 
 def get_final_file(w):
-    return [f"{destdir}/joint-{reg}.vcf.gz" for reg in REGIONS]
+    return [f"{destdir}/{reg}.vcf.gz.csi" for reg in REGIONS]
 
 
 def get_gvcf_files(region):
@@ -72,7 +73,6 @@ rule combine_gvcf:
     output:
         directory(f"{destdir}/dbs/{{reg}}")
     shell:
-        #"touch {output}"
         "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} --sample-name-map {input} -L {wildcards.reg}"
 
 
@@ -81,14 +81,11 @@ rule jointvarcall_gatk:
     input:
         f"{destdir}/dbs/{{reg}}"
     output:
-        f"{destdir}/joint-{{reg}}.vcf.gz"
+        f"{destdir}/{{reg}}.vcf.gz"
     params:
         bedfile = f'--variant {variant_file}' if variant_file else ''
     shell:
-        #"touch {output}"
-        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output} {params.bedfile} && "
-        "sleep 2 && "
-        "bcftools index {output}"
+        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output} {params.bedfile}"
 
 # EOF
 
