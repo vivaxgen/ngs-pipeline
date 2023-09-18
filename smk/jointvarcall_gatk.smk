@@ -16,8 +16,10 @@ SAMPLES = []
 SAMPLE_DIRS = []
 for a_dir in srcdirs:
     S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
-    SAMPLES += [s for s in S if s != 'config.yaml']
-    SAMPLE_DIRS += [f'{a_dir}/{s}' for s in SAMPLES]
+    # filter for non-sample directories/files
+    S += [s for s in S if s != 'config.yaml']
+    SAMPLES += S
+    SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
 
 # additional settings and parameters
 
