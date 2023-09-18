@@ -21,11 +21,13 @@ rule gatk_gatherbsqr:
         expand('maps/recal-{reg}.table', reg=REGIONS)
     output:
         "maps/recal.table"
+    log:
+        "logs/gatk-GatherBSQRReports.log"
     params:
         n_input = lambda wildcards, input: len(input)
     run:
         input_opts = '-I ' + ' -I '.join(input)
-        shell("gatk {java_opts} GatherBQSRReports {input_opts} -O {output}")
+        shell("gatk {java_opts} GatherBQSRReports {input_opts} -O {output} 2>{log}")
 
 
 rule gatk_applybqsr:
