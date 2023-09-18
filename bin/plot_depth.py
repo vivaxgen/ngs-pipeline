@@ -51,6 +51,8 @@ def plot_depth(args):
 
     import pandas as pd
     import numpy as np
+    import matplotlib
+    matplotlib.use('Cairo')
     from matplotlib import pyplot as plt
 
     chroms = args.chroms.split(',')
@@ -78,6 +80,7 @@ def plot_depth(args):
 
     for ax, chrom in zip(axs, chroms):
         current_df = df[df.CHROM == chrom]
+        cerr(f'Plotting for {len(current_df)} pos of {chrom}')
         ax.fill_between(current_df.POS, current_df.DEPTH, facecolor=color, color=color)
         q995 = np.quantile(current_df.DEPTH, 0.995) if len(current_df) > 0 else 1
         if current_df.DEPTH.max() > q995 * 5:
