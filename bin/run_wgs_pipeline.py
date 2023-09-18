@@ -36,12 +36,17 @@ def init_argparser():
     p.add_argument('-j', type=int, default=-1,
                    help='number of samples to be processed in parallel, will override '
                    'JOBS environment [32]')
+    p.add_argument('--joblog', default=None,
+                   help='name of job log file [run-DATETIME.log]')
     p.add_argument('--dryrun', default=False, action='store_true')
     p.add_argument('--count', type=int, default=-1,
                    help='number of samples to be processed, useful to check initial run [-1]')
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
+    p.add_argument('--touch', default=False, action='store_true',
+                   help='touch all output files, to avoid re-running the ngs-pipeline '
+                   'such as after modifying/debugging snakemake file')
     p.add_argument('--target', choices=['all', 'mapping', 'clean'],
                    help="target of snakemake module, use 'all' for GATK joint variant "
                    "or 'mapping' for FreeBayes joint variant call")
@@ -67,6 +72,10 @@ def run_wgs_pipeline(args):
 
     # get NGSENV_BASEDIR
     NGSENV_BASEDIR = os.environ["NGSENV_BASEDIR"]
+
+    # joblog file
+    if not args.joblog:
+        args.joblog = 'run-' + time.strftime("%y%m%d-%H%M") + '.log'
 
     cwd = pathlib.Path.cwd()
 
@@ -101,10 +110,13 @@ def run_wgs_pipeline(args):
     cmds = ['parallel',
             '--eta',
             '-j', str(args.j),
+            '--joblog', args.joblog,
             '--workdir',
             '{}',
-            f'{NGS_PIPELINE_BASE}/bin/run_varcall.py -j 32 '
-            f'{"--unlock" if args.unlock else ""} {"--rerun" if args.rerun else ""} '
+            f'{NGS_PIPELINE_BASE}/bin/run_varcall.py -j 48 '
+            f'{"--unlock" if args.unlock else ""} '
+            f'{"--rerun" if args.rerun else ""} '
+            f'{"--touch" if args.touch else ""} '
             f'{args.target}',
             ':::'
             ]
