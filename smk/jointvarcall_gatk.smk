@@ -7,7 +7,7 @@ include: "utilities.smk"
 
 # source directories would be provided using config=dict() args of snakemake()
 
-srcdirs = config['srcdirs']
+srcdirs = set(config['srcdirs'])
 destdir = config.get('destdir', 'vcfs')
 
 # get all samples and sample directories
@@ -17,9 +17,10 @@ SAMPLE_DIRS = []
 for a_dir in srcdirs:
     S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
     # filter for non-sample directories/files
-    S += [s for s in S if s != 'config.yaml']
+    S = [s for s in S if s != 'config.yaml']
     SAMPLES += S
     SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
+
 
 # additional settings and parameters
 
