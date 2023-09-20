@@ -40,6 +40,9 @@ def init_argparser():
     p = arg_parser(desc='run WGS varcalling pipeline')
     p.add_argument('-j', type=int, default=196)
     p.add_argument('--dryrun', default=False, action='store_true')
+    p.add_argument('--touch', default=False, action='store_true',
+                   help='touch all output files, to avoid re-running the ngs-pipeline '
+                   'such as after modifying/debugging snakemake file')
     p.add_argument('--showcmds', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
@@ -108,6 +111,7 @@ def run_pipeline(args):
         config=dict(srcdirs=source_dirs, destdir=args.outdir),
         printshellcmds=args.showcmds,
         dryrun=args.dryrun,
+        touch=args.touch,
         unlock=args.unlock,
         force_incomplete=args.rerun,
         cores=args.j,
