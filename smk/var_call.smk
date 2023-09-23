@@ -43,9 +43,10 @@ rule mapping:
         'logs/stats.tsv'
 
 
-include: config.get('reads_trimmer_wf', 'trimmer_cutadapt.smk')
-include: config.get('reads_mapper_wf', 'mapper_minimap2.smk')
+include: config.get('reads_trimmer_wf', 'trimmer_fastp.smk')
+include: config.get('reads_mapper_wf', 'mapper_bwa-mem2.smk')
 include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
+include: config.get('variant_caller_wd', 'varcall_gatk.smk')
 
 # the mapping process in this snakemake file is:
 # paired-maps -> proper-maps -> deduped-maps -> merged-maps
@@ -53,7 +54,7 @@ include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
 # for wgs variant calling, we perform deduplication on mapped reads
 
 rule map_proper:
-    # this rule filter input BAM file for only mapped, properly paired, hiqh-quality reads
+    # this rule filter input BAM file for only mapped, properly paired (FR) reads
     threads: 3
     input:
         "maps/mapped-{idx}.bam"
@@ -99,9 +100,6 @@ rule map_merging_dedup:
         # to make index file newer by 1-sec to bam file
         sleep(2)
         shell('samtools index {output}')
-
-
-include: "varcall_gatk.smk"
 
 
 rule map_depth:
