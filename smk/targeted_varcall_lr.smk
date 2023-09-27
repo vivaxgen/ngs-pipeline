@@ -4,6 +4,8 @@
 import os
 import pathlib
 
+from ngsutils import cexit
+
 include: "utilities.smk"
 
 ngs_pipeline_basedir = os.environ['NGS_PIPELINE_BASE']
@@ -21,10 +23,25 @@ max_read_len = config['max_read_len']
 min_read_len = config['min_read_len']
 
 read_files = {}
+err_files = []
 for infile in infiles:
+    if not infile.endswith('.fastq.gz'):
+        err_files.append(
+            f'Input file: {infile} is not a compressed FASTQ file (fastq.gz).'
+        )
+        continue
     path = pathlib.Path(infile)
+    if not path.exists():
+        err_files.append(
+            f'Input file: {infile} does not exist. Please check your path.'
+        )
+        continue
     sample = path.name.removesuffix('.fastq.gz')
     read_files[sample] = infile
+
+if any(err_files):
+    cexit('ERROR: invalid input files: \n' +
+          '\n'.join(f'  {errmsg}' for errmsg in err_files))
 
 
 def get_read_file(w):
