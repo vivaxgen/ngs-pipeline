@@ -59,6 +59,7 @@ def run_wgs_pipeline(args):
 
     import pathlib
     import subprocess
+    import time
 
     # check for number of jobs from environment
     if args.j < 0:
