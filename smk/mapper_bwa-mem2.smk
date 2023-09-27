@@ -12,7 +12,11 @@
 
 
 rule reads_mapping:
-    # this rule provides a bam file with only mapped paired reads in regions stated in REGIONS
+    # this rule provides a name-sorted bam file with only mapped paired reads with:
+    # - regions mentioned in contaminant_regions removed out, or
+    # - regions mentioned in regions filtered-in
+    # no further filtering is done (eg. secondary/trans/CPP)
+    # the final bam file is suitable for uploading to SRA public database
     threads: 16
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
@@ -21,12 +25,18 @@ rule reads_mapping:
         bam = "maps/mapped-{idx}.bam" if keep_paired_bam else temp("maps/mapped-{idx}.bam"),
     log:
         log1 = "logs/bwa-mem2-{idx}.log",
+        log2 = "logs/filter-reads-{idx}.json",
+        log3 = "logs/filter_reads_region-{idx}.log",
+        log4 = "logs/fixmate-{idx}.log"
+    benchmark:
+        "logs/bwa-mem2-{idx}.bm.txt"
     params:
         rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'",
-        regions = ' '.join(REGIONS)
+        regions = ' '.join(CONTAMINANT_REGIONS) if CONTAMINANT_REGIONS else ' '.join(REGIONS),
+        mode = '--remove' if CONTAMINANT_REGIONS else ''
     shell:
         "bwa-mem2 mem -M -t {threads} {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
-        " | filter_reads.py {params.regions}"
-        " | samtools fixmate -r -m - {output.bam}"
+        " | filter_reads_region.py --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
+        " | samtools fixmate -m - {output.bam} 2> {log.log4}"
 
 # EOF
