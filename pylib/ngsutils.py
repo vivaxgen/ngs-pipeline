@@ -56,4 +56,22 @@ def run_main(argument_parser=None, main_function=None):
     else:
         main_function(args)
 
+
+def add_pgline(alignment_file, pg_dict):
+    """ append new PG line using a PG dict, return the full header """
+
+    header = alignment_file.header.to_dict()
+    pg_header = header['PG']
+    pg_dict['PP'] = pg_header[-1]['ID']
+    pg_header.append(pg_dict)
+    return header
+
+
+def get_mode(filename, mode):
+    """ return either (r, rb, w, wb) depending on file name """
+    if filename.endswith('.bam'):
+        return mode + 'b'
+    return mode
+
+
 # EOF
