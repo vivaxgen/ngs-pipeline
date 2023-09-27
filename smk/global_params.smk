@@ -16,6 +16,15 @@ keep_proper_bam = config.get('keep_proper_bam', False)
 keep_deduplicated_bam = config.get('keep_deduplicated_bam', False)
 keep_recalibrated_bam = config.get('keep_recalibrated_bam', False)
 
+# parameters for read trimming
+minlen = int(config['minlen']) if 'minlen' in config else int(config['read_length'] / 3)
+maxlen = int(config['maxlen']) if 'maxlen' in config else 0
+min_quality = int(config['min_read_qual'])
+min_avg_quality = int(config['min_avg_qual'])
+correction = config.get('correction', False)
+instrument = config.get('instrument', None)
+read_filters = config.get('read_filters', '')
+
 
 java_opts = ''
 
@@ -28,6 +37,8 @@ REGIONS = config.get('regions', [])
 if isinstance(REGIONS, dict):
     PARTIALS = REGIONS
     REGIONS = PARTIALS.keys()
+
+CONTAMINANT_REGIONS = config.get('contaminant_regions', [])
 
 wildcard_constraints:
     idx = '\\d+',
