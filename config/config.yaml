@@ -1,0 +1,96 @@
+
+optical_dedup: False
+instrument: generic
+platform: generic
+libprep: generic
+
+min_read_qual: 15
+min_avg_qual: 13
+read_length: 100
+minlen:
+maxlen:
+correction:
+
+keep_paired_bam:
+keep_proper_bam:
+keep_deduplicated_bam:
+keep_recalibrated_bam:
+keep_realigned_bam:
+
+refseq_file: refs/PvP01_v1.fasta
+refmap_file: refs/PvP01_v1.mmi
+knownsites_file: refs/pv-known-variants.bed.gz
+knownvariants_dir: refs/known-variants
+
+
+regions:
+  - PvP01_14_v1
+  - PvP01_13_v1
+  - PvP01_12_v1
+  - PvP01_11_v1
+  - PvP01_10_v1
+  - PvP01_09_v1
+  - PvP01_08_v1
+  - PvP01_07_v1
+  - PvP01_06_v1
+  - PvP01_05_v1
+  - PvP01_04_v1
+  - PvP01_03_v1
+  - PvP01_02_v1
+  - PvP01_01_v1
+  - PvP01_API_v1
+  - PvP01_MIT_v1
+
+contaminant_regions:
+  - NC_000001.11
+  - NC_000002.12
+  - NC_000003.12
+  - NC_000004.12
+  - NC_000005.10
+  - NC_000006.12
+  - NC_000007.14
+  - NC_000008.11
+  - NC_000009.12
+  - NC_000010.11
+  - NC_000011.10
+  - NC_000012.12
+  - NC_000013.11
+  - NC_000014.9
+  - NC_000015.10
+  - NC_000016.10
+  - NC_000017.11
+  - NC_000018.10
+  - NC_000019.10
+  - NC_000020.11
+  - NC_000021.9
+  - NC_000022.11
+  - NC_000023.11
+  - NC_000024.10
+  - NC_012920.1
+
+
+
+
+reads_trimmer_wf: trimmer_fastp.smk
+reads_mapper_wf: mapper_bwa-mem2.smk
+
+# -- snakemake configuration --
+
+cluster:
+  sbatch
+    --cpus-per-task={threads}
+    --job-name=smk-{rule}-{sample}-{wildcards}
+    --time={resources.time}
+default-resources:
+  - time="48:00:00"
+restart-times: 3
+max-jobs-per-second: 10
+max-status-checks-per-second: 1
+local-cores: 1
+latency-wait: 60
+jobs: 500
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy
+
