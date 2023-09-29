@@ -42,7 +42,6 @@ rule mapping:
         'maps/mapped-dedup.bam',
         'logs/stats.tsv'
 
-
 include: config.get('reads_trimmer_wf', 'trimmer_fastp.smk')
 include: config.get('reads_mapper_wf', 'mapper_bwa-mem2.smk')
 include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
@@ -63,16 +62,25 @@ rule map_proper:
     shell:
         "samtools view -F 0x4 -f 0x2 -q 15 -o  {output} {input}"
 
-rule map_dedup:
+
+rule map_filter_dedup:
     threads: 4
     input:
-        "maps/mapped-proper-{idx}.bam"
+        "maps/mapped-{idx}.bam"
     output:
         temp("maps/mapped-dedup-{idx}.bam")
     log:
-        "logs/markdup-{idx}.log"
+        log1 = "logs/filter_orientation-{idx}.log",
+        log2 = "logs/samtools-sort-{idx}.log",
+        log3 = "logs/markdup-{idx}.log",
+        markdup_stat = "logs/markdup-stat-{idx}.json",
+        read_orientation = "logs/read-orientation-{idx}.json"
+    params:
+        args = config.get('read_filters', '') or '--remove_unmapped'
     shell:
-        "samtools sort -@4 {input} | samtools markdup -r - {output} 2> {log}"
+        "filter_reads_orientation.py {params.args} {input} 2> {log.log1} "
+        "| samtools sort -@4 2> {log.log2} "
+        "| samtools markdup -r --json -f {log.markdup_stat} - {output} 2> {log.log3}"
 
 
 rule map_stats:
