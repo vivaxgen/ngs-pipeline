@@ -108,7 +108,7 @@ def run_pipeline(args):
     status = snakemake.snakemake(
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / args.snakefile,
         configfiles=configfiles,
-        config=dict(srcdirs=source_dirs, destdir=args.outdir),
+        config=dict(srcdirs=source_dirs, destdir=args.outdir.removesuffix('/')),
         printshellcmds=args.showcmds,
         dryrun=args.dryrun,
         touch=args.touch,
