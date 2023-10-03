@@ -20,7 +20,7 @@ keep_recalibrated_bam = config.get('keep_recalibrated_bam', False)
 # parameters for read trimming
 minlen = int(config['minlen']) if 'minlen' in config else int(config['read_length'] / 3)
 maxlen = int(config['maxlen']) if 'maxlen' in config else 0
-min_quality = int(config.get('min_read_qual', 15))
+min_read_quality = int(config.get('min_read_qual', 15))
 min_avg_quality = int(config.get('min_avg_qual', 0))
 correction = config.get('correction', False)
 instrument = config.get('instrument', None)
@@ -42,7 +42,7 @@ if isinstance(REGIONS, dict):
 CONTAMINANT_REGIONS = config.get('contaminant_regions', [])
 
 wildcard_constraints:
-    idx = '\\d+',
-    sample = '[\\w-]+'
+    idx = r'\d+',
+    sample = r'[.\w-]+'
 
 # EOF
