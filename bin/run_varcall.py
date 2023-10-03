@@ -49,6 +49,7 @@ def run_varcall(args):
 
     import pathlib
     import snakemake
+    import datetime
 
     # directory structure:
     #  [NGSENV_BASEDIR]/sets/[BATCH]/samples/[SAMPLE]
@@ -94,9 +95,14 @@ def run_varcall(args):
 
     configfiles.reverse()
 
+    # remove .failed or .finished screen first if exists
+    (cwd / '.failed').unlink(missing_ok=True)
+    (cwd / '.finished').unlink(missing_ok=True)
+
     # run smk
 
-    snakemake.snakemake(
+    start_time = datetime.datetime.now()
+    status = snakemake.snakemake(
         pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'var_call.smk',
         configfiles=configfiles,
         dryrun=args.dryrun,
@@ -110,6 +116,8 @@ def run_varcall(args):
         cluster_cancel="scancel",
         targets=[args.target],
     )
+    finish_time = datetime.datetime.now()
+    open(cwd / ('.failed' if not status else '.finished'), 'w').write(f'{finish_time - start_time}')
 
 
 if __name__ == '__main__':
