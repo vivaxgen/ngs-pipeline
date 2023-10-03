@@ -60,6 +60,7 @@ def run_wgs_pipeline(args):
     import pathlib
     import subprocess
     import time
+    import datetime
 
     # check for number of jobs from environment
     if args.j < 0:
@@ -108,6 +109,7 @@ def run_wgs_pipeline(args):
 
     # import IPython; IPython.embed()
 
+    start_time = datetime.datetime.now()
     cmds = ['parallel',
             '--eta',
             '-j', str(args.j),
@@ -128,7 +130,29 @@ def run_wgs_pipeline(args):
 
     subprocess.call(cmds)
 
+    finish_time = datetime.datetime.now()
+    cerr(f'[WGS pipeline was running for {finish_time - start_time}]')
+
     cwd = pathlib.Path.cwd()
+
+    # iterating the directory list and check for existance of '.finished' or '.failed'
+    finished = 0
+    failed = []
+    unknown = []
+    for sample_dir in samples:
+        sample_path = Path(sample_dir)
+        if (sample_path / '.finished').is_file():
+            finished += 1
+        elif (sample_path / '.failed').if_file():
+            failed.append(sample_dir)
+        else:
+            unknown.append(sample_dir)
+
+    cerr(f'[Finished: {finished}, Failed: {len(failed)}, Unknown: {len(unknown)}]')
+    if any(failed):
+        cerr('\n  - '.join(['Failed:'] + failed))
+    if any(unknown):
+        cerr('\n  - '.join(['Unknown:'] + unknown))
 
 
 if __name__ == '__main__':
