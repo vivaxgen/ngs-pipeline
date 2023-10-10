@@ -9,9 +9,12 @@ min_avg_qual: 13
 read_length: 100
 minlen:
 maxlen:
-correction:
 
-keep_paired_bam:
+# use base correction for fastp (eg. for denovo-assembling, etc)
+correction: False
+
+# whether to keep 
+keep_paired_bam: True
 keep_proper_bam:
 keep_deduplicated_bam:
 keep_recalibrated_bam:
@@ -23,6 +26,7 @@ knownsites_file: refs/pv-known-variants.bed.gz
 knownvariants_dir: refs/known-variants
 
 
+# regions to be analyzed
 regions:
   - PvP01_14_v1
   - PvP01_13_v1
@@ -40,6 +44,9 @@ regions:
   - PvP01_01_v1
   - PvP01_API_v1
   - PvP01_MIT_v1
+
+# regions to be considered as contaminant whose mapped reads
+# will be removed right after mapping
 
 contaminant_regions:
   - NC_000001.11
@@ -75,6 +82,8 @@ reads_trimmer_wf: trimmer_fastp.smk
 reads_mapper_wf: mapper_bwa-mem2.smk
 
 # -- snakemake configuration --
+
+# example for slurm batch manager
 
 cluster:
   sbatch
