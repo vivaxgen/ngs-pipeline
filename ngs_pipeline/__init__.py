@@ -1,6 +1,7 @@
 
 # library providing file common functions
 
+import os
 import sys
 import argparse
 import platform
@@ -25,6 +26,12 @@ def greet():
     cerr(f'{sys.argv[0].split("/")[-1]} - ngs-pipeline command line interface\n'
          f'[https://github.com/vivaxgen/ngs-pipeline]')
     cerr(f'Host: {platform.uname().node}')
+
+
+def check_NGSENV_BASEDIR():
+    if 'NGSENV_BASEDIR' not in os.environ:
+        cexit('ERROR: NGSENV_BASEDIR environment is not set. '
+              'Please set proper shell enviroment by sourcing relevant activate.sh')
 
 
 def arg_parser(desc=''):
