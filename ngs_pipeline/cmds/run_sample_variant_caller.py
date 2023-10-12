@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
-run_wgs_pipeline.py - ngs-pipeline command line
+run_sample_variant_caller.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -18,15 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: please set proper shell enviroment by sourcing activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-
-from ngsutils import cerr, cexit, run_main, arg_parser
+from ngs_pipeline import cerr, cexit, arg_parser
 
 
 # usage: run_varcall.py
@@ -37,7 +26,9 @@ def init_argparser():
                    help='number of samples to be processed in parallel, will override '
                    'JOBS environment [32]')
     p.add_argument('--joblog', default=None,
-                   help='name of job log file [run-DATETIME.log]')
+                   help='name of job log file, if this is an existing directory, '
+                   'the directory name will be prepended to default log file name '
+                   ' [$USER-run-DATETIME.log]')
     p.add_argument('--dryrun', default=False, action='store_true')
     p.add_argument('--count', type=int, default=-1,
                    help='number of samples to be processed, useful to check initial run [-1]')
@@ -55,7 +46,7 @@ def init_argparser():
     return p
 
 
-def run_wgs_pipeline(args):
+def run_sample_variant_caller(args):
 
     import pathlib
     import subprocess
@@ -75,9 +66,15 @@ def run_wgs_pipeline(args):
     # get NGSENV_BASEDIR
     NGSENV_BASEDIR = os.environ["NGSENV_BASEDIR"]
 
-    # joblog file
-    if not args.joblog:
-        args.joblog = 'run-' + time.strftime("%y%m%d-%H%M") + '.log'
+    # set up joblog filename
+    default_joblog = os.getlogin() + '-run' + time.strftime("%y%m%d-%H%M") + '.log'
+    if args.joblog:
+        if (jobpath := pathlib.Path(args.joblog)).is_dir():
+            args.joblog = jobpath / default_joblog
+        else:
+            args.joblog = jobpath
+    else:
+        args.joblog = pathlib.Path(default_joblog)
 
     cwd = pathlib.Path.cwd()
 
@@ -140,7 +137,7 @@ def run_wgs_pipeline(args):
     failed = []
     unknown = []
     for sample_dir in samples:
-        sample_path = Path(sample_dir)
+        sample_path = pathlib.Path(sample_dir)
         if (sample_path / '.finished').is_file():
             finished += 1
         elif (sample_path / '.failed').if_file():
@@ -155,7 +152,8 @@ def run_wgs_pipeline(args):
         cerr('\n  - '.join(['Unknown:'] + unknown))
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, run_wgs_pipeline)
+def main(args):
+    run_sample_variant_caller(args)
+
 
 # EOF

@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
-prepare_samples.py - ngs-pipeline command line
+run_joint_variant_caller.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -18,22 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: NGS_PIPELINE_BASE environment is not set. '
-          'Please set proper shell enviroment by sourcing relevant activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-if 'NGSENV_BASEDIR' not in os.environ:
-    print('ERROR: NGSENV_BASEDIR environment is not set. '
-          'Please set proper shell enviroment by sourcing relevant activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-
-from ngsutils import cerr, cexit, run_main, arg_parser
+from ngsutils import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 
 def init_argparser():
@@ -63,7 +45,9 @@ def init_argparser():
     return p
 
 
-def run_pipeline(args):
+def run_joint_variant_caller(args):
+
+    check_NGSENV_BASEDIR()
 
     import pathlib
     import snakemake
@@ -125,8 +109,8 @@ def run_pipeline(args):
     cerr(f'[Finish joint variant calling (time: {finish_time - start_time})]')
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, run_pipeline)
+def main(args):
+    run_joint_variant_caller(args)
+
 
 # EOF
-
