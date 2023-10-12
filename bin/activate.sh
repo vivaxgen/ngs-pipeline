@@ -8,7 +8,7 @@ _mydir="$(dirname $_script)"
 
 export NGS_PIPELINE_BASE="$(dirname $_mydir)"
 export PATH=${NGS_PIPELINE_BASE}/bin/:${PATH}
-export PYTHONPATH="${NGS_PIPELINE_BASE}/pylib/:${PYTHONPATH}"
+export PYTHONPATH="${NGS_PIPELINE_BASE}/pylib/:${NGS_PIPELINE_BASE}:${PYTHONPATH}"
 
 
 # BELOW is taken verbatim from argcomplete global autocomplete source script
