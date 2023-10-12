@@ -78,7 +78,7 @@ rule map_filter_dedup:
     params:
         args = config.get('read_filters', '') or '--remove_unmapped'
     shell:
-        "filter_reads_orientation.py {params.args} {input} 2> {log.log1} "
+        "filter_reads_orientation.py --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
         "| samtools sort -@4 2> {log.log2} "
         "| samtools markdup -r --json -f {log.markdup_stat} - {output} 2> {log.log3}"
 
