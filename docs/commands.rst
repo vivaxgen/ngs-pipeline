@@ -1,7 +1,8 @@
 Available Commands
 ==================
 
-The ngs-pipeline command line is invoked using ngs-pl executable, i.e.::
+The ngs-pipeline command line is invoked using ``ngs-pl`` executable, i.e.::
+
   ngs-pl CMD [ARGS]
 
 Fpr esample, to see the available commands, execute::
