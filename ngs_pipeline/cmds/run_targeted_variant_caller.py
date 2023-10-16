@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
 run-targeted-varcall.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
@@ -16,25 +13,8 @@ Please read the README.txt of this software.
 # modules (such as numpy, pandas, etc) here, but instead import them within the
 # functions that requires respective heavy modules
 
-import sys
 import os
-
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: NGS_PIPELINE_BASE environment is not set. '
-          'Please set proper shell enviroment by sourcing relevant activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-# check that we have NGSENV_BASEDIR environemt
-if 'NGSENV_BASEDIR' not in os.environ:
-    print('ERROR: NGSENV_BASEDIR environment is not set. '
-          'Please set proper shell enviroment by sourcing relevant activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-
-from ngsutils import cerr, cexit, run_main, arg_parser
+from ngsutils import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 
 def init_argparser():
@@ -66,7 +46,9 @@ def init_argparser():
     return p
 
 
-def run_targeted_varcall(args):
+def run_targeted_variant_caller(args):
+
+    check_NGSENV_BASEDIR()
 
     import pathlib
     import snakemake
@@ -119,7 +101,7 @@ def run_targeted_varcall(args):
     cerr(f'[Finish targeted variant calling (time: {finish_time - start_time})]')
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, run_targeted_varcall)
+def main(args):
+    run_targeted_variant_caller(args)
 
 # EOF
