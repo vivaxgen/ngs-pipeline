@@ -5,7 +5,7 @@ The ngs-pipeline command line is invoked using ``ngs-pl`` executable, i.e.::
 
   ngs-pl CMD [ARGS]
 
-Fpr esample, to see the available commands, execute::
+For example, to see the available commands, execute::
 
   $ ngs-pl showcmds
 
