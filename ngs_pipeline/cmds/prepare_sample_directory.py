@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, run_main, arg_parser
+from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 
 def init_argparser():
@@ -27,6 +27,9 @@ def init_argparser():
     p.add_argument('-i', '--infile', default='-',
                    help='the name of file containing sample and read manifest, '
                         'default to stdin')
+    p.add_argument('-f', '--force', default=False, action='store_true',
+                   help='force the preparation even if the output directory is not '
+                        'under current pipeline base directory')
     p.add_argument('indir',
                    help='the name of the directory containing reads')
     return p
@@ -51,6 +54,13 @@ def prepare_samples(args):
     # get absolute path for indir and outdir, without resolving symlinks
     indir = pathlib.Path(args.indir).absolute()
     outdir = pathlib.Path(args.outdir).absolute()
+
+    if not args.force:
+        NGSENV_BASEDIR = check_NGSENV_BASEDIR()
+
+        # check whether outdir is under NGSENV_BASEDIR
+        if not outdir.resolve().is_relative_to(NGSENV_BASEDIR):
+            cexit(f'[ERROR: {outdir} is not relative to {NGSENV_BASEDIR}]')
 
     # check and search for indir & outdir common parent directory
     common_parent = None

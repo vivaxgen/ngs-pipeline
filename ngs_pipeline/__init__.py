@@ -32,6 +32,7 @@ def check_NGSENV_BASEDIR():
     if 'NGSENV_BASEDIR' not in os.environ:
         cexit('ERROR: NGSENV_BASEDIR environment is not set. '
               'Please set proper shell enviroment by sourcing relevant activate.sh')
+    return os.environ["NGSENV_BASEDIR"]
 
 
 def arg_parser(desc=''):
