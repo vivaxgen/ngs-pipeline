@@ -90,7 +90,7 @@ def run_sample_variant_caller(args):
         if not indir.is_dir():
             cexit(f'[ERROR: directory {indir} does not exist]')
 
-        # check whether indir is under NGS_PIPELINE_BASE
+        # check whether indir is under NGSENV_BASEDIR
         if not indir.resolve().is_relative_to(NGSENV_BASEDIR):
             cexit(f'[ERROR: {indir} is not relative to {NGSENV_BASEDIR}]')
 
