@@ -4,22 +4,25 @@ instrument: generic
 platform: generic
 libprep: generic
 
+
+# if using fastp null read filtering, these can be ignored
 min_read_qual: 15
 min_avg_qual: 13
 read_length: 100
-minlen:
-maxlen:
+minlen: 33
+maxlen: 325
 
 # use base correction for fastp (eg. for denovo-assembling, etc)
 correction: False
 
-# whether to keep 
-keep_paired_bam: True
-keep_proper_bam:
-keep_deduplicated_bam:
-keep_recalibrated_bam:
-keep_realigned_bam:
+# whether to keep bam files in any of the steps 
+keep_paired_bam: False
+keep_proper_bam: False
+keep_recalibrated_bam: False
+keep_deduplicated_bam: True
+keep_realigned_bam: False
 
+# reference sequence, reference map, known variants for base recalibration, etc
 refseq_file: refs/PvP01_v1.fasta
 refmap_file: refs/PvP01_v1.mmi
 knownsites_file: refs/pv-known-variants.bed.gz
@@ -75,10 +78,19 @@ contaminant_regions:
   - NC_000024.10
   - NC_012920.1
 
+# filter to apply for deduplicated BAM
+# read_filters options:
+# --remove_FR --remove_RF --remove_FF --remove_RR : removing by orientation (Front, Reverse)
+# --remove_trans : remove pair of reads that map to different chromosomes
+# --remove_unmapped : remove pair or reads whose any of the pair is unmapped
+# --remove_secondary --remove_supplementary : remove secondary & supplementary maps
+# for below, we keep FR, RF, FF and RR orientation for future SV analysis
+read_filters: --remove_trans --remove_unmapped --remove_secondary --remove_supplementary
 
 
+# snakemake to use:
 
-reads_trimmer_wf: trimmer_fastp.smk
+reads_trimmer_wf: trimmer_null.smk
 reads_mapper_wf: mapper_bwa-mem2.smk
 
 # -- snakemake configuration --
@@ -103,3 +115,4 @@ rerun-incomplete: True
 printshellcmds: True
 scheduler: greedy
 
+# EOF
