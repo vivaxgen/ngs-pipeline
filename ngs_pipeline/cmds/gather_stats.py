@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
 gather_stats.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
@@ -18,22 +15,15 @@ Please read the README.txt of this software.
 
 import sys
 import os
-
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: please set proper shell enviroment by sourcing activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-from ngsutils import cerr, run_main, arg_parser
+from ngsutils import cerr, arg_parser
 
 
 def init_argparser():
     p = arg_parser('gather stats')
     p.add_argument('-s', '--statfile', default='logs/stats.tsv',
                    help='stat file to be gathered [logs/stats.tsv]')
-    p.add_argument('-o', '--outfile',
-                   help='output filename')
+    p.add_argument('-o', '--outfile', required=True,
+                   help='output filename, eg. my-stats.tsv')
     p.add_argument('indirs', nargs='+')
     return p
 
@@ -59,7 +49,7 @@ def gather_stats(args):
     all_df.to_csv(args.outfile, index=False, sep='\t')
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, gather_stats)
+def main(args):
+    gather_stats(args)
 
 # EOF
