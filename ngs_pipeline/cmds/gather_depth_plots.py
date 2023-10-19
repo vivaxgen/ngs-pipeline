@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 
-import argparse
+from ngsutils import cerr, arg_parser
+
+from pathlib import Path
 from PIL import Image
 
 
 def init_argparser():
 
-    p = argparse.ArgumentParser()
+    p = arg_parser('gather depth plots')
     p.add_argument('-n', type=int, default=1,
                    help='number of sample(s) per page')
+    p.add_argument('-p', '--plotfile', default='logs/depths.png',
+                   help='name of plot file [logs/depth.png]')
     p.add_argument('-o', '--outfile', default='outplot.pdf')
-    p.add_argument('infiles', nargs='+')
+    p.add_argument('indirs', nargs='+')
 
     return p
 
@@ -22,11 +26,19 @@ def batch(seq, size):
     ]
 
 
-def images2pdf(args):
+def gather_depth_plots(args):
+
+    plotfiles = []
+
+    for indir in args.indirs:
+        for plotfile in Path(indir).glob('*/' + args.plotfile):
+            plotfiles.append(plotfile)
+
+    cerr(f'[Gathering {len(plotfiles)} depth plots]')
 
     pages = []
     counter = 0
-    for file_list in batch(args.infiles, args.n):
+    for file_list in batch(plotfiles, args.n):
 
         imgs = [Image.open(infile) for infile in file_list]
         imgs = [img.resize((img.width//2, img.height//2)) for img in imgs]
@@ -48,11 +60,7 @@ def images2pdf(args):
     print('Processing depthplot for %d samples' % counter)
 
 
-def main():
-    images2pdf(init_argparser().parse_args())
-
-
-if __name__ == '__main__':
-    main()
+def main(args):
+    gather_depth_plots(args)
 
 # EOF
