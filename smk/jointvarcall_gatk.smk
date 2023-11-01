@@ -24,10 +24,9 @@ for a_dir in srcdirs:
 
 # additional settings and parameters
 
-if 'variant_file' in config:
-    variant_file = config['variant_file']
-else:
-    variant_file = None
+variant_file = config.get('variant_file', None)
+interval_file = config.get('interval_file', None)
+ggvcf_extra_flags = config.get('ggvcf_extra_flags', '')
 
 
 # final output of this workflow
@@ -76,7 +75,8 @@ rule combine_gvcf:
     output:
         directory(f"{destdir}/dbs/{{reg}}")
     shell:
-        "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} --sample-name-map {input} -L {wildcards.reg}"
+        "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} "
+        "--sample-name-map {input} -L {wildcards.reg}"
 
 
 rule jointvarcall_gatk:
@@ -86,9 +86,10 @@ rule jointvarcall_gatk:
     output:
         f"{destdir}/{{reg}}.vcf.gz"
     params:
-        bedfile = f'--variant {variant_file}' if variant_file else ''
+        variantfile = f'--variant {variant_file}' if variant_file else '',
+        intervalfile = f'--intervals {interval_file}' if interval_file else '',
     shell:
-        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output} {params.bedfile}"
+        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} "
+        "-O {output} {params.variantfile} {params.intervalfile} {ggvcf_extra_flags}"
 
 # EOF
-
