@@ -26,6 +26,9 @@ correction = config.get('correction', False)
 instrument = config.get('instrument', None)
 read_filters = config.get('read_filters', '')
 
+# parameters to do processing
+min_depth = config.get('min_depth', 5)
+
 
 java_opts = ''
 

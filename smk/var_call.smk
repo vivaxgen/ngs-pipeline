@@ -136,7 +136,8 @@ rule collect_stats:
     output:
         'logs/stats.tsv'
     shell:
-        'collect_stats.py -o {output} {params.trimmed} {params.mapped} {params.deduped} {params.depthed} {sample}'
+        'collect_stats.py -o {output} --mindepth {min_depth} '
+        '{params.trimmed} {params.mapped} {params.deduped} {params.depthed} {sample}'
 
 
 rule depth_plot:
