@@ -27,7 +27,7 @@ def get_final_file(w):
 
 def get_bam_files():
     # traversing on all source directories
-    return [f'{a_dir}/maps/mapped-dedup.bam' for (a_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
+    return [f'{a_dir}/maps/mapped-final.bam' for (a_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
 
 
 # define local rules
@@ -50,7 +50,7 @@ rule prepare_bam_list:
     output:
         f"{destdir}/bam_list.txt"
     run:
-	# check format for freebayes bam file list
+        # check format for freebayes bam file list
         # write {input} to ??
         if len(SAMPLES) != len(input):
             raise ValueError('SAMPLES and input files do not have identical length')
@@ -65,9 +65,7 @@ rule jointvarcall_freebayes:
     output:
         f"{destdir}/joint-{{reg}}.vcf.gz"
     shell:
-        #"touch {output}"
-        #"gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} -O {output}"
         "freebayes --fasta-reference {refseq} --ploidy {ploidy} --min-alternate-count 2 --region {wildcards.reg} > {output}"
         " && sleep 1 && bcftools index {output}"
-# EOF
 
+# EOF
