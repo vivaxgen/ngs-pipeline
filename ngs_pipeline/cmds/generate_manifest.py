@@ -35,7 +35,7 @@ def get_sample_name(filename, underline=0):
     filename = pathlib.Path(filename)
     if underline != 0:
         return filename.name.rsplit('_', underline)[0]
-    return filename.stem
+    return filename.name.removesuffix('.fastq.gz')
 
 
 def generate_manifest(args):
@@ -66,6 +66,14 @@ def generate_manifest(args):
                 samples[prefix_1] = [f'{infile_1},{infile_2}']
             else:
                 samples[prefix_1].append(f'{infile_1},{infile_2}')
+
+    else:
+        for infile in infiles:
+            name = get_sample_name(infile, underline=args.underline)
+            if name not in samples:
+                samples[name] = [infile]
+            else:
+                samples[name].append(infile)
 
     # write to TSV file
     sample_series = []

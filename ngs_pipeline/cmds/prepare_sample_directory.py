@@ -130,7 +130,7 @@ def prepare_samples(args):
         sample_path.mkdir(parents=True)
 
         for idx, fastq_pair in enumerate(fastq_list):
-            for no, fastq_file in enumerate(fastq_pair, 1):
+            for no, fastq_file in enumerate(fastq_pair, 1 if len(fastq_pair) > 1 else 0):
                 dest = sample_path / f'raw-{idx}_R{no}.fastq.gz'
                 dest.symlink_to(source_dir / fastq_file)
 
