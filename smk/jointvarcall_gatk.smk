@@ -26,13 +26,23 @@ for a_dir in srcdirs:
 
 variant_file = config.get('variant_file', None)
 interval_file = config.get('interval_file', None)
+interval_dir = config.get('interval_dir', None)
 ggvcf_extra_flags = config.get('ggvcf_extra_flags', '')
+
+
+def get_interval(w):
+    global interval_dir, interval_file
+    if interval_dir:
+        return f'-L {interval_dir}/{w.reg}.bed'
+    if interval_file:
+        return f'-L {interval_file}'
+    return f'-L {w.reg}'
 
 
 # final output of this workflow
 
 def get_final_file(w):
-    return [f"{destdir}/{reg}.vcf.gz.csi" for reg in REGIONS]
+    return [f"{destdir}/vcfs/{reg}.vcf.gz.csi" for reg in REGIONS]
 
 
 def get_gvcf_files(region):
@@ -74,9 +84,13 @@ rule combine_gvcf:
         f"{destdir}/maps/{{reg}}.tsv"
     output:
         directory(f"{destdir}/dbs/{{reg}}")
+    log:
+        f"{destdir}/logs/genomicsdbimport-{{reg}}.log"
+    params:
+        reg = get_interval,
     shell:
         "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} "
-        "--sample-name-map {input} -L {wildcards.reg}"
+        "--sample-name-map {input} {params.reg} 2> {log}"
 
 
 rule jointvarcall_gatk:
@@ -84,12 +98,14 @@ rule jointvarcall_gatk:
     input:
         f"{destdir}/dbs/{{reg}}"
     output:
-        f"{destdir}/{{reg}}.vcf.gz"
+        f"{destdir}/vcfs/{{reg}}.vcf.gz"
     params:
         variantfile = f'--variant {variant_file}' if variant_file else '',
-        intervalfile = f'--intervals {interval_file}' if interval_file else '',
+        reg = get_interval,
+    log:
+        f"{destdir}/logs/genotypegvcfs-{{reg}}.log"
     shell:
         "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} "
-        "-O {output} {params.variantfile} {params.intervalfile} {ggvcf_extra_flags}"
+        "-O {output} {params.variantfile} {params.reg} {ggvcf_extra_flags} 2> {log}"
 
 # EOF
