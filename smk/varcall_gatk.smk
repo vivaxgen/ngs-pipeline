@@ -3,7 +3,7 @@
 rule gatk_haplotypecaller:
     threads: 2
     input:
-        "maps/mapped-dedup-recal.bam"
+        "maps/mapped-final-recal.bam"
     output:
         "gvcf/{sample}-{reg}.g.vcf.gz"
     shell:
