@@ -96,8 +96,8 @@ def run_varcall(args):
     configfiles.reverse()
 
     # remove .failed or .finished screen first if exists
-    (cwd / '.failed').unlink(missing_ok=True)
-    (cwd / '.finished').unlink(missing_ok=True)
+    (cwd / '.completed').unlink(missing_ok=True)
+    (cwd / '.uncompleted').unlink(missing_ok=True)
 
     # run smk
 
@@ -117,7 +117,7 @@ def run_varcall(args):
         targets=[args.target],
     )
     finish_time = datetime.datetime.now()
-    open(cwd / ('.failed' if not status else '.finished'), 'w').write(f'{finish_time - start_time}')
+    open(cwd / ('.uncompleted' if not status else '.completed'), 'w').write(f'{finish_time - start_time}')
 
 
 if __name__ == '__main__':

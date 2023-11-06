@@ -138,18 +138,18 @@ def run_sample_variant_caller(args):
     unknown = []
     for sample_dir in samples:
         sample_path = pathlib.Path(sample_dir)
-        if (sample_path / '.finished').is_file():
+        if (sample_path / '.completed').is_file():
             finished += 1
-        elif (sample_path / '.failed').is_file():
+        elif (sample_path / '.uncompleted').is_file():
             failed.append(sample_dir)
         else:
             unknown.append(sample_dir)
 
-    cerr(f'[Finished: {finished}, Failed: {len(failed)}, Unknown: {len(unknown)}]')
+    cerr(f'[Completed: {finished}, Uncompleted: {len(failed)}, Unknown: {len(unknown)}]')
     if any(failed):
-        cerr('\n  - '.join(['Failed:'] + failed))
+        cerr('\n  - '.join(['Completed:'] + failed))
     if any(unknown):
-        cerr('\n  - '.join(['Unknown:'] + unknown))
+        cerr('\n  - '.join(['Uncompleted:'] + unknown))
 
 
 def main(args):
