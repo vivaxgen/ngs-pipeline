@@ -34,6 +34,7 @@ def init_argparser():
                    help='output filename [stdout]')
     p.add_argument('--trimmed', action='append')
     p.add_argument('--mapped', action='append')
+    p.add_argument('--final', action='append')
     p.add_argument('--dedup', action='append')
     p.add_argument('--depth', action='append')
     p.add_argument('--mindepth', default=5, type=int,
@@ -197,7 +198,9 @@ def collect_stats(args):
     mapped_r = (mapped_reads / trimmed_reads) if trimmed_reads > 0 else 0
     proper_r = (proper_mapped_reads / mapped_reads) if mapped_reads > 0 else 0
 
-    _, proper_dedup_reads, insert_size, insert_size_sd, avg_qual, inward, outward, other, trans = parse_mapping_stats(args.dedup)
+
+
+    _, proper_dedup_reads, insert_size, insert_size_sd, avg_qual, inward, outward, other, trans = parse_mapping_stats(args.final)
     dedup_r = proper_dedup_reads / proper_mapped_reads if proper_mapped_reads > 0 else 0
     final_r = proper_dedup_reads / trimmed_reads if trimmed_reads > 0 else 0
     if proper_dedup_reads > 0:
@@ -216,7 +219,7 @@ def collect_stats(args):
         'TRIMMED', 'TRIMMED_R',
         'MAPPED', 'MAPPED_R',
         'PROPER', 'PROPER_R',
-        'DEDUP', 'DEDUP_R',
+        'DEDUP-FINAL', 'DEDUP-FINAL_R',
         'FINAL_R',
         'INWARD', 'INWARD_R',
         'OUTWARD', 'OUTWARD_R',
