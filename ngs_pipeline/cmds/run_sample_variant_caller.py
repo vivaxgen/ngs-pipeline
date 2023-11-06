@@ -140,7 +140,7 @@ def run_sample_variant_caller(args):
         sample_path = pathlib.Path(sample_dir)
         if (sample_path / '.finished').is_file():
             finished += 1
-        elif (sample_path / '.failed').if_file():
+        elif (sample_path / '.failed').is_file():
             failed.append(sample_dir)
         else:
             unknown.append(sample_dir)
