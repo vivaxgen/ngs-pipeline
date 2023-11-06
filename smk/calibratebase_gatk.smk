@@ -1,10 +1,11 @@
 
 
+
 rule gatk_baserecalibrator:
     # this rule generates calibration table from deduplicated bam file for each region
     threads: 1
     input:
-        "maps/mapped-dedup.bam"
+        'maps/mapped-final.bam'
     output:
         temp("maps/recal-{reg}.table")
     params:
@@ -34,12 +35,11 @@ rule gatk_applybqsr:
     # this rule applies calibration from the single calibration table
     threads: 2
     input:
-        bam = "maps/mapped-dedup.bam",
+        bam = "maps/mapped-final.bam",
         table = "maps/recal.table"
     output:
-        "maps/mapped-dedup-recal.bam" if keep_recalibrated_bam else temp("maps/mapped-dedup-recal.bam")
+        "maps/mapped-final-recal.bam" if keep_recalibrated_bam else temp("maps/mapped-final-recal.bam")
     shell:
         "gatk {java_opts} ApplyBQSR -R {refseq} -I {input.bam} --bqsr-recal-file {input.table} -O {output}"
 
 # EOF
-
