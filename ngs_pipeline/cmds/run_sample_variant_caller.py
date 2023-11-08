@@ -38,6 +38,8 @@ def init_argparser():
     p.add_argument('--touch', default=False, action='store_true',
                    help='touch all output files, to avoid re-running the ngs-pipeline '
                    'such as after modifying/debugging snakemake file')
+    p.add_argument('--snakefile', default=None, choices=['var_call.smk', 'var_call_ont.smk'],
+                   help='snakemake file to be run (or from VARCALL_SMK env) [var_call.smk]')
     p.add_argument('--target', choices=['all', 'mapping', 'clean'],
                    help="target of snakemake module, use 'all' for GATK joint variant "
                    "or 'mapping' for FreeBayes joint variant call")
@@ -65,6 +67,14 @@ def run_sample_variant_caller(args):
 
     # get NGSENV_BASEDIR
     NGSENV_BASEDIR = os.environ["NGSENV_BASEDIR"]
+
+    # get snakefile to run
+    if args.snakefile is None:
+        if 'VARCALL_SMK' in os.environ:
+            args.snakefile = os.environ['VARCALL_SMK']
+        else:
+            args.snakefile = 'var_call.smk'
+    cerr(f'Snakefile to be run: {args.snakefile}')
 
     # set up joblog filename
     default_joblog = os.getlogin() + '-run' + time.strftime("%y%m%d-%H%M") + '.log'
@@ -97,6 +107,7 @@ def run_sample_variant_caller(args):
         curr_samples = [s.as_posix() for s in indir.iterdir() if s.is_dir()]
         cerr(f'[Collecting {len(curr_samples)} directories from {indir}]')
         samples += curr_samples
+
     cerr(f'[Collecting total of {len(samples)} sample directories from '
          f'{len(args.indirs)} input directories]')
 
@@ -117,6 +128,7 @@ def run_sample_variant_caller(args):
             f'{"--unlock" if args.unlock else ""} '
             f'{"--rerun" if args.rerun else ""} '
             f'{"--touch" if args.touch else ""} '
+            f'--snakefile {args.snakefile} '
             f'{args.target}',
             ':::'
             ]
@@ -127,6 +139,7 @@ def run_sample_variant_caller(args):
 
     subprocess.call(cmds)
 
+    cerr('\n==================================================================\n')
     finish_time = datetime.datetime.now()
     cerr(f'[WGS pipeline was running for {finish_time - start_time}]')
 
@@ -150,6 +163,7 @@ def run_sample_variant_caller(args):
         cerr('\n  - '.join(['Completed:'] + failed))
     if any(unknown):
         cerr('\n  - '.join(['Uncompleted:'] + unknown))
+    cerr('\n')
 
 
 def main(args):

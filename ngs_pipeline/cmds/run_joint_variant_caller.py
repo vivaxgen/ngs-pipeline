@@ -34,7 +34,7 @@ def init_argparser():
                    help='run without cluster support (eg. only on local node')
     p.add_argument('-o', '--outdir', default='vcfs',
                    help='directory ouput, default to "vcfs"')
-    p.add_argument('--snakefile', default='jointvarcall_gatk.smk',
+    p.add_argument('--snakefile', default=None,
                    choices=['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk'],
                    help='snakemake file to be called [jointvarcall_gatk.smk]')
     p.add_argument('-c', '--config', default=[], action='append',
@@ -52,6 +52,14 @@ def run_joint_variant_caller(args):
     import pathlib
     import snakemake
     import datetime
+
+    # get snakefile to run
+    if args.snakefile is None:
+        if 'JOINTCALL_SMK' in os.environ:
+            args.snakefile = os.environ['JOINTCALL_SMK']
+        else:
+            args.snakefile = 'jointvarcall_gatk.smk'
+    cerr(f'Snakefile to be run: {args.snakefile}')
 
     # sanity check for all directory
     source_dirs = [srcdir.removesuffix('/') for srcdir in args.source_dirs]
