@@ -1,5 +1,5 @@
 __copyright__ = '''
-run-targeted-varcall.py - ngs-pipeline command line
+run_panel_variant_caller.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
 (c) 2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
@@ -18,7 +18,7 @@ from ngsutils import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 
 def init_argparser():
-    p = arg_parser(desc='run targeted variant calling')
+    p = arg_parser(desc='run panel variant calling')
     p.add_argument('-j', type=int, default=32)
 
     # Snakemake options
