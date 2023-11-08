@@ -19,10 +19,25 @@ for a_dir in srcdirs:
     SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
 
 
+# get regions
+variant_file = config.get('variant_file', None)
+interval_file = config.get('interval_file', None)
+interval_dir = config.get('interval_dir', None)
+freebayes_extra_flags = config.get('freebayes_extra_flags', '')
+
+
+def get_interval(w):
+    global interval_dir, interval_file
+    if interval_dir:
+        return f'--targets {interval_dir}/{w.reg}.bed'
+    if interval_file:
+        return f'--targets {interval_file}'
+    return f'--region {w.reg}'
+
 # final output of this workflow
 
 def get_final_file(w):
-    return [f"{destdir}/joint-{reg}.vcf.gz" for reg in REGIONS]
+    return [f"{destdir}/vcfs/{reg}.vcf.gz" for reg in REGIONS]
 
 
 def get_bam_files():
@@ -44,7 +59,7 @@ rule all:
 
 # get the list of all bams
 rule prepare_bam_list:
-    threads: 2
+    localrule: True
     input:
         lambda w: get_bam_files()
     output:
@@ -63,9 +78,14 @@ rule jointvarcall_freebayes:
     input:
         f"{destdir}/bam_list.txt"
     output:
-        f"{destdir}/joint-{{reg}}.vcf.gz"
+        f"{destdir}/vcfs/{{reg}}.vcf.gz"
+    params:
+        reg = get_interval,
+        fb_args = "--haplotype-length -1 --min-coverage 10 " + freebayes_extra_flags
     shell:
-        "freebayes --fasta-reference {refseq} --ploidy {ploidy} --min-alternate-count 2 --region {wildcards.reg} > {output}"
-        " && sleep 1 && bcftools index {output}"
+        "freebayes --fasta-reference {refseq} -L {input} --ploidy {ploidy} --min-alternate-count 2 {params.reg} "
+        "{params.fb_args} "
+        "| bcftools view -o {output} "
+        "&& sleep 1 && bcftools index {output}"
 
 # EOF
