@@ -21,6 +21,8 @@ outdir = config['outdir']
 
 max_read_len = config['max_read_len']
 min_read_len = config['min_read_len']
+headcrop = config.get('headcrop', 0)
+tailcrop = config.get('tailcrop', 0)
 
 read_files = {}
 err_files = []
@@ -45,15 +47,15 @@ if any(err_files):
 
 
 def get_read_file(w):
-    return read_files[w.sample_id]
+    return read_files[w.sample]
 
 
 def get_output_file(w):
-    return [f'{outdir}/{sample_id}/vcfs/variants.vcf.gz.csi' for sample_id in read_files.keys()]
+    return [f'{outdir}/{sample}/vcfs/variants.vcf.gz.csi' for sample in read_files.keys()]
 
 
 wildcard_constraints:
-    sample_id = '[\.\\w-]+'
+    sample = '[\.\\w-]+'
 
 
 rule all:
@@ -67,7 +69,7 @@ rule link_reads:
     input:
         get_read_file
     output:
-        f"{outdir}/{{sample_id}}/reads/raw.fastq.gz"
+        f"{outdir}/{{sample}}/reads/raw.fastq.gz"
     run:
         import pathlib
 
@@ -92,25 +94,31 @@ rule trim_reads:
         "{pfx}/reads/raw.fastq.gz"
     output:
         "{pfx}/trimmed_reads/trimmed.fastq.gz"
+    params:
+        headcrop = f'--headcrop {headcrop}' if headcrop else '',
+        tailcrop = f'--tailcrop {tailcrop}' if tailcrop else '',
     shell:
-        "gunzip -c {input} | chopper -t {threads} -q 10 --minlength {min_read_len} --maxlength {max_read_len} | gzip -c > {output}"
+        "gunzip -c {input} | chopper -t {threads} -q 10 --minlength {min_read_len} --maxlength {max_read_len} "
+        "{params.headcrop} {params.tailcrop} "
+        "| gzip -c > {output}"
 
 
 rule mapping:
     threads: 8
     input:
-        "{pfx}/{sample_id}/trimmed_reads/trimmed.fastq.gz"
+        "{pfx}/{sample}/trimmed_reads/trimmed.fastq.gz"
     output:
-        "{pfx}/{sample_id}/maps/sorted.bam"
+        "{pfx}/{sample}/maps/sorted.bam"
     params:
-        rg = lambda w: f"-R @RG\\\\tID:{w.sample_id}\\\\tSM:{w.sample_id}\\\\tLB:LIB-{w.sample_id}",
+        rg = lambda w: f"-R @RG\\\\tID:{w.sample}\\\\tSM:{w.sample}\\\\tLB:LIB-{w.sample}",
+        threads = lambda wildcards, threads: threads - 1,
     shell:
-        "minimap2 -a {refmap} {params.rg} {input} "
+        "minimap2 -t {params.threads} -a {refmap} {params.rg} {input} "
         "|  samtools sort -@4 -o {output} "
 
 
 rule freebayes:
-    threads: 1
+    threads: 2
     input:
         bam = "{pfx}/maps/sorted.bam",
         idx = "{pfx}/maps/sorted.bam.bai"
