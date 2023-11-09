@@ -33,8 +33,8 @@ def init_argparser():
                    help='target rule in the snakefile [all]')
     p.add_argument('-o', '--outdir', default='analysis',
                    help='directory for output [analysis/]')
-    p.add_argument('--snakefile', default='targeted_varcall_pe.smk',
-                   choices=['targeted_varcall_pe.smk', 'targeted_varcall_lr.smk'],
+    p.add_argument('--snakefile', default='panel_varcall_pe.smk',
+                   choices=['panel_varcall_pe.smk', 'panel_varcall_lr.smk'],
                    help='snakemake file to be called [targeted_varcall_pe.smk]')
     p.add_argument('-c', '--config', default=[], action='append',
                    help='config file(s) to append')
