@@ -128,6 +128,7 @@ def run_sample_variant_caller(args):
             f'{"--unlock" if args.unlock else ""} '
             f'{"--rerun" if args.rerun else ""} '
             f'{"--touch" if args.touch else ""} '
+            f'{"--showcmds" if args.showcmds else ""} '
             f'--snakefile {args.snakefile} '
             f'{args.target}',
             ':::'
