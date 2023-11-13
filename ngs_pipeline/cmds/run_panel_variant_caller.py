@@ -29,7 +29,7 @@ def init_argparser():
 
     # general options
     p.add_argument('--target', default='all',
-                   choices=['all'],
+                   choices=['all', 'merged_report'],
                    help='target rule in the snakefile [all]')
     p.add_argument('-o', '--outdir', default='analysis',
                    help='directory for output [analysis/]')
