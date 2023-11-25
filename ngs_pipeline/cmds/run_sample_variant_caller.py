@@ -140,30 +140,34 @@ def run_sample_variant_caller(args):
 
     subprocess.call(cmds)
 
-    cerr('\n==================================================================\n')
+    cerr('\n============================== RUN REPORT ====================================\n')
     finish_time = datetime.datetime.now()
     cerr(f'[WGS pipeline was running for {finish_time - start_time}]')
 
     cwd = pathlib.Path.cwd()
 
     # iterating the directory list and check for existance of '.finished' or '.failed'
-    finished = 0
-    failed = []
+    completed = 0
+    uncompleted = []
     unknown = []
     for sample_dir in samples:
         sample_path = pathlib.Path(sample_dir)
         if (sample_path / '.completed').is_file():
-            finished += 1
+            completed += 1
         elif (sample_path / '.uncompleted').is_file():
-            failed.append(sample_dir)
+            uncompleted.append(sample_dir)
         else:
             unknown.append(sample_dir)
 
-    cerr(f'[Completed: {finished}, Uncompleted: {len(failed)}, Unknown: {len(unknown)}]')
-    if any(failed):
-        cerr('\n  - '.join(['Completed:'] + failed))
+    cerr('')
+    if any(uncompleted):
+        cerr('\n  - '.join(['Uncompleted:'] + uncompleted))
+        cerr('')
     if any(unknown):
-        cerr('\n  - '.join(['Uncompleted:'] + unknown))
+        cerr('\n  - '.join(['Unknown:'] + unknown))
+        cerr('')
+
+    cerr(f'[Completed: {completed}, Uncompleted: {len(uncompleted)}, Unknown: {len(unknown)}]')
     cerr('\n')
 
 
