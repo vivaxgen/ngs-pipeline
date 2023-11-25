@@ -8,11 +8,13 @@ rule gatk_baserecalibrator:
         'maps/mapped-final.bam'
     output:
         temp("maps/recal-{reg}.table")
+    log:
+        "logs/gatk-BaseRecalibrator-{reg}.log"
     params:
         known = f"--known-sites {knownsites_file}",
         region_opts = '-L {reg}'
     shell:
-        "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input} -O {output}"
+        "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input} -O {output} 2>{log}"
 
 
 rule gatk_gatherbsqr:
@@ -39,7 +41,9 @@ rule gatk_applybqsr:
         table = "maps/recal.table"
     output:
         "maps/mapped-final-recal.bam" if keep_recalibrated_bam else temp("maps/mapped-final-recal.bam")
+    log:
+        "logs/gatk-ApplyBQSR.log"
     shell:
-        "gatk {java_opts} ApplyBQSR -R {refseq} -I {input.bam} --bqsr-recal-file {input.table} -O {output}"
+        "gatk {java_opts} ApplyBQSR -R {refseq} -I {input.bam} --bqsr-recal-file {input.table} -O {output} 2>{log}"
 
 # EOF
