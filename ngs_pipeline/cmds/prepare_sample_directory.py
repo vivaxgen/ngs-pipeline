@@ -89,6 +89,9 @@ def prepare_samples(args):
         sample = r['SAMPLE']
         reads = r['FASTQ']
 
+        if sample.startswith('#'):
+            continue
+
         fastq_list = []
         # split reads for multiple runs
         for fastq_pair in reads.split(';'):
