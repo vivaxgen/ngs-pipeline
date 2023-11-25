@@ -1,5 +1,5 @@
 __copyright__ = '''
-run_panel_variant_caller.py - ngs-pipeline command line
+run_targeted_variant_caller.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
 (c) 2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
@@ -18,7 +18,7 @@ from ngsutils import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 
 def init_argparser():
-    p = arg_parser(desc='run panel variant calling')
+    p = arg_parser(desc='run targeted variant calling')
     p.add_argument('-j', type=int, default=32)
 
     # Snakemake options
@@ -38,6 +38,8 @@ def init_argparser():
                    help='snakemake file to be called [targeted_varcall_pe.smk]')
     p.add_argument('-c', '--config', default=[], action='append',
                    help='config file(s) to append')
+    p.add_argument('--no-config-cascade', default=False, action='store_true',
+                   help='prevent from reading cascading configuration file')
 
     # input options
     p.add_argument('infiles', nargs='+',
@@ -48,30 +50,32 @@ def init_argparser():
 
 def run_targeted_variant_caller(args):
 
-    check_NGSENV_BASEDIR()
+    NGSENV_BASEDIR = check_NGSENV_BASEDIR()
 
     import pathlib
     import snakemake
     import datetime
 
     cwd = pathlib.Path.cwd()
-    NGSENV_BASEDIR = pathlib.Path(os.environ['NGSENV_BASEDIR'])
 
     # check sanity
     if not cwd.is_relative_to(NGSENV_BASEDIR):
         cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
 
-    configfiles = []
+    configfiles = list(reversed(args.config))
 
-    # for each config directory, check config file existence
-    config_dirs = []
-    config_path = cwd
-    while config_path.is_relative_to(NGSENV_BASEDIR):
-        config_dirs.append(config_path)
-        configfile = config_path / 'config.yaml'
-        if configfile.is_file():
-            configfiles.append(configfile)
-        config_path = config_path.parent
+    if args.no_config_cascade:
+        configfiles.append(NGSENV_BASEDIR / 'config.yaml')
+    else:
+        # for each config directory, check config file existence
+        config_dirs = []
+        config_path = cwd
+        while config_path.is_relative_to(NGSENV_BASEDIR):
+            config_dirs.append(config_path)
+            configfile = config_path / 'config.yaml'
+            if configfile.is_file():
+                configfiles.append(configfile)
+            config_path = config_path.parent
 
     if not any(configfiles):
         cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
