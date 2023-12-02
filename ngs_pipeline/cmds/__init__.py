@@ -10,16 +10,25 @@ Please read the README.txt of this software.
 '''
 
 
-from ngs_pipeline import cerr, cexit
+from ngs_pipeline import cerr, cexit, get_command_modules
 import argcomplete
 import importlib
 import pathlib
+import os
 
 
 def run_main(args):
 
     command = args[0].replace('-', '_')
-    M = importlib.import_module('ngs_pipeline.cmds.' + command)
+    for module in get_command_modules():
+        try:
+            M = importlib.import_module(f'{module}.{command}')
+            break
+        except ModuleNotFoundError as err:
+            pass
+    else:
+        cexit(f'Command: {args[0]} does not exist!')
+
     cerr(f'Executing: {M.__file__}')
     parser = M.init_argparser()
     if not parser:
@@ -41,10 +50,13 @@ def run_main(args):
 
 def list_commands():
     # read sqpy.cmds directory
-    import ngs_pipeline.cmds
-    cmds_directory = pathlib.Path(ngs_pipeline.cmds.__file__).parent
+    cmd_files = []
+    for  module in get_command_modules():
+        M = importlib.import_module(module)
+        cmd_directory = pathlib.Path(M.__file__).parent
+        cmd_files += cmd_directory.iterdir()
     cmds = set(
-        [p.name.removesuffix('.py').replace('_', '-') for p in cmds_directory.iterdir()]
+        [p.name.removesuffix('.py').replace('_', '-') for p in cmd_files]
     ) - {'--init--', '--pycache--'}
     return sorted(cmds)
 
