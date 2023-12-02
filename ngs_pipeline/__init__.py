@@ -36,6 +36,22 @@ def check_NGSENV_BASEDIR():
     return os.environ["NGSENV_BASEDIR"]
 
 
+def check_NGS_PIPELINE_BASE():
+    if 'NGS_PIPELINE_BASE' not in os.environ:
+         cexit('ERROR: NGS_PIPELINE_BASE environment is not set. '
+              'Please set proper shell enviroment by sourcing relevant activate.sh')
+    return os.environ["NGS_PIPELINE_BASE"]     
+
+
+def get_command_modules():
+    """ return a list of modules containing commands"""
+    modules = ['ngs_pipeline.cmds']
+    if 'NGS_PIPELINE_CMD_MODS' in os.environ:
+        additional_modules = [m for m in os.environ['NGS_PIPELINE_CMD_MODS'].split(':') if m]
+        return modules + additional_modules
+    return modules
+
+
 def arg_parser(desc=''):
     p = argparse.ArgumentParser(description=desc)
     p.add_argument('--debug', action='store_true', default=False,
@@ -95,5 +111,12 @@ def get_snakefile_path(filepath: str, snakefile_root: pathlib.Path):
     if filepath.startswith('/') or filepath.startswith('./') or filepath.startswith('../'):
         return filepath
     return snakefile_root / filepath
+
+
+def setup_config(d = {}):
+    d['NGSENV_BASEDIR'] = check_NGSENV_BASEDIR()
+    d['NGS_PIPELINE_BASE'] = check_NGS_PIPELINE_BASE()
+    return d
+
 
 # EOF
