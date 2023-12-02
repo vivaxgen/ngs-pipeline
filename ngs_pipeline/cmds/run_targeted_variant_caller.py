@@ -14,7 +14,9 @@ Please read the README.txt of this software.
 # functions that requires respective heavy modules
 
 import os
-from ngsutils import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
+from ngs_pipeline import (cerr, cexit, arg_parser,
+                          check_NGSENV_BASEDIR, check_NGS_PIPELINE_BASE,
+                          get_snakefile_path, setup_config)
 
 
 def init_argparser():
@@ -34,10 +36,13 @@ def init_argparser():
     p.add_argument('-o', '--outdir', default='analysis',
                    help='directory for output [analysis/]')
     p.add_argument('--snakefile', default='panel_varcall_pe.smk',
-                   choices=['panel_varcall_pe.smk', 'panel_varcall_lr.smk'],
+                   #choices=['panel_varcall_pe.smk', 'panel_varcall_lr.smk'],
                    help='snakemake file to be called [targeted_varcall_pe.smk]')
     p.add_argument('-c', '--config', default=[], action='append',
                    help='config file(s) to append')
+    p.add_argument('-f', '--force', default=False, action='store_true',
+                   help='force the processing even if the working directory is not '
+                        'under current pipeline environment base directory')
     p.add_argument('--no-config-cascade', default=False, action='store_true',
                    help='prevent from reading cascading configuration file')
 
@@ -50,16 +55,17 @@ def init_argparser():
 
 def run_targeted_variant_caller(args):
 
-    NGSENV_BASEDIR = check_NGSENV_BASEDIR()
+    NGS_PIPELINE_BASE = check_NGS_PIPELINE_BASE()
 
     import pathlib
     import snakemake
     import datetime
 
     cwd = pathlib.Path.cwd()
+    NGSENV_BASEDIR = pathlib.Path(check_NGSENV_BASEDIR())
 
     # check sanity
-    if not cwd.is_relative_to(NGSENV_BASEDIR):
+    if not args.force and not cwd.is_relative_to(NGSENV_BASEDIR):
         cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
 
     configfiles = list(reversed(args.config))
@@ -86,10 +92,11 @@ def run_targeted_variant_caller(args):
 
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / args.snakefile,
+        get_snakefile_path(args.snakefile, pathlib.Path(NGS_PIPELINE_BASE) / 'smk'),
         configfiles=configfiles,
-        config=dict(infiles=args.infiles,
-                    outdir=args.outdir),
+        config=setup_config(
+            dict(infiles=args.infiles,
+                 outdir=args.outdir)),
         dryrun=args.dryrun,
         printshellcmds=args.showcmds,
         unlock=args.unlock,
