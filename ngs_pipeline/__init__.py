@@ -106,9 +106,12 @@ def get_file_path(filepath: str):
     return pathlib.Path(check_NGSENV_BASEDIR()) / filepath
 
 
-def get_snakefile_path(filepath: str, snakefile_root: pathlib.Path):
+def get_snakefile_path(filepath: str | pathlib.Path, snakefile_root: pathlib.Path):
     """ return the actual snakefile """
-    if filepath.startswith('/') or filepath.startswith('./') or filepath.startswith('../'):
+    filepath_str = filepath
+    if isinstance(filepath, pathlib.Path):
+        filepath_str = filepath.as_posix()
+    if filepath_str.startswith('/') or filepath_str.startswith('./') or filepath_str.startswith('../'):
         return filepath
     return snakefile_root / filepath
 
