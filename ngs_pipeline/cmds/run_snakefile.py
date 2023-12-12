@@ -7,20 +7,13 @@ from ngs_pipeline import (cerr, cexit, arg_parser,
 
 def init_argparser():
     p = snakeutils.init_argparser(desc='run arbitrary snakefile')
-
-    # input/output options
-    p.add_argument('-o', '--outdir', default='analysis',
-                   help='directory for output [analysis/]')
-    p.add_argument('infiles', nargs='+',
-                   help='FASTQ input files, eg. sample-1.fastq.gz')
-
     return p
 
 
-def run_snakefile(args):
+def run_snakefile(args, config: dict = {}):
 
-    config = dict(infiles=args.infiles, outdir=args.outdir)
-    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+    status, elapsed_time = snakeutils.run_snakefile(args,
+                                                    config=setup_config(config))
 
     if not status:
         cerr('[WARNING: targeted variant calling did not successfully complete]')
