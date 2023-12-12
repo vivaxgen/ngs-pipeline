@@ -94,7 +94,7 @@ def run_snakefile(args, config = {}):
     # for profile purposes
 
     if 'SNAKEMAKE_PROFILE' in os.environ:
-        if args.profile is not None:
+        if args.profile is None:
             args.profile = os.environ['SNAKEMAKE_PROFILE']
 
     if args.profile is not None and not args.nocluster:
