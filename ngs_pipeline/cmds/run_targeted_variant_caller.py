@@ -16,37 +16,16 @@ Please read the README.txt of this software.
 import os
 from ngs_pipeline import (cerr, cexit, arg_parser,
                           check_NGSENV_BASEDIR, check_NGS_PIPELINE_BASE,
-                          get_snakefile_path, setup_config)
+                          get_snakefile_path, setup_config, snakeutils)
 
 
 def init_argparser():
-    p = arg_parser(desc='run targeted variant calling')
-    p.add_argument('-j', type=int, default=32)
+    p = snakeutils.init_argparser(desc='run targeted variant calling')
+    p.arg_dict['snakefile'].choices = ['panel_varcall_pe.smk', 'panel_varcall_lr.smk']
 
-    # Snakemake options
-    p.add_argument('--dryrun', default=False, action='store_true')
-    p.add_argument('--showcmds', default=False, action='store_true')
-    p.add_argument('--unlock', default=False, action='store_true')
-    p.add_argument('--rerun', default=False, action='store_true')
-
-    # general options
-    p.add_argument('--target', default='all',
-                   choices=['all', 'merged_report'],
-                   help='target rule in the snakefile [all]')
+    # input/output options
     p.add_argument('-o', '--outdir', default='analysis',
                    help='directory for output [analysis/]')
-    p.add_argument('--snakefile', default='panel_varcall_pe.smk',
-                   #choices=['panel_varcall_pe.smk', 'panel_varcall_lr.smk'],
-                   help='snakemake file to be called [targeted_varcall_pe.smk]')
-    p.add_argument('-c', '--config', default=[], action='append',
-                   help='config file(s) to append')
-    p.add_argument('-f', '--force', default=False, action='store_true',
-                   help='force the processing even if the working directory is not '
-                        'under current pipeline environment base directory')
-    p.add_argument('--no-config-cascade', default=False, action='store_true',
-                   help='prevent from reading cascading configuration file')
-
-    # input options
     p.add_argument('infiles', nargs='+',
                    help='FASTQ input files, eg. sample-1.fastq.gz')
 
@@ -55,61 +34,12 @@ def init_argparser():
 
 def run_targeted_variant_caller(args):
 
-    NGS_PIPELINE_BASE = check_NGS_PIPELINE_BASE()
+    config = dict(infiles=args.infiles, outdir=args.outdir)
+    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
 
-    import pathlib
-    import snakemake
-    import datetime
-
-    cwd = pathlib.Path.cwd()
-    NGSENV_BASEDIR = pathlib.Path(check_NGSENV_BASEDIR())
-
-    # check sanity
-    if not args.force and not cwd.is_relative_to(NGSENV_BASEDIR):
-        cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
-
-    configfiles = list(reversed(args.config))
-
-    if args.no_config_cascade:
-        configfiles.append(NGSENV_BASEDIR / 'config.yaml')
-    else:
-        # for each config directory, check config file existence
-        config_dirs = []
-        config_path = cwd
-        while config_path.is_relative_to(NGSENV_BASEDIR):
-            config_dirs.append(config_path)
-            configfile = config_path / 'config.yaml'
-            if configfile.is_file():
-                configfiles.append(configfile)
-            config_path = config_path.parent
-
-    if not any(configfiles):
-        cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
-
-    configfiles.reverse()
-
-    # run snakemake
-
-    start_time = datetime.datetime.now()
-    status = snakemake.snakemake(
-        get_snakefile_path(args.snakefile, pathlib.Path(NGS_PIPELINE_BASE) / 'smk'),
-        configfiles=configfiles,
-        config=setup_config(
-            dict(infiles=args.infiles,
-                 outdir=args.outdir)),
-        dryrun=args.dryrun,
-        printshellcmds=args.showcmds,
-        unlock=args.unlock,
-        force_incomplete=args.rerun,
-        cores=args.j,
-        cluster=os.environ.get('JOBCMD', ''),
-        cluster_cancel="scancel",
-        targets=[args.target],
-    )
-    finish_time = datetime.datetime.now()
     if not status:
         cerr('[WARNING: targeted variant calling did not successfully complete]')
-    cerr(f'[Finish targeted variant calling (time: {finish_time - start_time})]')
+    cerr(f'[Finish targeted variant calling (time: {elapsed_time})]')
 
 
 def main(args):
