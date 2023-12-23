@@ -36,9 +36,19 @@ rule index_fai:
     input:
         fasta = "{pfx}/{fn}.fasta"
     output:
-        fasta = "{pfx}/{fn}.fasta.fai"
+        fai = "{pfx}/{fn}.fasta.fai"
     shell:
         "samtools faidx {input.fasta}"
+
+
+rule index_dict:
+    threads: 1
+    input:
+        fasta = "{pfx}/{fn}.fasta"
+    output:
+        dict = "{pfx}/{fn}.dict"
+    shell:
+        "samtools dict -o {output.dict} {input.fasta}"
 
 
 rule index_ont_mmi:
@@ -49,6 +59,16 @@ rule index_ont_mmi:
         index = "{pfx}/{fn}.fasta.ont.mmi"
     shell:
         "minimap2 -x map-ont -d {output.index} {input.fasta}"
+
+
+rule index_bwamem2:
+    threads: 1
+    input:
+        fasta = "{pfx}/{fn}.fasta"
+    output:
+        index = "{pfx}/{fn}.fasta.bwt.2bit.64"
+    shell:
+        "bwa=mem2 index {input.fasta}"
 
 
 rule bunzip2:
