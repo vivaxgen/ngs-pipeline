@@ -42,45 +42,26 @@ def generate_manifest(args):
 
     # import heavy modules here if required
     import pandas as pd
+    from ngs_pipeline import fileutils
 
     cerr(f'[Receiving {len(args.infiles)} source files]')
 
-    if not args.single:
-        if (len(args.infiles) % 2) != 0:
-            cexit(f'Error: odd number of infiles ({len(args.infiles)})')
+    read_files = fileutils.ReadFileDict(args.infiles, args.underline)
 
-    infiles = sorted(args.infiles)
+    if any(read_files.err_files):
+        cexit('ERROR: invalid input files: \n' +
+            '\n'.join(f'  {errmsg}' for errmsg in read_files.err_files))
 
-    samples = {}
-
-    if not args.single:
-
-        infiles_1, infiles_2 = infiles[::2], infiles[1::2]
-        for (infile_1, infile_2) in zip(infiles_1, infiles_2):
-            prefix_1 = get_sample_name(infile_1, underline=args.underline)
-            prefix_2 = get_sample_name(infile_2, underline=args.underline)
-            if prefix_1 != prefix_2:
-                cexit(f'ERROR: unmatch pair [{prefix_1}] <> [{prefix_2}]')
-
-            if prefix_1 not in samples:
-                samples[prefix_1] = [f'{infile_1},{infile_2}']
-            else:
-                samples[prefix_1].append(f'{infile_1},{infile_2}')
-
-    else:
-        for infile in infiles:
-            name = get_sample_name(infile, underline=args.underline)
-            if name not in samples:
-                samples[name] = [infile]
-            else:
-                samples[name].append(infile)
-
-    # write to TSV file
+    # for each sample, process manifest line
     sample_series = []
     fastq_series = []
-    for sample in sorted(samples.keys()):
+    counter = 0
+    for sample in read_files.samples():
         sample_series.append(sample)
-        fastq_series.append(';'.join(samples[sample]))
+        items = [
+            ','.join(item) if type(item) == tuple else item for item in read_files[sample]
+        ]
+        fastq_series.append(';'.join(items))
 
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     df.to_csv(args.outfile, sep='\t', index=False)
