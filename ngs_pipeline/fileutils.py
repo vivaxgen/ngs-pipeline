@@ -6,20 +6,48 @@ from ngs_pipeline import cerr
 ReadMode = Enum('ReadMode', ['SINGLETON', 'PAIRED_END'])
 
 
-class ReadFileDict(dict):
+class ReadFileDict(object):
     """ a dictionary with sample as keys, and values of [file1, ...] for singleton 
         or [(file_R1, file_R2), ...] for paired-end
     """
 
-    def __init__(self, infiles: list, underline: int, mode: str | None = None):
+    ReadMode = ReadMode
+
+    def __init__(self, infiles: list, underscore: int, mode: str | None = None):
         super().__init__()
+        self._d = {}
         self.err_files = []
         self.mode = mode
-        self.underline = underline
+        self.underscore = underscore
         self.populate_read_files(infiles)
+
+    def keys(self):
+        return self._d.keys()
+
+    def __getitem__(self, key):
+        return self._d[key]
+
+    def __setitem__(self, key, value):
+        self._d[key] = value
+
+    def __contains__(self, key):
+        return (key in self._d)
+
+    def __iter__(self):
+        raise NotImplementedError()
 
     def samples(self):
         return list(sorted(self.keys()))
+
+    def get_read_file(self, wildcards):
+        """ this function is suitable to be used in input: directive in snake rules"""
+        idx = int(wildcards.idx)
+        return self[wildcards.sample][idx]
+
+    def get_indexes(self, sample):
+        """ eeturn list of indexes for each sample
+        """
+        return list(range(len(self[sample])))
 
     def populate_read_files(self, infiles):
             
@@ -43,7 +71,7 @@ class ReadFileDict(dict):
                     )
                     continue
 
-                sample = get_sample_name(infile, self.underline)
+                sample = get_sample_name(infile, self.underscore)
                 if sample not in self:
                     self[sample] = [infile]
                 else:
@@ -55,10 +83,15 @@ class ReadFileDict(dict):
                 raise ValueError(
                     f'Error: reads are paired-end but number of infiles is odd ({len(infiles)})')
 
+            # with paired-end reads, underscore must at least be 1, since filenames have _R1.fastq.gz
+            # and _R2.fastq.gz (or _!.fastq.gz and _2.fastq.gz)
+            if self.underscore == 0:
+                self.underscore = 1
+
             infiles_1, infiles_2 = infiles[::2], infiles[1::2]
             for (infile_1, infile_2) in zip(infiles_1, infiles_2):
-                prefix_1 = get_sample_name(infile_1, underline=self.underline)
-                prefix_2 = get_sample_name(infile_2, underline=self.underline)
+                prefix_1 = get_sample_name(infile_1, self.underscore)
+                prefix_2 = get_sample_name(infile_2, self.underscore)
                 if prefix_1 != prefix_2:
                     err_files.append(f'ERROR: unmatch pair [{prefix_1}] <> [{prefix_2}]')
 
@@ -82,7 +115,12 @@ def check_read_mode(infiles: list):
         '2.fastq.gz': 0,
     }
     for infile in infiles:
-        if (suffix := infile[-10:]) in counters:
+
+        if not '_' in infile:
+            cerr('Filename does not contain underscore character, hence assumming singleton reads.')
+            return ReadMode.SINGLETON
+
+        if (suffix := infile.rsplit('_', 1)[-1].removeprefix('R')) in counters:
             counters[suffix] += 1
 
     if sum(counters.values()) != len(infiles):
