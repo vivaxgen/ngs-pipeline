@@ -74,9 +74,9 @@ rule index_bwamem2:
 rule bunzip2:
     threads: 1
     input:
-        path = "{fn}.bz2"
+        path = "{fn}.fasta.bz2"
     output:
-        path = "{fn}"
+        path = "{fn}.fasta"
     shell:
         "bunzip2 -c {input.path} > {output.path}"
 
