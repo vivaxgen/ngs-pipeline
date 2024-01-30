@@ -10,6 +10,9 @@ refseq = ngsenv_basedir + '/' + config['refseq_file']
 ploidy = int(config.get('ploidy', 2))
 min_depth = config.get('min_depth', 5)
 
+# thread allocations
+thread_allocations = config.get('thread_allocations', {})
+
 # wildcard constraints:
 wildcard_constraints:
     sample = r'[.\w-]+',

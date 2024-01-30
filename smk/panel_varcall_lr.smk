@@ -4,7 +4,7 @@
 import os
 import pathlib
 
-from ngsutils import cexit
+from ngs_pipeline import cexit, cerr
 
 include: "utilities.smk"
 
@@ -58,7 +58,7 @@ def get_output_file(w):
 
 
 wildcard_constraints:
-    sample = '[\.\\w-]+'
+    sample = r'[.\w-]+'
 
 
 rule all:
@@ -170,6 +170,7 @@ rule gen_report:
         '{pfx}/genetic_report.tsv'
     shell:
         "ngs-pl generate-variant-report -o {output} --infofile {variant_info} {input}"
+
 
 rule merge_report:
     localrule: True
