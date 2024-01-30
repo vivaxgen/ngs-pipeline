@@ -17,27 +17,47 @@ its dependencies.
 
 There are two modes of working with the pipeline:
 
-* 2-step mode
+* 3-step mode
 
-  This mode allows the variant calling procecessing to be separated into 2 steps:
+  The 3-step mode allows users to process samples in batches or incrementally in consistent ways, which is suitable for processing high number of samples from WGS experiments.
 
-  * Mapping and indiviual sample genotyping
+  The steps are:
 
-    This step involves preparing sample directory structures and running genotyping of each
-    sample individually in parallel.
+  1 Preparing sample directory structure
 
-  * Joint variant calling
+    This step involves generating sample directory structures as working directory for the
+    pipeline.
+    Each sample will be processed in its own directory.
+    The basic command for this step is::
+
+      ngs-pl prepare-sample-directory -o OUTPUT_DIR -i MANIFEST_FILE INPUT_DIR
+
+  2 Running variant caller for each sample
+
+    This step involves running variant caller for each sample in parallel.
+    The result of this step would a set of GVCF files for each sample.
+    The basic command is::
+
+      ngs-pl run-sample-variant-caller DIRECTORY_! [DIRECTORY_2 ...]
+
+  3 Running joint variant caller combining all samples
 
     This step involves running a joint-variant calling for all samples after each sample
-    has been genotyped individually from the previous above step.
+    has been variant-called individually from the previous above steps.
+    The final result would be a set of VCF files containing the variants of all samples.
+    The basic command is::
 
-  The 2-step mode is suitable for processing high number of samples, especially from WGS
-  experiments, where samples are processed incrementally or in batch.
+      ngs-pl run-joint-variant-caller -o OUTPUT_DIR DIRECTORY_1 [DIRECTORY_2 ...]
 
 * 1-step mode
 
   A 1-process mapping/variant-calling suitable for targeted sequencing, such as panel and
-  amplicon sequencing, with smaller number of samples. 
+  amplicon sequencing, with smaller number of samples.
+  The basic command for this mode is:
+
+    ngs-pl run-targeted-variant-caller -o OUTPUT_DIR INPUT_DIR/*.fastq.gz
+
+See the documentation for available `commands <docs/commands.rst>`_
 
 
 Quick Installation
