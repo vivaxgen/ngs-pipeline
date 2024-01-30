@@ -37,7 +37,7 @@ There are two modes of working with the pipeline:
       The result of this step would a set of GVCF files for each sample.
       The basic command is::
 
-        ngs-pl run-sample-variant-caller DIRECTORY_! [DIRECTORY_2 ...]
+        ngs-pl run-sample-variant-caller DIRECTORY_1 [DIRECTORY_2 ...]
 
   3.  Running joint variant caller combining all samples
 
@@ -50,7 +50,7 @@ There are two modes of working with the pipeline:
 
 * 1-step mode
 
-  A 1-process mapping/variant-calling suitable for targeted sequencing, such as panel and
+  A 1-step mapping/variant-calling suitable for targeted sequencing, such as panel and
   amplicon sequencing, with smaller number of samples.
   The basic command for this mode is::
 
@@ -75,21 +75,27 @@ Take a note of the directory where the pipeline is installed and the full path o
 Overview of ngs-pipeline Setting Up
 -----------------------------------
 
-Since ngs-pipeline is a variant-calling pipeline, it requires one to setup a proper configuration,
-such as the reference sequence and any other settings, to work properly.
+Since ngs-pipeline is a variant-calling pipeline, it requires one to setup a proper
+configuration, such as the reference sequence and any other settings, to work properly.
+
+[TBW]
 
 
-2-Step Mode Usage
+3-Step Mode Usage
 ---------------------
 
+[TBW]
 
 
 1-Step Mode Usage
 ---------------------
 
+[TBW]
+
 
 Extending ngs-pipeline
 ----------------------
 
-The ngs-pipeline is developed in a way that it can be extended using Python and snakemake files.
-All
+The ngs-pipeline can be extended using Python and additional snakemake files.
+The Python modules and the snakemake files in the ngs-pipeline can also be imported to be used
+by other custom Python scripts and/or snakemake files.
