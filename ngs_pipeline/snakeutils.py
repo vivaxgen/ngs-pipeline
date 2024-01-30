@@ -122,7 +122,7 @@ def run_snakefile(args, config = {}):
     # run snakefile
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
-        get_snakefile_path(args.snakefile, pathlib.Path(NGS_PIPELINE_BASE) / 'smk'),
+        get_snakefile_path(args.snakefile, pathlib.Path(NGS_PIPELINE_BASE) / 'rules'),
         configfiles=configfiles,
         config=setup_config(config),
         dryrun=args.dryrun,

@@ -25,7 +25,7 @@ if 'NGS_PIPELINE_BASE' not in os.environ:
           file=sys.stderr)
     sys.exit(1)
 
-from ngsutils import cerr, cexit, run_main, arg_parser
+from ngs_pipeline import cerr, cexit, run_main, arg_parser
 
 
 # usage: run_varcall.py
@@ -105,7 +105,7 @@ def run_varcall(args):
 
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / args.snakefile,
+        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'rules' / args.snakefile,
         configfiles=configfiles,
         dryrun=args.dryrun,
         touch=args.touch,

@@ -25,7 +25,7 @@ if 'NGS_PIPELINE_BASE' not in os.environ:
           file=sys.stderr)
     sys.exit(1)
 
-from ngsutils import cerr, cexit, run_main, arg_parser
+from ngs_pipeline import cerr, cexit, run_main, arg_parser
 
 
 # usage: run_amtofastq.py
@@ -75,7 +75,7 @@ def run_amtofastq(args):
     # run smk
 
     snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / 'amtofastq.smk',
+        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'rules' / 'amtofastq.smk',
         config=dict(SOURCES=sources),
         dryrun=args.dryrun,
         printshellcmds=args.showcmds,

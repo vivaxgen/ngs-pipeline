@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngsutils import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
+from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 
 def init_argparser():
@@ -98,7 +98,7 @@ def run_joint_variant_caller(args):
     cerr('[Step: joint variant calling]')
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'smk' / args.snakefile,
+        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'rules' / args.snakefile,
         configfiles=configfiles,
         config=dict(srcdirs=source_dirs, destdir=args.outdir.removesuffix('/')),
         printshellcmds=args.showcmds,
