@@ -23,7 +23,7 @@ There are two modes of working with the pipeline:
 
   The steps are:
 
-  #.  Preparing sample directory structure
+  1.  Preparing sample directory structure
 
       This step involves generating sample directory structures as working directory for the pipeline.
       Each sample will be processed in its own directory.
@@ -31,7 +31,7 @@ There are two modes of working with the pipeline:
 
         ngs-pl prepare-sample-directory -o OUTPUT_DIR -i MANIFEST_FILE INPUT_DIR
 
-  #.  Running variant caller for each sample
+  2.  Running variant caller for each sample
 
       This step involves running variant caller for each sample in parallel.
       The result of this step would a set of GVCF files for each sample.
@@ -39,7 +39,7 @@ There are two modes of working with the pipeline:
 
         ngs-pl run-sample-variant-caller DIRECTORY_! [DIRECTORY_2 ...]
 
-  #.  Running joint variant caller combining all samples
+  3.  Running joint variant caller combining all samples
 
       This step involves running a joint-variant calling for all samples after each sample
       has been variant-called individually from the previous above steps.
