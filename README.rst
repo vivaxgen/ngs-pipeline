@@ -1,8 +1,9 @@
+
 vivaxGEN NGS-Pipeline
 =====================
 
 
-The viaxGEN NGS-Pipeline is a flexible pipeline for upstream processing (variant calling) of WGS or
+The vivaxGEN NGS-Pipeline is a flexible pipeline for upstream processing (variant calling) of WGS or
 targeted-sequencing data from paired-end short reads or singleton long reads NGS experiments.
 
 
@@ -13,13 +14,30 @@ The vivaxGEN NGS-Pipeline was developed to cater the need to do upstream process
 sequencing data produced within vivaxGEN project.
 The pipeline uses snakemake for its workflow system and relies on micromamba to provide
 its dependencies.
+
 There are two modes of working with the pipeline:
 
-* a 2-process mechanism with different steps for mapping and joint variant calling which is
-  suitable for whole-genome sequencing or variant discovery with big number of samples, and
+* 2-step mode
 
-* a 1-process mapping/variant-calling suitable for targeted sequencing, such
-  as panel and amplicon sequencing, with smaller number of samples. 
+  This mode allows the variant calling procecessing to be separated into 2 steps:
+
+  * Mapping and indiviual sample genotyping
+
+    This step involves preparing sample directory structures and running genotyping of each
+    sample individually in parallel.
+
+  * Joint variant calling
+
+    This step involves running a joint-variant calling for all samples after each sample
+    has been genotyped individually from the previous above step.
+
+  The 2-step mode is suitable for processing high number of samples, especially from WGS
+  experiments, where samples are processed incrementally or in batch.
+
+* 1-step mode
+
+  A 1-process mapping/variant-calling suitable for targeted sequencing, such as panel and
+  amplicon sequencing, with smaller number of samples. 
 
 
 Quick Installation
@@ -42,13 +60,13 @@ Since ngs-pipeline is a variant-calling pipeline, it requires one to setup a pro
 such as the reference sequence and any other settings, to work properly.
 
 
-2-Step WGS Mode Usage
+2-Step Mode Usage
 ---------------------
 
 
 
-1-Step Targeted Mode Usage
---------------------------
+1-Step Mode Usage
+---------------------
 
 
 Extending ngs-pipeline
