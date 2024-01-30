@@ -23,37 +23,36 @@ There are two modes of working with the pipeline:
 
   The steps are:
 
-  1 Preparing sample directory structure
+  #.  Preparing sample directory structure
 
-    This step involves generating sample directory structures as working directory for the
-    pipeline.
-    Each sample will be processed in its own directory.
-    The basic command for this step is::
+      This step involves generating sample directory structures as working directory for the pipeline.
+      Each sample will be processed in its own directory.
+      The basic command for this step is::
 
-      ngs-pl prepare-sample-directory -o OUTPUT_DIR -i MANIFEST_FILE INPUT_DIR
+        ngs-pl prepare-sample-directory -o OUTPUT_DIR -i MANIFEST_FILE INPUT_DIR
 
-  2 Running variant caller for each sample
+  #.  Running variant caller for each sample
 
-    This step involves running variant caller for each sample in parallel.
-    The result of this step would a set of GVCF files for each sample.
-    The basic command is::
+      This step involves running variant caller for each sample in parallel.
+      The result of this step would a set of GVCF files for each sample.
+      The basic command is::
 
-      ngs-pl run-sample-variant-caller DIRECTORY_! [DIRECTORY_2 ...]
+        ngs-pl run-sample-variant-caller DIRECTORY_! [DIRECTORY_2 ...]
 
-  3 Running joint variant caller combining all samples
+  #.  Running joint variant caller combining all samples
 
-    This step involves running a joint-variant calling for all samples after each sample
-    has been variant-called individually from the previous above steps.
-    The final result would be a set of VCF files containing the variants of all samples.
-    The basic command is::
+      This step involves running a joint-variant calling for all samples after each sample
+      has been variant-called individually from the previous above steps.
+      The final result would be a set of VCF files containing the variants of all samples.
+      The basic command is::
 
-      ngs-pl run-joint-variant-caller -o OUTPUT_DIR DIRECTORY_1 [DIRECTORY_2 ...]
+        ngs-pl run-joint-variant-caller -o OUTPUT_DIR DIRECTORY_1 [DIRECTORY_2 ...]
 
 * 1-step mode
 
   A 1-process mapping/variant-calling suitable for targeted sequencing, such as panel and
   amplicon sequencing, with smaller number of samples.
-  The basic command for this mode is:
+  The basic command for this mode is::
 
     ngs-pl run-targeted-variant-caller -o OUTPUT_DIR INPUT_DIR/*.fastq.gz
 
