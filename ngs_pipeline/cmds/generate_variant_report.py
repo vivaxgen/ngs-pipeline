@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngsutils import cerr, arg_parser
+from ngs_pipeline import cerr, arg_parser
 
 
 def init_argparser():
@@ -31,12 +31,6 @@ def init_argparser():
     p.add_argument('infile',
                    help='input file in vcf.gz format')
     return p
-
-
-__done__ = False
-def d():
-    global __done__
-    __done__ = True
 
 
 def generate_variant_report(args):
@@ -63,14 +57,9 @@ def generate_variant_report(args):
 
     for v in vcf:
 
-        if __done__:
-            break
-
         try:
+
             info_row = info_df.loc[(v.CHROM, v.POS)]
-
-            #IPython.embed()
-
             variants.append(info_row.Name)
 
             # check if depth is sufficent
