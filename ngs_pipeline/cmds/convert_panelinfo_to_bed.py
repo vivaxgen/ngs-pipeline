@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngsutils import cerr, arg_parser
+from ngs_pipeline import cerr, arg_parser
 
 
 def init_argparser():
@@ -25,12 +25,6 @@ def init_argparser():
     p.add_argument('infile',
                    help='input panel info file, in TSV format')
     return p
-
-
-__done__ = False
-def d():
-    global __done__
-    __done__ = True
 
 
 def convert_panelinfo_to_bed(args):
