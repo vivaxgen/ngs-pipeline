@@ -1,3 +1,8 @@
+# __init__.py - ngs-pipeline
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(c) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 # library providing file common functions
 
