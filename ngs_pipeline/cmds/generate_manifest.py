@@ -1,5 +1,5 @@
 __copyright__ = '''
-greet.py - ngs-pipeline command line
+generate_manifest.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
 (c) 2022-2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
@@ -22,10 +22,15 @@ from ngs_pipeline import cexit, cerr, arg_parser
 def init_argparser():
     p = arg_parser('generate sample manifest file')
     p.add_argument('-o', '--outfile', default='outfile.tsv')
-    p.add_argument('-s', '--single', default=False, action='store_true',
+
+    m = p.add_mutually_exclusive_group()
+    m.add_argument('-s', '--single', default=False, action='store_true',
                    help='fastq files are single (non-paired) such as ONT reads')
-    p.add_argument('-u', '--underline', type=int, default=0,
-                   help='no of consecutive underlines to be stripped from filenames '
+    m.add_argument('-p', '--paired', default=False, action='store_true',
+                   help='fastq files are paired such as Illumina paired-end reads')
+
+    p.add_argument('-u', '--underscore', type=int, default=0,
+                   help='no of consecutive underscore to be stripped from filenames '
                    'to form sample code, counted in reverse')
     p.add_argument('infiles', nargs='+')
     return p
@@ -46,7 +51,14 @@ def generate_manifest(args):
 
     cerr(f'[Receiving {len(args.infiles)} source files]')
 
-    read_files = fileutils.ReadFileDict(args.infiles, args.underline)
+    if args.single:
+        mode = fileutils.ReadMode.SINGLETON
+    elif args.paired:
+        mode = fileutils.ReadMode.PAIRED_END
+    else:
+        mode = None
+
+    read_files = fileutils.ReadFileDict(args.infiles, args.underscore, mode)
 
     if any(read_files.err_files):
         cexit('ERROR: invalid input files: \n' +
