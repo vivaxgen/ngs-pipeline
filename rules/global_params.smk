@@ -1,18 +1,13 @@
 
-import os
 import pathlib
 
-ngs_pipeline_basedir = os.environ['NGS_PIPELINE_BASE']
-ngsenv_basedir = os.environ['NGSENV_BASEDIR']
+include: "general_params.smk"
 
 # parameters to do processing
 
 refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
-refseq = ngsenv_basedir + '/' + config['refseq_file']
 knownsites_file = ngsenv_basedir + '/' + config.get('knownsites_file', '')
-ploidy = int(config.get('ploidy', 2))
 
-min_depth = config.get('min_depth', 5)
 deduplicate = config.get('deduplicate', True)
 
 # parameters to save storage space
