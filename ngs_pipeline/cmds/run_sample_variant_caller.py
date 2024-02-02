@@ -124,7 +124,7 @@ def run_sample_variant_caller(args):
             '--joblog', args.joblog,
             '--workdir',
             '{}',
-            f'{NGS_PIPELINE_BASE}/bin/run_varcall.py -j 48 '
+            f'ngs-pl run-indv-varcall -j 48 '
             f'{"--unlock" if args.unlock else ""} '
             f'{"--rerun" if args.rerun else ""} '
             f'{"--touch" if args.touch else ""} '

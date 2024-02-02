@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
-run_varcall.py - ngs-pipeline command line
+run_indv_varcall.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2024 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -18,19 +15,12 @@ Please read the README.txt of this software.
 
 import sys
 import os
-
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: please set proper shell enviroment by sourcing activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-from ngs_pipeline import cerr, cexit, run_main, arg_parser
+from ngs_pipeline import cerr, cexit, snakeutils
 
 
 # usage: run_varcall.py
 
-def init_argparser():
+def init_argparser_XXX():
     p = arg_parser(desc='run varcalling pipeline')
     p.add_argument('-j', type=int, default=72)
     p.add_argument('--dryrun', default=False, action='store_true')
@@ -46,10 +36,34 @@ def init_argparser():
     p.add_argument('sampledir')
     return p
 
+def init_argparser():
+    p = snakeutils.init_argparser(desc='run individual sample variant caller')
+    p.arg_dict['snakefile'].choices = ['var_call.smk']
+    p.arg_dict['snakefile'].default = 'var_call.smk'
+    p.add_argument('target')
+    p.add_argument('sammple')
 
-def run_varcall(args):
+    return p
+
+def run_indv_varcall(args):
 
     import pathlib
+
+    # simple sanity checks
+    cwd = pathlib.Path.cwd()
+    sample = cwd.parts[-1]
+    if not (cwd / 'reads').is_dir():
+        cexit(f'ERROR: current directory {cwd} does not have "reads" directory!')
+
+    # remove .completed or .uncompleted screen first if exists
+    (cwd / '.completed').unlink(missing_ok=True)
+    (cwd / '.uncompleted').unlink(missing_ok=True)
+
+    status, elapsed_time = snakeutils.run_snakefile(args)
+    open(cwd / ('.uncompleted' if not status else '.completed'), 'w').write(f'{elapsed_time}')
+
+    return
+
     import snakemake
     import datetime
 
@@ -122,7 +136,7 @@ def run_varcall(args):
     open(cwd / ('.uncompleted' if not status else '.completed'), 'w').write(f'{finish_time - start_time}')
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, run_varcall)
+def main(args):
+    run_indv_varcall(args)
 
 # EOF
