@@ -79,12 +79,14 @@ rule map_proper:
         "maps/mapped-{idx}.bam"
     output:
         "maps/mapped-proper-{idx}.bam" if keep_proper_bam else temp("maps/mapped-proper-{idx}.bam")
+    params:
+        sample = sample,
     shell:
         "samtools view -F 0x4 -f 0x2 -q 15 -o  {output} {input}"
 
 
 rule map_filter:
-    threads: 4
+    threads: thread_allocations.get('map_filtering', 4)
     input:
         "maps/mapped-{idx}.bam"
     output:
@@ -94,18 +96,21 @@ rule map_filter:
         log2 = "logs/samtools-sort-{idx}.log",
         read_orientation = "logs/read-orientation-{idx}.json"
     params:
-        args = config.get('read_filters', '') or '--remove_unmapped'
+        sample = sample,
+        args = config.get('read_filters', '') or '--remove_unmapped',
     shell:
         "filter_reads_orientation.py --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
         "| samtools sort -@4 -o {output} 2> {log.log2} "
 
 
 rule map_dedup:
-    threads: 3
+    threads: thread_allocations.get('map_deduping', 3)
     input:
         "maps/mapped-filtered-{idx}.bam"
     output:
         temp("maps/mapped-dedup-{idx}.bam")
+    params:
+        sample = sample,
     log:
         log1 = "logs/markdup-{idx}.log",
         markdup_stat = "logs/markdup-stat-{idx}.json",
@@ -119,17 +124,21 @@ rule map_stats:
         "maps/{filename}.bam"
     output:
         "logs/{filename}.stats.txt"
+    params:
+        sample = sample,
     shell:
         "samtools stats {input} > {output}"
 
 
 rule map_merge_final:
     # this rule merges dedup input BAM
-    threads: 4
+    threads: thread_allocations.get('map_merging', 4)
     input:
         expand('maps/mapped-final-{idx}.bam', idx=IDXS)
     output:
         'maps/mapped-final.bam' if keep_final_bam else temp('maps/mapped-final.bam')
+    params:
+        sample = sample,
     run:
         if len(IDXS) > 1:
             shell('samtools merge -@4 {output} {input}')
@@ -148,6 +157,8 @@ rule map_depth:
         'maps/{filename}.bam'
     output:
         'logs/{filename}.depths.txt.gz'
+    params:
+        sample = sample,
     shell:
         'samtools depth {input} | gzip > {output}'
 
@@ -162,6 +173,7 @@ rule collect_stats:
         finals = expand('logs/mapped-final-{idx}.stats.txt', idx=IDXS),
         depths = expand('logs/mapped-final-{idx}.depths.txt.gz', idx=IDXS),
     params:
+        sample = sample,
         trimmed = lambda wildcards, input: '--trimmed ' + ' --trimmed '.join(input.trims),
         mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps),
         deduped = (lambda wildcards, input: '--dedup ' + ' --dedup '.join(input.dedups)) if deduplicate else '',
@@ -179,7 +191,8 @@ rule depth_plot:
     input:
         "logs/mapped-final.depths.txt.gz"
     params:
-        chroms = ('--chrom ' + ','.join(REGIONS)) if any(REGIONS) else ''
+        sample = sample,
+        chroms = ('--chrom ' + ','.join(REGIONS)) if any(REGIONS) else '',
     output:
         'logs/depths.png'
     shell:

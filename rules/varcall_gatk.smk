@@ -1,7 +1,7 @@
 
 
 rule gatk_haplotypecaller:
-    threads: 2
+    threads: thread_allocations.get('haplotyping', 2)
     input:
         "maps/mapped-final-recal.bam"
     output:
@@ -9,3 +9,4 @@ rule gatk_haplotypecaller:
     shell:
         "gatk HaplotypeCaller --native-pair-hmm-threads 1 -R {refseq} -I {input} -L {wildcards.reg} -ploidy {ploidy} -ERC GVCF -O {output}"
 
+# EOF

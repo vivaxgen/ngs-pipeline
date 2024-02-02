@@ -17,7 +17,7 @@ rule reads_mapping:
     # - regions mentioned in regions filtered-in
     # no further filtering is done (eg. secondary/trans/CPP)
     # the final bam file is suitable for uploading to SRA public database
-    threads: 16
+    threads: thread_allocations.get('mapping', 16)
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
@@ -31,6 +31,7 @@ rule reads_mapping:
     benchmark:
         "logs/bwa-mem2-{idx}.bm.txt"
     params:
+        sample = sample,
         rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'",
         regions = ' '.join(CONTAMINANT_REGIONS) if CONTAMINANT_REGIONS else ' '.join(REGIONS),
         mode = '--remove' if CONTAMINANT_REGIONS else ''

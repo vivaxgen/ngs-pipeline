@@ -8,7 +8,7 @@ optdedup = config.get('optical_dedup', False)
 
 
 rule reads_trimming:
-    threads: 8
+    threads: thread_allocations.get('trimming', 8)
     input:
         read1 = "trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "reads/raw-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "reads/raw-{idx}_R2.fastq.gz"
@@ -20,6 +20,7 @@ rule reads_trimming:
         log2 = "logs/fastp-{idx}.json",
         log3 = "logs/fastp-{idx}.html"
     params:
+        sample = sample,
         nextseq_arg = '--trim_poly_g' if is_nextseq_or_novaseq() else '',
         length_arg = f'--length_limit {maxlen}' if maxlen > 0 else '-L',
         minlen_arg = f'--length_required {minlen}' if minlen > 0 else '',
@@ -29,6 +30,7 @@ rule reads_trimming:
         correction_arg = '-c' if config.get('correction', False) else ''
     shell:
         "fastp -w 8 {params.correction_arg} {params.nextseq_arg} {params.adapter_arg} {params.length_arg} {params.minlen_arg} {params.qual_arg} -o {output.trimmed1} -O {output.trimmed2} -i {input.read1} -I {input.read2} -j {log.log2} -h {log.log3} > {log.log1}"
+
 
 rule trimming_stat:
     localrule: True

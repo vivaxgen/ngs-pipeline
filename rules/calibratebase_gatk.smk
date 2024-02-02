@@ -11,8 +11,9 @@ rule gatk_baserecalibrator:
     log:
         "logs/gatk-BaseRecalibrator-{reg}.log"
     params:
+        sample = sample,
         known = f"--known-sites {knownsites_file}",
-        region_opts = '-L {reg}'
+        region_opts = '-L {reg}',
     shell:
         "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input} -O {output} 2>{log}"
 
@@ -27,7 +28,8 @@ rule gatk_gatherbsqr:
     log:
         "logs/gatk-GatherBSQRReports.log"
     params:
-        n_input = lambda wildcards, input: len(input)
+        sample = sample,
+        n_input = lambda wildcards, input: len(input),
     run:
         input_opts = '-I ' + ' -I '.join(input)
         shell("gatk {java_opts} GatherBQSRReports {input_opts} -O {output} 2>{log}")
@@ -41,6 +43,8 @@ rule gatk_applybqsr:
         table = "maps/recal.table"
     output:
         "maps/mapped-final-recal.bam" if keep_recalibrated_bam else temp("maps/mapped-final-recal.bam")
+    params:
+        sample = sample,
     log:
         "logs/gatk-ApplyBQSR.log"
     shell:
