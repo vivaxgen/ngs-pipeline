@@ -1,3 +1,8 @@
+# tgt_mapper_minimap2_lr.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 # required variables:
 # - refmap
