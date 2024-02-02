@@ -15,10 +15,10 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
+from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR, snakeutils
 
 
-def init_argparser():
+def init_argparser_XXX():
     p = arg_parser(desc='run WGS varcalling pipeline')
     p.add_argument('-j', type=int, default=196)
     p.add_argument('--dryrun', default=False, action='store_true')
@@ -45,13 +45,28 @@ def init_argparser():
     return p
 
 
+def init_argparser():
+    p = snakeutils.init_argparser(desc='run joint variant calling')
+    p.arg_dict['snakefile'].choices = ['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk']
+
+    # input/output options
+    p.add_argument('-o', '--outdir', default='joint',
+                   help='directory for output [joint/]')
+    p.add_argument('source_dirs', nargs='+',
+                   help='source directories containing sample directories')
+
+    return p
+
+
 def run_joint_variant_caller(args):
 
     check_NGSENV_BASEDIR()
 
-    import pathlib
-    import snakemake
     import datetime
+    import pathlib
+    import yaml
+    import snakemake
+    from snakemake.io import glob_wildcards
 
     # get snakefile to run
     if args.snakefile is None:
@@ -61,60 +76,39 @@ def run_joint_variant_caller(args):
             args.snakefile = 'jointvarcall_gatk.smk'
     cerr(f'Snakefile to be run: {args.snakefile}')
 
-    # sanity check for all directory
+    # sanity check for all directory and duplicated sample codes
     source_dirs = [srcdir.removesuffix('/') for srcdir in args.source_dirs]
+    sample_dirs = []
+    sample_codes = {}
+    duplicated_sample_codes = {}
     for srcdir in source_dirs:
         if not pathlib.Path(srcdir).is_dir():
             cexit(f'ERROR: directory {srcdir} does not exist!')
+        S, = glob_wildcards(srcdir + '/{sample,[\\w-]+}')
+        # filter for non-sample directories/files
+        S = [s for s in S if s != 'config.yaml']
+        for sample in S:
+            if sample in sample_codes:
+                if sample in duplicated_sample_codes:
+                    duplicated_sample_codes[sample].append(srcdir)
+                else:
+                    duplicated_sample_codes[sample] = [sample_codes[sample], srcdir]
+            else:
+                sample_codes[sample] = srcdir
+        sample_dirs += [f'{srcdir}/{s}' for s in S]
 
-    # merge config.yaml
+    if any(duplicated_sample_codes):
+        cerr('ERROR:')
+        cerr('Found duplicated sample code(s):')
+        cerr(yaml.dump(duplicated_sample_codes))
+        cexit('Pleae remove or rename the directory of those sample(s) to remove the duplication')
 
-    configfiles = []
-    ngsenv_basedir = pathlib.Path(os.environ['NGSENV_BASEDIR'])
-    cwd = pathlib.Path.cwd()
-    paths = [cwd]
+    config = dict(srcdirs=source_dirs, destdir=args.outdir.removesuffix('/'))
+    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
 
-    while True:
-        configfile = cwd / 'config.yaml'
-        if configfile.is_file():
-            configfiles.append(configfile)
-        if cwd == ngsenv_basedir:
-            break
-        cwd = cwd.parent
-        paths.append(cwd)
-
-    if not any(configfiles):
-        cexit('ERROR: cannot find any config.yaml in the folowing directories:\n'
-              + '\n'.join(str(x) for x in paths) + '\n')
-
-    configfiles.reverse()
-
-    if any(args.config):
-        configfiles += args.config
-
-    cerr('[Config files to be used are:\n'
-         + '\n'.join(str(x) for x in configfiles) + ']\n')
-
-    cerr('[Step: joint variant calling]')
-    start_time = datetime.datetime.now()
-    status = snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'rules' / args.snakefile,
-        configfiles=configfiles,
-        config=dict(srcdirs=source_dirs, destdir=args.outdir.removesuffix('/')),
-        printshellcmds=args.showcmds,
-        dryrun=args.dryrun,
-        touch=args.touch,
-        unlock=args.unlock,
-        force_incomplete=args.rerun,
-        cores=args.j,
-        cluster=args.cluster if not args.nocluster else None,
-        cluster_cancel='scancel' if not args.nocluster else None,
-        targets=[args.target],
-    )
-    finish_time = datetime.datetime.now()
     if not status:
         cerr('[WARNING: joint varian calling step did not successfully complete]')
-    cerr(f'[Finish joint variant calling (time: {finish_time - start_time})]')
+    cerr(f'[Finish joint variant calling (time: {elapsed_time})]')
 
 
 def main(args):
