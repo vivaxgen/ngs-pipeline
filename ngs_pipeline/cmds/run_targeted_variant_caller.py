@@ -21,9 +21,17 @@ from ngs_pipeline import (cerr, cexit, arg_parser,
 
 def init_argparser():
     p = snakeutils.init_argparser(desc='run targeted variant calling')
-    p.arg_dict['snakefile'].choices = ['panel_varcall_pe.smk', 'panel_varcall_lr.smk']
+    p.arg_dict['snakefile'].choices = [
+        'panel_varcall_pe.smk',
+        'panel_varcall_lr.smk',
+        'tgt_panel_varcall_pe.smk',
+        'tgt_panel_varcall_lr.smk'
+    ]
 
     # input/output options
+    p.add_argument('-u', '--underscore', default=0, type=int,
+                   help='number of undercore character to be stripped, counted in reverse')
+
     p.add_argument('-o', '--outdir', default='analysis',
                    help='directory for output [analysis/]')
     p.add_argument('infiles', nargs='+',
@@ -34,7 +42,11 @@ def init_argparser():
 
 def run_targeted_variant_caller(args):
 
-    config = dict(infiles=args.infiles, outdir=args.outdir)
+    config = dict(
+        infiles=args.infiles,
+        underscore=args.underscore,
+        outdir=args.outdir
+    )
     status, elapsed_time = snakeutils.run_snakefile(args, config=config)
 
     if not status:
