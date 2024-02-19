@@ -12,6 +12,7 @@ import argparse
 import platform
 import argcomplete
 import pathlib
+import types
 
 
 def cout(msg):
@@ -104,20 +105,34 @@ def get_mode(filename, mode):
     return mode
 
 
+def is_abs_or_rel_path(filepath: str):
+    if (
+        filepath.startswith('/')
+        or filepath.startswith('./')
+        or filepath.startswith('../')
+    ):
+        return True
+    return False
+
+
 def get_file_path(filepath: str):
     """ return the actual filepath"""
-    if filepath.startswith('/') or filepath.startswith('./') or filepath.startswith('../'):
+    if is_abs_or_rel_path(filepath):
         return filepath
     return pathlib.Path(check_NGSENV_BASEDIR()) / filepath
 
 
-def get_snakefile_path(filepath: str | pathlib.Path, snakefile_root: pathlib.Path):
+def get_snakefile_path(filepath: str | pathlib.Path,
+                       snakefile_root: pathlib.Path | None = None,
+                       from_module: types.ModuleType | None = None):
     """ return the actual snakefile """
     filepath_str = filepath
     if isinstance(filepath, pathlib.Path):
         filepath_str = filepath.as_posix()
-    if filepath_str.startswith('/') or filepath_str.startswith('./') or filepath_str.startswith('../'):
+    if is_abs_or_rel_path(filepath):
         return filepath
+    if from_module is not None:
+        snakefile_root = pathlib.Path(from_module.__path__[0]) / 'rules'
     return snakefile_root / filepath
 
 
