@@ -1,3 +1,8 @@
+# tgt_panel_varcall_lr.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023-2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 from ngs_pipeline import cerr
 
@@ -21,6 +26,9 @@ include: "tgt_merge_map.smk"
 
 # use FreeBayes panel variant-calling
 include: "tgt_panel_freebayes.smk"
+
+# include report-generating stuff and report merging
+include: "tgt_panel_genreport.smk"
 
 
 def get_output_file(w):
