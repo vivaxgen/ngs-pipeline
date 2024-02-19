@@ -27,6 +27,7 @@ def init_argparser(desc, p=None):
                    help='number of jobs to be executed in parallel')
     p.add_argument('--dryrun', default=False, action='store_true')
     p.add_argument('--showcmds', default=False, action='store_true')
+    p.add_argument('--showconfigfiles', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
     p.add_argument('--touch', default=False, action='store_true',
@@ -57,6 +58,7 @@ def run_snakefile(args, config = {}):
     """ exeute snakefile based on args"""
 
     import snakemake
+    import yaml
 
     # check sanity
     if not args.snakefile:
@@ -90,6 +92,12 @@ def run_snakefile(args, config = {}):
         cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
 
     configfiles.reverse()
+
+    if args.showconfigfiles:
+        cerr('Config files to read:')
+        cerr(yaml.dump(configfiles))
+        cexit('\n')
+
 
     # for profile purposes
 

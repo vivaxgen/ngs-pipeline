@@ -33,6 +33,7 @@ def init_argparser():
     p.add_argument('--count', type=int, default=-1,
                    help='number of samples to be processed, useful to check initial run [-1]')
     p.add_argument('--showcmds', default=False, action='store_true')
+    p.add_argument('--showconfigfiles', default=False, action='store_true')
     p.add_argument('--unlock', default=False, action='store_true')
     p.add_argument('--rerun', default=False, action='store_true')
     p.add_argument('--touch', default=False, action='store_true',
@@ -111,6 +112,10 @@ def run_sample_variant_caller(args):
     cerr(f'[Collecting total of {len(samples)} sample directories from '
          f'{len(args.indirs)} input directories]')
 
+    if args.showconfigfiles:
+        # only use 1 sample for showing cascading config files
+        args.count = 1
+
     if args.count > 0:
         samples = samples[:args.count]
         cerr(f'[Limiting processing to {args.count} sample(s)]')
@@ -129,6 +134,7 @@ def run_sample_variant_caller(args):
             f'{"--rerun" if args.rerun else ""} '
             f'{"--touch" if args.touch else ""} '
             f'{"--showcmds" if args.showcmds else ""} '
+            f'{"--showconfigfiles" if args.showconfigfiles else ""} '
             f'--snakefile {args.snakefile} '
             f'{args.target}',
             ':::'
