@@ -42,6 +42,12 @@ def init_argparser():
 
 def run_targeted_variant_caller(args):
 
+    # get default snakefile from environment if none is provided
+    if not args.snakefile:
+        args.snakefile = os.environ.get('SNAKEFILE', None)
+        if args.snakefile:
+            cerr(f'Obtaining snakefile from SNAKEFILE environment: {args.snakefile}')
+
     config = dict(
         infiles=args.infiles,
         underscore=args.underscore,
