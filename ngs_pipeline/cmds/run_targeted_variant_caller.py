@@ -24,8 +24,8 @@ def init_argparser():
     p.arg_dict['snakefile'].choices = [
         'panel_varcall_pe.smk',
         'panel_varcall_lr.smk',
-        'tgt_panel_varcall_pe.smk',
-        'tgt_panel_varcall_lr.smk'
+        'msf_panel_varcall_pe.smk',
+        'msf_panel_varcall_lr.smk'
     ]
 
     # input/output options

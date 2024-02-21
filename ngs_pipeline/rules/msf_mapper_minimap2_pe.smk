@@ -1,8 +1,13 @@
+# msf_mapper_minimap2_pe.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 # required variables:
 # - refmap
 
-rule tgt_mapping:
+rule msf_mapping:
     threads: 8
     input:
         read1 = "{pfx}/{sample}/trimmed_reads/trimmed-{idx}_R1.fastq.gz"

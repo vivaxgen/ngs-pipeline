@@ -119,7 +119,10 @@ def run_snakefile(args, config = {}):
                     setattr(args, k, arg)
                 else:
                     # adjust file path
-                    setattr(args, k, snakemake.get_profile_file(args.profile, arg, return_default=True))
+                    setattr(args, k,
+                            snakemake.get_profile_file(args.profile,
+                                                       arg,
+                                                       return_default=True))
         # print(profile_args)
         # print(args)
     
@@ -130,7 +133,9 @@ def run_snakefile(args, config = {}):
     # run snakefile
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
-        get_snakefile_path(args.snakefile, pathlib.Path(NGS_PIPELINE_BASE) / 'rules'),
+        get_snakefile_path(
+            args.snakefile,
+            pathlib.Path(NGS_PIPELINE_BASE) / 'ngs_pipeline' / 'rules'),
         configfiles=configfiles,
         config=setup_config(config),
         dryrun=args.dryrun,

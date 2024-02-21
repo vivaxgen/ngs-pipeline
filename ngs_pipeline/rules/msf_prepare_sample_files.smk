@@ -1,7 +1,12 @@
+# msf_prepare_sample_files.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 import pathlib
 
-rule link_reads_se:
+rule msf_link_reads_se:
     localrule: True
     input:
         lambda w: read_files.get_read_file(w)
@@ -13,7 +18,8 @@ rule link_reads_se:
         src_file = pathlib.Path(input[0]).resolve()
         dest_file.symlink_to(src_file)
 
-rule link_reads_pe:
+
+rule msf_link_reads_pe:
     localrule: True
     input:
         lambda w: read_files.get_read_file(w)

@@ -1,3 +1,8 @@
+# msf_panel_genreport.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 
 rule gen_report:
@@ -16,7 +21,7 @@ rule gen_report:
 rule merge_report:
     localrule: True
     input:
-        expand(f'{outdir}/{{sample}}/genetic_report.tsv', sample=read_files.samples()))
+        expand(f'{outdir}/{{sample}}/genetic_report.tsv', sample=read_files.samples())
     output:
         f'{outdir}/merged_report.tsv'
     run:

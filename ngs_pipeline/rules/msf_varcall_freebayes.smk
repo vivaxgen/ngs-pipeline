@@ -1,3 +1,8 @@
+# msf_varcall_freebayes.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 # targeted variant calling with freebayes, for either panel or discovery setting
 
@@ -12,10 +17,10 @@
 rule freebayes:
     threads: 2
     input:
-        bam = "{pfx}/maps/sorted.bam",
-        idx = "{pfx}/maps/sorted.bam.bai"
+        bam = "{pfx}/{sample}/maps/sorted.bam",
+        idx = "{pfx}/{sample}/maps/sorted.bam.bai"
     output:
-        vcf = "{pfx}/vcfs/variants.vcf.gz",
+        vcf = "{pfx}/{sample}/vcfs/variants.vcf.gz",
     params:
         target = f'--target {target_variants}' if target_variants else '',
         monomorphic = '--report-monomorphic' if target_variants else '',

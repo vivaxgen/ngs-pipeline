@@ -1,3 +1,8 @@
+# msf_trimmer_lr.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 # params:
 # - min_read_qual
@@ -10,26 +15,26 @@
 rule plot_qc:
     threads: 2
     input:
-        raw = "{pfx}/reads/raw-{idx}.fastq.gz"
+        raw = "{pfx}/{sample}/reads/raw-{idx}.fastq.gz"
     output:
-        dir = directory("{pfx}/QC-{idx}/")
+        dir = directory("{pfx}/{sample}/QC-{idx}/")
     log:
-        err = "{pfx}/logs/nanoplot-{idx}.log"
+        err = "{pfx}/{sample}/logs/nanoplot-{idx}.log"
     shell:
         "NanoPlot -t 2 --fastq {input.raw} --outdir {output} 2> {log.err}"
 
 
-rule trim_reads:
+rule msf_trim_reads:
     threads: 4
     input:
-        raw = "{pfx}/reads/raw-{idx}.fastq.gz"
+        raw = "{pfx}/{sample}/reads/raw-{idx}.fastq.gz"
     output:
-        fastq = "{pfx}/trimmed_reads/trimmed-{idx}.fastq.gz"
+        fastq = "{pfx}/{sample}/trimmed_reads/trimmed-{idx}.fastq.gz"
     params:
         headcrop = f'--headcrop {headcrop}' if headcrop else '',
         tailcrop = f'--tailcrop {tailcrop}' if tailcrop else '',
     log:
-        err = "{pfx}/logs/chopper-{idx}.log"
+        err = "{pfx}/{sample}/logs/chopper-{idx}.log"
     shell:
         "gunzip -c {input} | chopper -t {threads} -q {min_read_qual} --minlength {min_read_len} --maxlength {max_read_len} "
         "{params.headcrop} {params.tailcrop} 2> {log.err}"

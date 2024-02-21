@@ -1,3 +1,8 @@
+# msf_params.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 from ngs_pipeline import cerr, fileutils
 
