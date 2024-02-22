@@ -11,9 +11,21 @@ For example, to see the available commands, execute::
 
 The available CMD are:
 
-prepare_sample-directory
+
+prepare-sample-directory
   Given a manifest file containing the sample codes and corresponding fastq files,
-  the tool will prepare the directory structure for further processing.
+  the command will prepare the directory structure for further processing.
+
+  The basic command is::
+
+    ngs-pl prepare-sample-directory -o OUTDIR -i MANIFEST_FILE INPUTDIR
+
+  OUTDIR is the target directory where sample directories will be created.
+  INPUTDIR is the source directory where the read files to be prepared are reside.
+  MANIFEST_FILE is a tab-delimited file with header of SAMPLE and FASTQ, for the sample
+  codes and their corresponding FASTQ files, respectively.
+
+  [TODO: provide example manifest file]
 
 
 run-sample-variant-caller
