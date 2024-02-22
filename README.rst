@@ -93,8 +93,8 @@ Steps to performed in setting-up ngs-pipeline are:
 For further information about setting up the pipeline, see the `tutorial <docs/tutorial.rst>`_.
 
 
-Multi-Step Mode Usage
------------------
+Multi-Step Mode Features
+------------------------
 
 The multi-step mode is developed to cater for incremental upstream processing
 with several batches of samples which requires fully-parallelized processing
@@ -116,16 +116,16 @@ Some features of the multi-step mode are:
 * Support for incremental upstream processing
   
   Incremental data processing is very common in research fields that produces
-  continuous batch of samples, such as ressearch related to molecular
-  surveillances.
+  continuous batch of samples, such as research related to molecular
+  surveillance.
   By using multiple steps in processing the data, results of any of the steps
   from previous batch can be used again with new batch of samples.
 
   For example, supposed there is initally a batch of samples needed to be
   processed.
   A user can run step-1, step-2 and step-3 to obtain final VCF files.
-  When a new batch of samples is needed to be processed, the user will only
-  need run step-1 and step-2 to the new batch.
+  When a new batch of samples is needed to be processed, the user will need
+  to run only step-1 and step-2 to the new batch.
   Then, the user can perform step-3 by combining the results of step-2 of the
   previous batch and the new batch, to obtain the final VCF files from both
   batches.
@@ -134,14 +134,14 @@ Some features of the multi-step mode are:
 
 * Support for fully-parallelized processing
 
-* Support for troubleshotting errors
+* Support for troubleshooting errors
 
-  With separate steps, any errors can be troubleshooted prior to the next step,
-  hence lessening the trouble-shotting process.
+  With separate steps, any errors can be troubleshot prior to the next step,
+  hence lessening the troubleshooting process.
 
 
-Single-Step Mode Usage
------------------
+Single-Step Mode Features
+-------------------------
 
 The single-step mode is provided for those that require simpler workflow for
 upstream processing, such as panel variant calling (variant calling with
