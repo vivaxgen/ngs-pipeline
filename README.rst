@@ -82,15 +82,15 @@ with reference sequences and any other settings before it can be run properly.
 
 Steps to performed in setting-up ngs-pipeline are:
 
- 1. Create a base environemnt directory
+1. Create a base environemnt directory
 
- 2. Generate activation script in the base working directory
+2. Generate and edit activation script in the base working directory
 
- 3. Prepare reference sequence, region files and other necessary files
+3. Prepare reference sequence, region files and other necessary files
 
- 4. Create a YAML-based configuration file, with proper values for each parameter
+4. Create a YAML-based configuration file, with proper values for each parameter
 
- For further information about setting up the pipeline, see the `tutorial <docs/tutorial.rst>`_.
+For further information about setting up the pipeline, see the `tutorial <docs/tutorial.rst>`_.
 
 
 Multi-Step Mode Usage
