@@ -62,7 +62,7 @@ The following are step-by-step instructions to in setting up the environment:
       ngs-pl generate-config-file -o $BASEDIR/config.yaml
 
 8.  Edit the config file as necessary following the comments and notes in
-    config file.
+    config file::
 
       vim $BASEDIR/config.yaml
 
@@ -77,10 +77,51 @@ The following are step-by-step instructions to in setting up the environment:
 Running the Multi-Step Mode
 ---------------------------
 
-* Activate the environment by sourcing the activation script::
+#.  Open a new shell, and activate the environment by sourcing the activation
+    script::
 
-	$ source BASEDIR/activate.sh
-	
+	  source /data/Pvivax/activate.sh
+
+#.  Enter the directory for containing data sets, and create a new directory,
+    and enter to the new directory::
+
+      cd /data/Pvivax/sets
+      mkdir my-tutorial
+      cd my-tutorial
+
+#.  Create a directory to hold the FASTQ read files::
+
+	  mkdir reads
+
+#.  Download read files related to 2 *P. vivax* sequence data from ENA (note
+    that for working with public SRA read files, consider using
+    `SRA-Repo <https://github.com/vivaxgen/sra-repo>`_ to manage and
+    automatically download the read files)::
+
+      wget [url]
+
+
+#.  Generate a manifest file from the read files::
+
+      ngs-pl generate-manifest-file -o manifest.tsv reads/*.fastq.gz
+
+#.  Edit the manifest file as necessary, such as changing the sample code.
+
+#.  Run the sample directory preparation step (step-1)::
+
+      ngs-pl prepare-sample-directory -o analysis -i manifest.tsv reads/
+
+#.  Check for errors or warnings from the command.
+
+#.  Run the sample variant-calling step (step-2)::
+
+      ngs-pl run-sample-variant-caller analysis
+
+#.  Run the joint variant-calling step (step-3)::
+
+      ngs-pl run-joint-variant-caller -o joint analysis/
+
+#.  Check the final VCF files in ``joint/vcfs`` directory.
 
 
 Running the Single-Step Mode
