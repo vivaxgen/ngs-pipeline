@@ -159,4 +159,4 @@ The Python modules and the snakemake files in the ngs-pipeline can also be impor
 by other custom Python scripts and/or snakemake files.
 
 To learn more about extending the pipeline or developing custom pipeline based
-on ngs-pipeline, see 'documentation <docs/extending.rst>'_.
+on ngs-pipeline, see `documentation <docs/extending.rst>`_.
