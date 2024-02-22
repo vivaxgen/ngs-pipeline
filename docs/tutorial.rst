@@ -30,36 +30,48 @@ and directory names.
 
 The following are step-by-step instructions to in setting up the environment:
 
- 1. Activate the vivaxGEN NGS-Pipeline environment by running its activation
+1.  Activate the vivaxGEN NGS-Pipeline environment by running its activation
     script, as noted after the automatic installation finished, eg::
 
       source NGS-PIPELINE_INSTALL_DIR/activate.sh
 
- 2. Create the base working directory, eg: ``/data/Pvivax``::
+2.  Create the base working directory, eg: ``/data/Pvivax``::
 
       export BASEDIR=/data/Pvivax
 	  mkdir $BASEDIR
 
- 3. Generate activation script from the base directory::
+3.  Generate activation script from the base directory::
 
       ngs-pl generate-activation-script -o $BASEDIR/activate.sh
 
- 4. Edit the activation script as necessary, following the comments and notes
+4.  Edit the activation script as necessary, following the comments and notes
     in the activation script::
 
       vim $BASEDIR/activate.sh
 
- 5. Prepare reference directory and populate the directory as necessary::
+5.  Activate the new activation script::
+
+      source $BASEDIR/activate.sh
+
+6.  Prepare reference directory and populate the directory as necessary::
 
       mkdir $BASEDIR/refs
 
-
- 6. Copy config file templates::
+7.  Copy config file templates::
 
       ngs-pl generate-config-file -o $BASEDIR/config.yaml
 
- 7. Edit the config file as necessary following the comments and notes in
+8.  Edit the config file as necessary following the comments and notes in
     config file.
+
+      vim $BASEDIR/config.yaml
+
+9.  Check the configuration file::
+
+      ngs-pl check-config-file $BASEDIR/config.yaml
+
+    Fix any errors by editing the config.yaml, and then rerun the checking
+    command until no more errors are reported.
 
 
 Running the Multi-Step Mode
