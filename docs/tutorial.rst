@@ -38,7 +38,7 @@ The following are step-by-step instructions to in setting up the environment:
 2.  Create the base working directory, eg: ``/data/Pvivax``::
 
       export BASEDIR=/data/Pvivax
-	  mkdir $BASEDIR
+      mkdir $BASEDIR
 
 3.  Generate activation script from the base directory::
 
