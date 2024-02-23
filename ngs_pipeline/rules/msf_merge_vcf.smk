@@ -7,12 +7,15 @@ __license__ = "MIT"
 
 rule merge_vcfs:
     input:
-        expand(f'{outdir}/{{sample}}/vcfs/variants.vcf.gz',
-               sample=read_files.samples())
+        vcfs = expand(f'{outdir}/{{sample}}/vcfs/variants.vcf.gz',
+                      sample=read_files.samples()),
+        idx = expand(f'{outdir}/{{sample}}/vcfs/variants.vcf.gz.csi',
+                     sample=read_files.samples()),
+
     output:
         vcf = '{outdir}/merged.vcf.gz'
     shell:
-        "bcftools merge -o {output.vcf} {input}"
+        "bcftools merge -o {output.vcf} {input.vcfs}"
 
 
 # EOF
