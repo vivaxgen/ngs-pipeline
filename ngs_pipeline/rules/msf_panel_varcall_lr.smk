@@ -7,6 +7,7 @@ __license__ = "MIT"
 from ngs_pipeline import cerr
 
 cerr('Running: msf_panel_varcall_lr.smk')
+cerr(f'Output directory: {outdir}')
 
 include: "utilities.smk"
 include: "msf_params.smk"
@@ -31,14 +32,12 @@ include: "msf_varcall_freebayes.smk"
 include: "msf_panel_genreport.smk"
 
 
-def get_output_file(w):
-    cerr(f'Output directory: {outdir}')
-    #return [f'{outdir}/{sample}/vcfs/variants.vcf.gz.csi' for sample in read_files.keys()]
+def get_individual_output_file(w):
     return [f'{outdir}/{sample}/vcfs/variants.vcf.gz' for sample in read_files.samples()]
 
 
 rule all:
     input:
-        get_output_file
+        f'{outdir}/merged.vcf.gz'
 
 # EOF
