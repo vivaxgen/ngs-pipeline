@@ -20,11 +20,13 @@ The recommended structure of the base working directory is::
     BASEDIR/
             activate.sh
             config.yaml
+            configs/
             refs/
             sets/
 
-Note that only ``config.yaml`` is the mandatory name to be used for the config
-file, while the rest of the file and directory names can be anything.
+Note that only ``config.yaml`` and ``configs`` are the mandatory name to be
+used for the config file and directory, while the rest of the file and
+directory names can be anything.
 However, for consistency purposes, it is recommended to use the above file
 and directory names.
 
