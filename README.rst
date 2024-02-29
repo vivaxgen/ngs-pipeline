@@ -10,18 +10,22 @@ targeted-sequencing data from paired-end short reads or singleton long reads NGS
 Quick Overview
 --------------
 
-The vivaxGEN NGS-Pipeline was developed to cater the need to do upstream processing for
-sequencing data produced within vivaxGEN project.
-The pipeline uses snakemake for its workflow system and relies on micromamba to provide
-its dependencies.
+The vivaxGEN NGS-Pipeline was developed to cater the need to do upstream
+processing for sequencing data produced within vivaxGEN project.
+The pipeline uses snakemake for its workflow system and relies on micromamba to
+provide its dependencies.
+The micromamba dependencies is provided using mechanism as described in this
+`repo <https://github.com/vivaxgen/install>`_.
 
 There are two modes of working with the pipeline:
 
 * multi-step mode
 
-  The 3-step mode allows users to process samples in batches or incrementally in consistent ways, which is suitable for processing high number of samples from WGS experiments.
+  The multi-step mode allows users to process samples incrementally from
+  different sample batches in consistent ways, and is suitable for processing
+  high number of samples from WGS experiments.
 
-  The steps are:
+  The minimal steps are:
 
   1.  Preparing sample directory structure
 
@@ -108,7 +112,7 @@ the majority of the processing time and storage space.
 
 Some features of the multi-step mode are:
 
-* Support for flexible configuration
+* Flexible configuration
 
   The pipeline can be configured based on different data sets, different sample
   batch, and even to individual samples. It employs cascading configuration
@@ -135,7 +139,11 @@ Some features of the multi-step mode are:
   Hence, the user only needs to run step-2 on samples from the new batch, which
   would decrease the time and storage space needed.
 
-* Support for fully-parallelized processing
+* Fully-parallelized processing
+
+  The pipeline will try to distribute the process across available cores, or
+  available nodes if run under a cluster system with suitable job scheduler
+  such as slurm.
 
 * Support for troubleshooting errors
 
