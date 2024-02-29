@@ -105,7 +105,9 @@ def get_mode(filename, mode):
     return mode
 
 
-def is_abs_or_rel_path(filepath: str):
+def is_abs_or_rel_path(filepath: str | pathlib.Path):
+    filepath = (filepath.as_posix() if isinstance(filepath, pathlib.Path)
+                else filepath)
     if (
         filepath.startswith('/')
         or filepath.startswith('./')
