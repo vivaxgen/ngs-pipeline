@@ -14,7 +14,7 @@ The vivaxGEN NGS-Pipeline was developed to cater the need to do upstream
 processing for sequencing data produced within vivaxGEN project.
 The pipeline uses snakemake for its workflow system and relies on micromamba to
 provide its dependencies.
-The micromamba dependencies is provided using mechanism as described in this
+The micromamba dependencies is arranged using mechanism as described in this
 `repo <https://github.com/vivaxgen/install>`_.
 
 There are two modes of working with the pipeline:
