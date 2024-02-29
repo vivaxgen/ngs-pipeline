@@ -116,9 +116,9 @@ Some features of the multi-step mode are:
 
   The pipeline can be configured based on different data sets, different sample
   batch, and even to individual samples. It employs cascading configuration
-  feature, a mechanism where the configuration files are read, if exist, from
-  base environment directory down to the sample directory, with configuration
-  closer to the sample directory taking precedence.
+  feature, a mechanism where the configuration files named ``config.yaml`` are
+  read, if exist, from base environment directory down to the sample directory,
+  with configuration closer to the sample directory taking precedence.
 
 * Support for incremental upstream processing
   
