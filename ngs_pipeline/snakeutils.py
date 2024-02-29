@@ -43,6 +43,9 @@ def init_argparser(desc, p=None):
                                           help='target rule in the snakefile [all]')
     p.arg_dict['snakefile'] = p.add_argument('--snakefile', default=None,
                                              help='snakemake file to be called')
+    p.add_argument('--base-config', default=None,
+                   help='path for base configuration file, relative to '
+                   'base environment directory')
     p.add_argument('-c', '--config', default=[], action='append',
                    help='config file(s) to append')
     p.add_argument('-f', '--force', default=False, action='store_true',
@@ -54,8 +57,9 @@ def init_argparser(desc, p=None):
     return p
 
 
-def run_snakefile(args, config = {}):
-    """ exeute snakefile based on args"""
+def run_snakefile(args, config = {}, workdir=None,
+                  show_configfiles=False):
+    """ execute snakefile based on args """
 
     import snakemake
     import yaml
@@ -69,7 +73,7 @@ def run_snakefile(args, config = {}):
 
     # check sanity
 
-    cwd = pathlib.Path.cwd()
+    cwd = workdir or pathlib.Path.cwd()
     if not args.force and not cwd.is_relative_to(NGSENV_BASEDIR):
         cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
 
@@ -88,6 +92,9 @@ def run_snakefile(args, config = {}):
                 configfiles.append(configfile)
             config_path = config_path.parent
 
+    if args.base_config:
+        configfiles.append(NGSENV_BASEDIR / 'configs' / args.base_config)
+
     if not any(configfiles):
         cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
 
@@ -95,9 +102,8 @@ def run_snakefile(args, config = {}):
 
     if args.showconfigfiles:
         cerr('Config files to read:')
-        cerr(yaml.dump(configfiles))
+        cerr(yaml.dump([cf.as_posix() for cf in configfiles]))
         cexit('\n')
-
 
     # for profile purposes
 
@@ -151,6 +157,10 @@ def run_snakefile(args, config = {}):
         targets=[args.target],
     )
     finish_time = datetime.datetime.now()
+
+    if show_configfiles:
+        cerr('Config files read are:')
+        cerr(yaml.dump([cf.as_posix() for cf in configfiles]))
 
     return (status, finish_time - start_time)
 

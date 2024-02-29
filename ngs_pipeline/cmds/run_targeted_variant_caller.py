@@ -30,7 +30,11 @@ def init_argparser():
 
     # input/output options
     p.add_argument('-u', '--underscore', default=0, type=int,
-                   help='number of undercore character to be stripped, counted in reverse')
+                   help='number of undercore character to be stripped, '
+                   'counted in reverse')
+
+    p.add_argument('-p', '--panel', default=None,
+                   help='panel to be used')
 
     p.add_argument('-o', '--outdir', default='analysis',
                    help='directory for output [analysis/]')
@@ -47,6 +51,10 @@ def run_targeted_variant_caller(args):
         args.snakefile = os.environ.get('DEFAULT_SNAKEFILE', None)
         if args.snakefile:
             cerr(f'Obtaining snakefile from SNAKEFILE environment: {args.snakefile}')
+
+    # get panel configuration and set as base configuration from configs/
+    if args.panel:
+        args.base_config = args.panel + '.yaml'
 
     config = dict(
         infiles=args.infiles,
