@@ -12,12 +12,15 @@ def init_argparser():
 
 def run_snakefile(args, config: dict = {}):
 
-    status, elapsed_time = snakeutils.run_snakefile(args,
-                                                    config=setup_config(config))
+    status, elapsed_time = snakeutils.run_snakefile(
+        args,
+        config=setup_config(config)
+    )
 
     if not status:
-        cerr('[WARNING: targeted variant calling did not successfully complete]')
-    cerr(f'[Finish targeted variant calling (time: {elapsed_time})]')
+        cerr(f'[WARNING: snakefile {args.snakefile} did not successfully '
+             'complete]')
+    cerr(f'[Finish running snakefile {args.snakefile} (time: {elapsed_time})]')
 
 
 def main(args):
