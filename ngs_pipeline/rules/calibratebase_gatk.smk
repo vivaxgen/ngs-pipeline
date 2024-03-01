@@ -12,7 +12,7 @@ rule gatk_baserecalibrator:
         "logs/gatk-BaseRecalibrator-{reg}.log"
     params:
         sample = sample,
-        known = f"--known-sites {knownsites_file}",
+        known = f"--known-sites {knownvariants_dir}/{{reg}}.bed.gz",
         region_opts = '-L {reg}',
     shell:
         "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input} -O {output} 2>{log}"

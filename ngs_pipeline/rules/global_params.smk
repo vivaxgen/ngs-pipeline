@@ -7,6 +7,7 @@ include: "general_params.smk"
 
 refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
 knownsites_file = ngsenv_basedir + '/' + config.get('knownsites_file', '')
+knownvariants_dir = ngsenv_basedir + '/' + config.get('knownvariants_dir', '')
 
 deduplicate = config.get('deduplicate', True)
 
