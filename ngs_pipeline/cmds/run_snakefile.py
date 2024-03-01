@@ -5,8 +5,8 @@ from ngs_pipeline import (cerr, cexit, arg_parser,
                           get_snakefile_path, setup_config, snakeutils)
 
 
-def init_argparser():
-    p = snakeutils.init_argparser(desc='run arbitrary snakefile')
+def init_argparser(desc=None):
+    p = snakeutils.init_argparser(desc=desc or 'run arbitrary snakefile')
     return p
 
 
