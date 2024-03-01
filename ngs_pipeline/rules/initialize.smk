@@ -6,6 +6,9 @@ __license__ = "MIT"
 
 # prepares files for usage
 
+# put possibly empty variables so snakemake will not complain
+refseq=''
+refmap=''
 
 # include utilites.smk and general_params.smk from vivaxGEN ngs-pipeline
 include: "utilities.smk"
