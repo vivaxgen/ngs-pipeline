@@ -68,7 +68,7 @@ rule index_bwamem2:
     output:
         index = "{pfx}/{fn}.fasta.bwt.2bit.64"
     shell:
-        "bwa=mem2 index {input.fasta}"
+        "bwa-mem2 index {input.fasta}"
 
 
 rule bunzip2:
