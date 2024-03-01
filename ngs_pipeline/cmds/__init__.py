@@ -53,7 +53,7 @@ def list_commands():
     cmd_files = []
     for  module in get_command_modules():
         M = importlib.import_module(module)
-        cmd_directory = pathlib.Path(M.__file__).parent
+        cmd_directory = pathlib.Path(M.__path__[0])
         cmd_files += cmd_directory.iterdir()
     cmds = set(
         [p.name.removesuffix('.py').replace('_', '-') for p in cmd_files]
