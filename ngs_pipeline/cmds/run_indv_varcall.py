@@ -20,30 +20,15 @@ from ngs_pipeline import cerr, cexit, snakeutils
 
 # usage: run_varcall.py
 
-def init_argparser_XXX():
-    p = arg_parser(desc='run varcalling pipeline')
-    p.add_argument('-j', type=int, default=72)
-    p.add_argument('--dryrun', default=False, action='store_true')
-    p.add_argument('--showcmds', default=False, action='store_true')
-    p.add_argument('--unlock', default=False, action='store_true')
-    p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('--touch', default=False, action='store_true',
-                   help='touch all output files, to avoid re-running the ngs-pipeline '
-                   'such as after modifying/debugging snakemake file')
-    p.add_argument('--snakefile', default='var_call.smk',
-                   help='snakemake file to be run [var_call.smk]')
-    p.add_argument('target')
-    p.add_argument('sampledir')
-    return p
-
 def init_argparser():
     p = snakeutils.init_argparser(desc='run individual sample variant caller')
     p.arg_dict['snakefile'].choices = ['var_call.smk']
     p.arg_dict['snakefile'].default = 'var_call.smk'
     p.add_argument('target')
-    p.add_argument('sammple')
+    p.add_argument('sample')
 
     return p
+
 
 def run_indv_varcall(args):
 
