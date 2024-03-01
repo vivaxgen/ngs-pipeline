@@ -39,11 +39,16 @@ def init_argparser():
     p.add_argument('--touch', default=False, action='store_true',
                    help='touch all output files, to avoid re-running the ngs-pipeline '
                    'such as after modifying/debugging snakemake file')
+    p.add_argument('--force', default=False, action='store_true',
+                   help='force running the process outside the NGSENV_BASEDIR')
+    p.add_argument('--no-config-cascade', default=False, action='store_true',
+                   help='prevent from doing cascading configuration')
     p.add_argument('--snakefile', default=None, choices=['var_call.smk', 'var_call_ont.smk'],
                    help='snakemake file to be run (or from VARCALL_SMK env) [var_call.smk]')
     p.add_argument('--target', choices=['all', 'mapping', 'clean'],
-                   help="target of snakemake module, use 'all' for GATK joint variant "
-                   "or 'mapping' for FreeBayes joint variant call")
+                   default='all',
+                   help="target of snakemake module, use 'all' for GATK joint "
+                   "variant or 'mapping' for FreeBayes joint variant call")
     p.add_argument('indirs', nargs='+',
                    help="directory(ies) containing the sample directory")
     return p
@@ -102,7 +107,7 @@ def run_sample_variant_caller(args):
             cexit(f'[ERROR: directory {indir} does not exist]')
 
         # check whether indir is under NGSENV_BASEDIR
-        if not indir.resolve().is_relative_to(NGSENV_BASEDIR):
+        if not (args.force or indir.resolve().is_relative_to(NGSENV_BASEDIR)):
             cexit(f'[ERROR: {indir} is not relative to {NGSENV_BASEDIR}]')
 
         curr_samples = [s.as_posix() for s in indir.iterdir() if s.is_dir()]
@@ -135,6 +140,8 @@ def run_sample_variant_caller(args):
             f'{"--touch" if args.touch else ""} '
             f'{"--showcmds" if args.showcmds else ""} '
             f'{"--showconfigfiles" if args.showconfigfiles else ""} '
+            f'{"--force" if args.force else ""} '
+            f'{"--no-config-cascade" if args.no_config_cascade else ""} '
             f'--snakefile {args.snakefile} '
             f'{args.target}',
             ':::'
