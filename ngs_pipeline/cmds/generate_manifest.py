@@ -32,6 +32,12 @@ def init_argparser():
     p.add_argument('-u', '--underscore', type=int, default=0,
                    help='no of consecutive underscore to be stripped from filenames '
                    'to form sample code, counted in reverse')
+
+    p.add_argument('--pause', type=int, default=0,
+                   help='pause (in seconds) before back to shell prompt, '
+                   'useful for automatic or batch processing so users can '
+                   'double check the sample names')
+
     p.add_argument('infiles', nargs='+')
     return p
 
@@ -78,7 +84,16 @@ def generate_manifest(args):
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     df.to_csv(args.outfile, sep='\t', index=False)
 
+    # print at least 5 rows
+    cerr('[Showing snippets of sample(s):]')
+    cerr(str(df))
+
     cerr(f'[Writing {len(df)} sample manifest to {args.outfile}]')
+
+    if args.pause > 0:
+        import time
+        cerr(f'[Pausing for {args.pause} second(s) for manual inspection]')
+        time.sleep(args.pause)
 
 
 def main(args):
