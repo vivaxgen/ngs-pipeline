@@ -24,6 +24,7 @@ rule reads_mapping:
     output:
         bam = "maps/mapped-{idx}.bam" if keep_paired_bam else temp("maps/mapped-{idx}.bam"),
     log:
+        log0 = f"logs/reads_mapping-{sample}-{{idx}}.log",
         log1 = "logs/bwa-mem2-{idx}.log",
         log2 = "logs/filter-reads-{idx}.json",
         log3 = "logs/filter_reads_region-{idx}.log",
