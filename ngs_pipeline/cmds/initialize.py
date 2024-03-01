@@ -17,7 +17,8 @@ from ngs_pipeline.cmds import run_snakefile
 
 def init_argparser():
 
-    p = run_snakefile.init_argparser('prepare and initialize all reuiqred files and settings')
+    p = run_snakefile.init_argparser(
+        'prepare and initialize all required files and settings')
     return p
 
 
