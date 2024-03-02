@@ -30,13 +30,15 @@ def init_argparser():
                    help='fastq files are paired such as Illumina paired-end reads')
 
     p.add_argument('-u', '--underscore', type=int, default=0,
-                   help='no of consecutive underscore to be stripped from filenames '
-                   'to form sample code, counted in reverse')
+                   help='number of consecutive underscore to be stripped from'
+                   'filenames to form sample code, counted in reverse')
 
     p.add_argument('--pause', type=int, default=0,
                    help='pause (in seconds) before back to shell prompt, '
                    'useful for automatic or batch processing so users can '
                    'double check the sample names')
+    p.add_argument('--ask-confirmation', default=False, action='store_true',
+                   help='ask confirmation to continue saving to output file')
 
     p.add_argument('infiles', nargs='+')
     return p
@@ -87,13 +89,20 @@ def generate_manifest(args):
     # print at least 5 rows
     cerr('[Showing snippets of sample(s):]')
     cerr(str(df))
-
-    cerr(f'[Writing {len(df)} sample manifest to {args.outfile}]')
+    cerr('If the sample code is not correct, try to use option --underscore')
 
     if args.pause > 0:
         import time
         cerr(f'[Pausing for {args.pause} second(s) for manual inspection]')
+        cerr(['Press CTRL-C to abort saving the output file'])
         time.sleep(args.pause)
+    
+    if args.ask_confirmation:
+        resp = input(f'Continue saving to {args.outfile} [y/n]: ')
+        if resp.lower().strip()[0] != 'y':
+            return
+
+    cerr(f'[Writing {len(df)} sample manifest to {args.outfile}]')
 
 
 def main(args):
