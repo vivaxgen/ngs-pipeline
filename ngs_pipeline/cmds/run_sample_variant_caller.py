@@ -60,6 +60,7 @@ def run_sample_variant_caller(args):
     import subprocess
     import time
     import datetime
+    import getpass
 
     # check for number of jobs from environment
     if args.j < 0:
@@ -83,7 +84,7 @@ def run_sample_variant_caller(args):
     cerr(f'Snakefile to be run: {args.snakefile}')
 
     # set up joblog filename
-    default_joblog = os.getlogin() + '-run-' + time.strftime("%y%m%d-%H%M") + '.log'
+    default_joblog = getpass.getuser() + '-run-' + time.strftime("%y%m%d-%H%M") + '.log'
     if args.joblog:
         if (jobpath := pathlib.Path(args.joblog)).is_dir():
             args.joblog = jobpath / default_joblog
