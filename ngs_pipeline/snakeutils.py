@@ -43,9 +43,13 @@ def init_argparser(desc, p=None):
                                           help='target rule in the snakefile [all]')
     p.arg_dict['snakefile'] = p.add_argument('--snakefile', default=None,
                                              help='snakemake file to be called')
+
+    # configuration files
     p.add_argument('--base-config', default=None,
                    help='path for base configuration file, relative to '
                    'base environment directory')
+    p.add_argument('-p', '--panel', default=None,
+                   help='panel to be used (eg. PANEL -> configs/PANEL.yaml as base config)')
     p.add_argument('-c', '--config', default=[], action='append',
                    help='config file(s) to append')
     p.add_argument('-f', '--force', default=False, action='store_true',
@@ -68,8 +72,13 @@ def run_snakefile(args, config = {}, workdir=None,
     if not args.snakefile:
         cexit('ERR: Please provide snakefile to ecexute using --snakefile argument.')
 
+    # getting values from environment
     NGS_PIPELINE_BASE = check_NGS_PIPELINE_BASE()
     NGSENV_BASEDIR = pathlib.Path(check_NGSENV_BASEDIR())
+    if 'NGS_PIPELINE_FORCE' in os.environ:
+        args.force = True
+    if 'NGS_PIPELINLE_NO_CONFIG_CASCADE' in environ:
+        args.no_config_cascade = True
 
     # check sanity
 
@@ -92,8 +101,12 @@ def run_snakefile(args, config = {}, workdir=None,
                 configfiles.append(configfile)
             config_path = config_path.parent
 
+    # get panel configuration and set as base configuration from configs/
+    if args.panel:
+        args.base_config = 'configs/' + args.panel + '.yaml'
+
     if args.base_config:
-        configfiles.append(NGSENV_BASEDIR / 'configs' / args.base_config)
+        configfiles.append(NGSENV_BASEDIR / args.base_config)
 
     if not any(configfiles):
         cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
@@ -165,5 +178,3 @@ def run_snakefile(args, config = {}, workdir=None,
     return (status, finish_time - start_time)
 
 # EOF
-
-    
