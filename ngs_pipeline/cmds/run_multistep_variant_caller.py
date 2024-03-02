@@ -31,7 +31,7 @@ def init_argparser():
     return p
 
 
-def run_multistep_variant_valler(args):
+def run_multistep_variant_caller(args):
 
     import ngs_pipeline
     from ngs_pipeline import get_snakefile_path, snakeutils
@@ -56,6 +56,6 @@ def run_multistep_variant_valler(args):
 
 
 def main(args):
-    run_multistep_variant_valler(args)
+    run_multistep_variant_caller(args)
 
 # EOF
