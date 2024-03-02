@@ -94,7 +94,7 @@ def generate_manifest(args):
     if args.pause > 0:
         import time
         cerr(f'[Pausing for {args.pause} second(s) for manual inspection]')
-        cerr(['Press CTRL-C to abort saving the output file'])
+        cerr('[Press CTRL-C to abort saving the output file]')
         time.sleep(args.pause)
     
     if args.ask_confirmation:
