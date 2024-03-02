@@ -1,4 +1,4 @@
-# discovery_variant_caller.smk - ngs-pipeline rules
+# multistep_variant_caller.smk - ngs-pipeline rules
 # [https://github.com/vivaxgen/ngs-pipeline]
 
 __copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"

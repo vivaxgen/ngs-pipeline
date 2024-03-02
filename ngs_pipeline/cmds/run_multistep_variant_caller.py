@@ -1,4 +1,4 @@
-# run_discovery_variant_caller.py - ngs-pipeline command
+# run_multistep_variant_caller.py - ngs-pipeline command
 # [https://github.com/vivaxgen/ngs-pipeline]
 
 __copyright__ = "(C) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
@@ -31,7 +31,7 @@ def init_argparser():
     return p
 
 
-def run_discovery_variant_valler(args):
+def run_multistep_variant_valler(args):
 
     import ngs_pipeline
     from ngs_pipeline import get_snakefile_path, snakeutils
@@ -43,7 +43,7 @@ def run_discovery_variant_valler(args):
     )
 
     args.snakefile = get_snakefile_path(
-        'discovery_variant_calling.smk',
+        'multistep_variant_calling.smk',
         from_module=ngs_pipeline
     )
 
@@ -56,6 +56,6 @@ def run_discovery_variant_valler(args):
 
 
 def main(args):
-    run_discovery_variant_valler(args)
+    run_multistep_variant_valler(args)
 
 # EOF
