@@ -77,7 +77,7 @@ def run_snakefile(args, config = {}, workdir=None,
     NGSENV_BASEDIR = pathlib.Path(check_NGSENV_BASEDIR())
     if 'NGS_PIPELINE_FORCE' in os.environ:
         args.force = True
-    if 'NGS_PIPELINLE_NO_CONFIG_CASCADE' in environ:
+    if 'NGS_PIPELINLE_NO_CONFIG_CASCADE' in os.environ:
         args.no_config_cascade = True
 
     # check sanity
