@@ -39,6 +39,8 @@ def scan_directory_and_move(a_directory: str | pathlib.Path,
     unknown = []
     for sample_dir in a_directory.iterdir():
         sample_path = pathlib.Path(sample_dir)
+        if not sample_path.is_dir():
+            continue
         if (sample_path / '.completed').is_file():
             completed += 1
         elif (sample_path / '.uncompleted').is_file():
