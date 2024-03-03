@@ -52,11 +52,22 @@ rule run_sample_variant_caller:
         '--target all {outdir}/analysis '
         '&& touch {output}'
 
+rule run_check_sample_variant_result:
+    localrule: True
+    input:
+        f'{outdir}/analysis/._completed_'
+    output:
+        f'{outdir}/analysis/._checked_',
+        f'{outdir}/failed_samples/._completed_'
+    shell:
+        'ngs-pl move-failed-samples -o {outdir}/failed_samples {outdir}/analysis/ '
+        '&& touch {output[0]} && touch {output[1]}'
+
 
 rule run_joint_variant_caller:
     localrule: True
     input:
-        f'{outdir}/analysis/._completed_'
+        f'{outdir}/analysis/._checked_'
     output:
         f'{outdir}/joint/._completed_'
     shell:
