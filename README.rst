@@ -52,6 +52,12 @@ There are two modes of working with the pipeline:
 
         ngs-pl run-joint-variant-caller -o OUTPUT_DIR DIRECTORY_1 [DIRECTORY_2 ...]
 
+  There is a special command ``run-multistep-variant-caller`` that will
+  execute the above commands consecutively and can be used if there is only
+  one sample batch.
+  However it is advised to perform the above commands manually if the sample
+  set is big or there are several sample batches.
+
 * single-step mode
 
   A single-step mapping/variant-calling suitable for targeted sequencing, such as panel and
