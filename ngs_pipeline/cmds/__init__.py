@@ -22,12 +22,14 @@ def run_main(args):
     command = args[0].replace('-', '_')
     for module in get_command_modules():
         try:
-            M = importlib.import_module(f'{module}.{command}')
+            module_name = f'{module}.{command}'
+            M = importlib.import_module(module_name)
             break
         except ModuleNotFoundError as err:
-            pass
+            if err.name != module_name:
+                raise
     else:
-        cexit(f'Command: {args[0]} does not exist!')
+        cexit(f'Command: {args[0]} does not exist! Please check with "ngs-pl showcmds".')
 
     cerr(f'Executing: {M.__file__}')
     parser = M.init_argparser()
