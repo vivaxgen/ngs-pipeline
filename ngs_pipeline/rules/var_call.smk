@@ -35,6 +35,7 @@ rule all:
     input:
         get_final_file,
         'logs/mapped-final.stats.txt',
+        'logs/mapped-final.depth-base.tsv.gz',
         'logs/stats.tsv',
         'logs/depths.png'
 
@@ -54,6 +55,7 @@ include: config.get('reads_trimmer_wf', 'trimmer_fastp.smk')
 include: config.get('reads_mapper_wf', 'mapper_bwa-mem2.smk')
 include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
 include: config.get('variant_caller_wf', 'varcall_gatk.smk')
+include: config.get('stats_wf', 'ssf_stats.smk')
 
 # the mapping process in this snakemake file is:
 # paired-maps -> proper-maps -> deduped-maps -> merged-maps
