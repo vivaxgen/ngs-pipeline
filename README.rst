@@ -83,6 +83,9 @@ will be installed.
 Make sure that the installation process finish successfully.
 Take a note of the directory where the pipeline is installed and the full path of its activation script.
 
+The installation takes about 5-15 minutes (depending on internet speed), and
+uses about 5-6 GB of storage.
+
 
 Overview of ngs-pipeline Setting Up
 -----------------------------------
