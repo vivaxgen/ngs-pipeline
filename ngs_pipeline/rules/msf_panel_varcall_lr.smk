@@ -44,4 +44,9 @@ rule all:
     input:
         f'{outdir}/merged.vcf.gz'
 
+rule merged_report:
+    input:
+        f'{outdir}/merged_genetic_report.xlsx'
+
+
 # EOF

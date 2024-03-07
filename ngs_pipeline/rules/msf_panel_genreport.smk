@@ -23,7 +23,7 @@ rule merge_report:
     input:
         expand(f'{outdir}/{{sample}}/genetic_report.tsv', sample=read_files.samples())
     output:
-        f'{outdir}/merged_report.tsv'
+        f'{outdir}/merged_genetic_report.tsv'
     run:
         import pandas as pd
 
@@ -42,9 +42,9 @@ rule merge_report:
 rule merge_report_xlsx:
     localrule: True
     input:
-        f'{outdir}/merged_report.tsv'
+        f'{outdir}/merged_genetic_report.tsv'
     output:
-        f'{outdir}/merged_report.xlsx'
+        f'{outdir}/merged_genetic_report.xlsx'
     run:
         import pandas as pd
 
