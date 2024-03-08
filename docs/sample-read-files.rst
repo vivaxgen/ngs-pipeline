@@ -46,7 +46,10 @@ directory, as follow:
 
     ngs-pl generate-links -o reads /DIR_1/*.fastq.gz /DIR_2/*.fastq.gz
 
-  Another feature from ``generate-links`` is the option ``--underscore`` that
+  Some commands in NGS-Pipeline require that the sample codes are used as the
+  filenames of the FASTQ files, eg. ``sample-123_R1.fastq.gz`` (for paired-end
+  input) or ``sample-ABC.fastq.gz`` (for single read input).
+  A feature from ``generate-links`` is the ``--underscore`` option that
   can be used in cases where the filenames of the read files contain more than
   the actual sample code.
   Some sequencing providers add the well number, or the lane number, or even
