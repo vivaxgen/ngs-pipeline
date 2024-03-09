@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = '2024.03.04'
+__version__ = '2024.03.10'
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
@@ -51,10 +51,26 @@ class SubCommands(object):
 
     def __init__(
         self,
-        module_env: str | None = None,
+
+        # list of Python module names to check for commands, eg:
+        # ['ngs_pipeline.cmds'] or ['seqpy.mds']
+        # the order implies precedence
         modules: list[str] = [],
+
+        # environment variable name to be used to get list of Python modules
+        # to check for commands, the order implies precedence
+        module_env: str | None = None,
+
+        # whether mdules named in env variable takes precedence
+        env_takes_precedence: bool = False,
+
+        # set true to allow running scripts located in any directory
         allow_any_script: bool = False,
+
+        # set true to allow for IPython shell
         allow_shell: bool = False,
+
+        # set for specific greet, usage and help functions
         greet_func: Callable | None = None,
         usage_func: Callable | None = None,
         help_func: Callable | None = None
@@ -70,7 +86,12 @@ class SubCommands(object):
         # set up module list
         self.modules = modules
         if module_env:
-            self.modules += [m for m in os.environ[module_env].split(':') if m]
+            module_envs = [m for m in os.environ.get(module_env, '').split(':')
+                           if m]
+            if env_takes_precedence:
+                self.modules = module_envs + self.modules
+            else:
+                self.modules += module_envs
 
     def autocomplete(self, tokens: list[str]):
 
@@ -126,6 +147,46 @@ class SubCommands(object):
             _cout(f'  {cmd}')
         sys.exit(0)
 
+    def run_main(
+        self,
+        main: Callable | None,
+        init_argparser: Callable | None,
+        args: list[str]
+    ):
+
+        if init_argparser is not None:
+            parser = init_argparser()
+            if not isinstance(parser, argparse.ArgumentParser):
+                _cexit('ERR: init_argparser() did not return ArgumentParser '
+                       'instance')
+            add_debug_to_parser(parser)
+
+            # perform bash autocompletion if needed
+            argcomplete.autocomplete(parser)
+
+            # if autocomplete does not exit:
+            args = parser.parse_args(args[1:])
+
+            if main is not None:
+                if args.debug:
+                    from ipdb import launch_ipdb_on_exception
+                    with launch_ipdb_on_exception():
+                        _cerr('WARN: running in debug mode')
+                        main(args)
+                else:
+                    main(args)
+            else:
+                _cexit('ERR: init_argparser() exists but main() does not')
+
+        elif main is not None:
+            import inspect
+            if 'args' in inspect.signature(main).parameters:
+                main(args=args)
+            else:
+                main()
+
+        # do nothing here
+
     def run_cmd(self, args: list[str]):
         """ this method will run module init_argparser() and main() """
 
@@ -143,29 +204,17 @@ class SubCommands(object):
                    f'Please check with "{self.prog_name} -l".')
 
         _cerr(f'Executing: {M.__file__}')
-        parser = M.init_argparser()
-        if not parser:
-            _cexit('Fatal ERR: init_argparser() does not return properly')
-        add_debug_to_parser(parser)
-
-        # perform bash autocompletion if needed
-        argcomplete.autocomplete(parser)
-
-        # if autocomplete does not exit:
-        args = parser.parse_args(args[1:])
-        if args.debug:
-            from ipdb import launch_ipdb_on_exception
-            with launch_ipdb_on_exception():
-                _cerr('WARN: running in debug mode')
-                M.main(args)
-        else:
-            M.main(args)
+        self.run_main(
+            getattr(M, 'main', None),
+            getattr(M, 'init_argparser', None),
+            args
+        )
 
     def run_script(self, args: list[str]):
         """ this method will run an arbitrary python script """
 
         path = args[0]
-        _cerr(f'Attempting to run script: {path}')
+        _cerr(f'Executing: {path}')
 
         # expand home directory
         if path.startswith('~'):
@@ -174,35 +223,12 @@ class SubCommands(object):
         with open(path) as fh:
             code = compile(fh.read(), path, 'exec')
             _l = {'__name__': '__anyscript_main__'}
-            exec(code, None, _l)
-            if 'main' in _l:
-                globals().update(_l)
-                main = _l['main']
-                if 'init_argparser' in _l:
-                    init_argparser = _l['init_argparser']
-                    p = init_argparser()
-                    if not isinstance(p, argparse.ArgumentParser):
-                        _cexit(
-                            'ERR: init_argparser() did not return '
-                            'ArgumentParser instance')
-                    add_debug_to_parser(p)
-
-                    argcomplete.autocomplete(p)
-                    argp = p.parse_args(args)
-
-                    if argp.debug:
-                        from ipdb import launch_ipdb_on_exception
-                        with launch_ipdb_on_exception():
-                            _cerr('WARN: running in debug mode')
-                            main(argp)
-                    else:
-                        main(argp)
-                else:
-                    import inspect
-                    if 'args' in inspect.signature(main).parameters:
-                        main(args=args)
-                    else:
-                        main()
+            exec(code, globals(), _l)
+            self.run_main(
+                _l.get('main', None),
+                _l.get('init_argparser', None),
+                args
+            )
 
     def main(self):
 
@@ -242,7 +268,7 @@ class SubCommands(object):
             # run script, with:
             #   path = cmd
             #   args = sys.argv[2:] (eg. 'my_prog my_script arg0 arg1')
-            self.run_script(cmd, sys.argv[2:])
+            self.run_script(tokens[1:] if any(tokens) else sys.argv[1:])
 
         else:
             self.run_cmd(tokens[1:] if any(tokens) else sys.argv[1:])
