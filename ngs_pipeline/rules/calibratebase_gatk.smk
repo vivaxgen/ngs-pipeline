@@ -5,7 +5,9 @@ rule gatk_baserecalibrator:
     # this rule generates calibration table from deduplicated bam file for each region
     threads: 1
     input:
-        'maps/mapped-final.bam'
+        bam = 'maps/mapped-final.bam',
+        # the following is for sanity check only
+        known = f'{knownvariants_dir}/{{reg}}.bed.gz',
     output:
         temp("maps/recal-{reg}.table")
     log:
@@ -15,7 +17,7 @@ rule gatk_baserecalibrator:
         known = f"--known-sites {knownvariants_dir}/{{reg}}.bed.gz",
         region_opts = '-L {reg}',
     shell:
-        "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input} -O {output} 2>{log}"
+        "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input.bam} -O {output} 2>{log}"
 
 
 rule gatk_gatherbsqr:

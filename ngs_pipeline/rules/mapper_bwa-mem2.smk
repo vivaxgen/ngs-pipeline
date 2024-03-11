@@ -20,7 +20,11 @@ rule reads_mapping:
     threads: thread_allocations.get('mapping', 16)
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
-        read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz"
+        read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz",
+        # the following is for sanity check purposes
+        refseq = refseq,
+        refmap = f"{refseq}.bwt.2bit.64",
+
     output:
         bam = "maps/mapped-{idx}.bam" if keep_paired_bam else temp("maps/mapped-{idx}.bam"),
     log:
