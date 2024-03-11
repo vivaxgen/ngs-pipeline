@@ -6,6 +6,9 @@ __license__ = "MIT"
 
 outdir = config['outdir']
 infiles = config['infiles']
+underscore = config.get('underscore', 0)
+singleton = config.get('singleton', False)
+paired_end = config.get('paired_end', False)
 
 include: 'utilities.smk'
 
@@ -43,11 +46,13 @@ rule generate_manifest:
     output:
         f'{outdir}/metafile/manifest.tsv'
     params:
-        underscore = config['underscore'],
+        underscore = f'--underscore {underscore}' if underscore else '',
+        singleton = '--single' if singleton else '',
+        paired_end = '--paired' if paired_end else '',
         infiles = ' '.join(infiles)
     shell:
-        'ngs-pl generate-manifest -o {output} -u {params.underscore} --pause 3 '
-        '{infiles} '
+        'ngs-pl generate-manifest -o {output} {params.underscore} --pause 3 '
+        '{params.singleton} {params.paired_end} --pause 3 {infiles}'
 
 
 rule run_prepare_sample_directory:
@@ -60,7 +65,7 @@ rule run_prepare_sample_directory:
         extra_opts = '--force'
     shell:
         'ngs-pl prepare-sample-directory {params.extra_opts} '
-        '-o {outdir}/analysis -i {input} .'
+        '-o {outdir}/analysis -i {input} . '
         '&& touch {output}'
 
 
