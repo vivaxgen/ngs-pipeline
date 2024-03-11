@@ -19,6 +19,14 @@ from ngs_pipeline import (cerr, cexit, arg_parser, get_snakefile_path,
 
 def init_argparser():
     p = snakeutils.init_argparser('run whole steps of discovery variant caller')
+
+    # file input arguments, similar to generate-manifest command
+    m = p.add_mutually_exclusive_group()
+    m.add_argument('--single', default=False, action='store_true',
+                   help='fastq files are single (non-paired) such as ONT reads')
+    m.add_argument('--paired', default=False, action='store_true',
+                   help='fastq files are paired such as Illumina paired-end reads')
+
     p.add_argument('-u', '--underscore', type=int, default=0,
                    help='no of consecutive underscore to be stripped from '
                    'filenames to form sample code, counted in reverse')
@@ -38,6 +46,8 @@ def run_multistep_variant_caller(args):
     
     config=dict(
         underscore=args.underscore,
+        singleton=args.single,
+        paired_end=args.paired,
         outdir=args.outdir,
         infiles=args.infiles,
     )
