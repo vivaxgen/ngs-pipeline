@@ -16,6 +16,7 @@ include: 'utilities.smk'
 rule all:
     input:
         f'{outdir}/concatenated.vcf.gz.tbi',
+        f'{outdir}/stats.tsv',
         f'{outdir}/reports/._completed_',
 
 
@@ -80,6 +81,7 @@ rule run_sample_variant_caller:
         '--target all {outdir}/analysis '
         '&& touch {output}'
 
+
 rule run_check_sample_variant_result:
     localrule: True
     input:
@@ -112,6 +114,16 @@ rule concat_vcfs:
         f'{outdir}/concatenated.vcf.gz'
     shell:
         'bcftools concat -o {output} {outdir}/joint/vcfs/*.vcf.gz'
+
+
+rule gather_stats:
+    localrule: True
+    input:
+        f'{outdir}/analysis/._checked_'
+    output:
+        f'{outdir}/stats.tsv'
+    shell:
+        'ngs-pl gather-stats -o {output} {outdir}/analysis'
 
 
 rule consolidate_depth_base:
