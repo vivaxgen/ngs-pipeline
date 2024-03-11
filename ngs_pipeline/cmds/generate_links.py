@@ -22,8 +22,16 @@ def init_argparser():
     p = arg_parser(desc='generate symbolic links for each of input files')
     p.add_argument('-o', '--outdir', default='analysis',
                    help='the name of the output directory [infiles]')
-    p.add_argument('-u', '--underline', type=int, default=0,
-                   help='the number of underline for filename splitting, counted in reverse')
+
+    m = p.add_mutually_exclusive_group()
+    m.add_argument('-s', '--single', default=False, action='store_true',
+                   help='fastq files are single (non-paired) such as ONT reads')
+    m.add_argument('-p', '--paired', default=False, action='store_true',
+                   help='fastq files are paired such as Illumina paired-end reads')
+
+    p.add_argument('-u', '--underscore', type=int, default=0,
+                   help='the number of undercore for filename splitting, counted in reverse')
+
     p.add_argument('--use-absolute-link', default=False, action='store_true',
                    help='Use absolute link instead of relative link')
     p.add_argument('infiles', nargs='+',
@@ -37,8 +45,17 @@ def generate_links(args):
     import pathlib
     from ngs_pipeline import fileutils
 
+    cerr(f'[Receiving {len(args.infiles)} source files]')
+
+    if args.single:
+        mode = fileutils.ReadMode.SINGLETON
+    elif args.paired:
+        mode = fileutils.ReadMode.PAIRED_END
+    else:
+        mode = None
+
     # generate read files dictionary
-    read_files = fileutils.ReadFileDict(args.infiles, args.underline)
+    read_files = fileutils.ReadFileDict(args.infiles, args.underscore, mode)
 
     if any(read_files.err_files):
         cexit('ERROR: invalid input files: \n' +
