@@ -9,6 +9,7 @@ infiles = config['infiles']
 underscore = config.get('underscore', 0)
 singleton = config.get('singleton', False)
 paired_end = config.get('paired_end', False)
+jobs = config.get('jobs', 32)
 
 include: 'utilities.smk'
 
@@ -76,8 +77,11 @@ rule run_sample_variant_caller:
         f'{outdir}/analysis/._prepared_'
     output:
         f'{outdir}/analysis/._completed_'
+    params:
+        jobs = jobs,
     shell:
         'ngs-pl run-sample-variant-caller --force --no-config-cascade '
+        '-j {params.jobs} '
         '--target all {outdir}/analysis '
         '&& touch {output}'
 

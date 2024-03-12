@@ -50,6 +50,7 @@ def run_multistep_variant_caller(args):
         paired_end=args.paired,
         outdir=args.outdir,
         infiles=args.infiles,
+        jobs=args.j,
     )
 
     args.snakefile = get_snakefile_path(
