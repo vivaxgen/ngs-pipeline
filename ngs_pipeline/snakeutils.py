@@ -2,7 +2,7 @@ __copyright__ = '''
 snakeutils.py - ngs-pipeline
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2023-2024 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -176,5 +176,30 @@ def run_snakefile(args, config = {}, workdir=None,
         cerr(yaml.dump([cf.as_posix() for cf in configfiles]))
 
     return (status, finish_time - start_time)
+
+
+def scan_for_config_keywords(path):
+    """ return a list of keywords used as config keys in any of the
+        snakemake rules
+    """
+
+    import re
+
+    mo_bracket = re.compile('''config\s*\[\s*['"]([^]]*)['"]\s*\]''')
+    mo_get = re.compile('''config\s*\.\s*get\s*\(\s*['"]([^'"]*)''')
+
+    keywords = []
+
+    path = pathlib.Path(path)
+
+    for rule_file in path.glob('*.smk'):
+        with open(rule_file) as f_in:
+            for line in f_in:
+                keys = mo_bracket.findall(line) + mo_get.findall(line)
+                if any(keys):
+                    keywords += keys
+
+    return sorted(set(keywords))
+
 
 # EOF
