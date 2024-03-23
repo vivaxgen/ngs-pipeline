@@ -7,6 +7,8 @@ _mydir="$(dirname $_script)"
 
 export NGS_PIPELINE_BASE="$(dirname $_mydir)"
 export PATH=${NGS_PIPELINE_BASE}/bin/:${PATH}
+
+PYTHONPATH=${PYTHONPATH:-}
 export PYTHONPATH="${NGS_PIPELINE_BASE}/pylib/:${NGS_PIPELINE_BASE}:${PYTHONPATH}"
 
 # register bash autocomplete
