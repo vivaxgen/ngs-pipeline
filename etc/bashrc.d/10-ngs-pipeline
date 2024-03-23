@@ -11,6 +11,8 @@ export PATH=${NGS_PIPELINE_BASE}/bin/:${PATH}
 PYTHONPATH=${PYTHONPATH:-}
 export PYTHONPATH="${NGS_PIPELINE_BASE}/pylib/:${NGS_PIPELINE_BASE}:${PYTHONPATH}"
 
+export NGS_PIPELINE_CMD_MODS=${NGS_PIPELINE_CMD_MODS:-}
+
 # register bash autocomplete
 eval "$(register-python-argcomplete ngs-pl)"
 
