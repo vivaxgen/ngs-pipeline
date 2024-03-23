@@ -5,7 +5,7 @@ _script="$(readlink -f ${BASH_SOURCE[0]})"
 # Delete last component from $_script
 _mydir="$(dirname $_script)"
 
-export NGS_PIPELINE_BASE="$(dirname $_mydir)"
+export NGS_PIPELINE_BASE="$(dirname $(dirname $_mydir))"
 export PATH=${NGS_PIPELINE_BASE}/bin/:${PATH}
 
 PYTHONPATH=${PYTHONPATH:-}
