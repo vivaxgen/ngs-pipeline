@@ -1,0 +1,15 @@
+# source script, which needs to be sourced after vvg-base is activated
+
+_script="$(readlink -f ${BASH_SOURCE[0]})"
+
+# Delete last component from $_script
+_mydir="$(dirname $_script)"
+
+export NGS_PIPELINE_BASE="$(dirname $_mydir)"
+export PATH=${NGS_PIPELINE_BASE}/bin/:${PATH}
+export PYTHONPATH="${NGS_PIPELINE_BASE}/pylib/:${NGS_PIPELINE_BASE}:${PYTHONPATH}"
+
+# register bash autocomplete
+eval "$(register-python-argcomplete ngs-pl)"
+
+# EOF
