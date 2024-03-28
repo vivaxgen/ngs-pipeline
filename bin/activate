@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# required environment
+#   BASHRC
+#   NGSENV_BASEDIR
+#   NGS_PIPELINE_BASE
+
+# optional environment
+#   SPAWN_SHELL
+
+if [ ${SPAWN_SHELL:-0} -ge 1 ]; then
+
+    SPAWN_SHELL=0
+
+    set -o errexit
+    set -o pipefail
+    set -o nounset
+
+    bash --init-file <(echo "
+        . /etc/profile;
+        . ~/.bashrc;
+        export NGSENV_BASEDIR=${NGSENV_BASEDIR};
+        . ${BASHRC}
+        . ${NGS_PIPELINE_BASE}/bin/activate
+    ")
+
+else
+
+    . ${NGS_PIPELINE_BASE}/etc/bashrc.d/10-ngs-pipeline
+
+    NGS_PROMPT=`basename ${NGSENV_BASEDIR}`
+
+    . ${NGS_PIPELINE_BASE}/etc/bashrc.d/95-prompt-history
+
+    # source bashrc on NGSENV_BASEDIR if the file exists
+    if [ -f ${NGSENV_BASEDIR}/bashrc ]; then
+
+        . ${NGSENV_BASEDIR}/bashrc
+    fi
+
+fi
+
+# EOF
