@@ -10,8 +10,10 @@ Please read the README.txt of this software.
 '''
 
 import os
+import sys
 import pathlib
 import datetime
+import ngs_pipeline
 from ngs_pipeline import (cerr, cexit, arg_parser,
                           check_NGSENV_BASEDIR, check_NGS_PIPELINE_BASE,
                           get_snakefile_path, setup_config)
@@ -300,8 +302,8 @@ def scan_for_config_keywords(path):
 
     import re
 
-    mo_bracket = re.compile('''config\s*\[\s*['"]([^]]*)['"]\s*\]''')
-    mo_get = re.compile('''config\s*\.\s*get\s*\(\s*['"]([^'"]*)''')
+    mo_bracket = re.compile(r'''config\s*\[\s*['"]([^]]*)['"]\s*\]''')
+    mo_get = re.compile(r'''config\s*\.\s*get\s*\(\s*['"]([^'"]*)''')
 
     keywords = []
 
