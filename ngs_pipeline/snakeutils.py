@@ -268,8 +268,8 @@ def run_snakefile_8(args, config={}, workdir=None,
             args.snakefile,
             from_module=ngs_pipeline
         )
-        cargs.configfiles = configfiles
-        cargs.config = setup_config(config)
+        cargs.configfile = configfiles
+        cargs.config = [f'{k}={v}' for k, v in setup_config(config).items()]
         cargs.targets = [args.target]
 
         # running mode
