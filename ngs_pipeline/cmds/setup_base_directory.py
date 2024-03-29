@@ -9,7 +9,7 @@ __license__ = "MIT"
 # functions that require the respective heavy modules
 
 import os
-import pathlib
+from pathlib import Path
 import ngs_pipeline
 
 
@@ -38,9 +38,9 @@ export NGS_PIPELINE_BASE={NGS_PIPELINE_BASE}
 # get the directory where this script resides
 _script="$(readlink -f ${{BASH_SOURCE[0]}})"
 _mydir="$(dirname $_script)"
-export NGSENV_BASEDIR=${_mydir}
+export NGSENV_BASEDIR=${{_mydir}}
 
-if [[ "${{BASH_SOURCE[0]}}" == "${0}" ]]; then
+if [[ "${{BASH_SOURCE[0]}}" == "${{0}}" ]]; then
     # new shell will be spawned
     export SPAWN_SHELL=1
 fi
@@ -62,12 +62,12 @@ def setup_base_directory(args):
     
     # create directory structure
     basedir = Path(args.basedir)
-    basedir.mkdir()
+    basedir.mkdir(exist_ok=True)
 
 
-    (basedir / 'configs').mkdir()
-    (basedir / 'sets').mkdir()
-    (basedir / 'refs').mkdir()
+    (basedir / 'configs').mkdir(exist_ok=True)
+    (basedir / 'sets').mkdir(exist_ok=True)
+    (basedir / 'refs').mkdir(exist_ok=True)
 
     # check if we are under vivaxGEN base install
 
@@ -96,8 +96,9 @@ def setup_base_directory(args):
                     NGS_PIPELINE_BASE=args.ngs_pipeline_base
                 )
             )
+        activation_file.chmod(0o775)
 
-    with open(basedir / 'bashrc') as f_out:
+    with open(basedir / 'bashrc', 'w') as f_out:
         f_out.write(bashrc_source_template)
 
 
