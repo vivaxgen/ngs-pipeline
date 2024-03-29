@@ -74,10 +74,13 @@ def setup_base_directory(args):
     VVG_BASEDIR = os.environ.get('VVG_BASEDIR', '')
     if VVG_BASEDIR:
         # we use vivaxGEN vvg-base to generate script file
-        VVGBIN = os.environ.get('VVGBIN)')
-        run([
+
+        import subprocess
+        VVGBIN = os.environ.get('VVGBIN')
+        subprocess.call([
             f'{VVGBIN}/generate-activation-script.py',
             '-o', (basedir / 'activate').as_posix(),
+            '-b', VVG_BASEDIR,
             '-e', f'NGSENV_BASEDIR={basedir.resolve()} ',
             '-e', f'NGS_PROMPT={basedir.name}'
         ])
