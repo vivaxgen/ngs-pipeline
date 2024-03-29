@@ -61,12 +61,15 @@ def init_argparser(desc, p=None):
     return p
 
 
-def run_snakefile(args, config = {}, workdir=None,
+def run_snakefile(args, config={}, workdir=None,
                   show_configfiles=False):
     """ execute snakefile based on args """
 
     import snakemake
     import yaml
+
+    if snakemake.__version__ >= '8':
+        return run_snakefile_8(args, config, workdir, show_configfiles)
 
     # check sanity
     if not args.snakefile:
@@ -176,6 +179,118 @@ def run_snakefile(args, config = {}, workdir=None,
         cerr(yaml.dump([cf.as_posix() for cf in configfiles]))
 
     return (status, finish_time - start_time)
+
+
+def run_snakefile_8(args, config={}, workdir=None,
+                  show_configfiles=False):
+    """ execute snakefile based on args """
+
+    import snakemake
+    from snakemake import cli
+    import yaml
+
+    # check sanity
+    if not args.snakefile:
+        cexit('ERR: Please provide snakefile to ecexute using --snakefile argument.')
+
+    # getting values from environment
+    NGS_PIPELINE_BASE = check_NGS_PIPELINE_BASE()
+    NGSENV_BASEDIR = pathlib.Path(check_NGSENV_BASEDIR())
+    if 'NGS_PIPELINE_FORCE' in os.environ:
+        args.force = True
+    if 'NGS_PIPELINE_NO_CONFIG_CASCADE' in os.environ:
+        args.no_config_cascade = True
+
+    # check sanity
+
+    cwd = workdir or pathlib.Path.cwd()
+    if not args.force and not cwd.is_relative_to(NGSENV_BASEDIR):
+        cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
+
+    configfiles = list(reversed(args.config))
+
+    if args.no_config_cascade:
+        configfiles.append(NGSENV_BASEDIR / 'config.yaml')
+    else:
+        # for each config directory, check config file existence
+        config_dirs = []
+        config_path = cwd
+        while config_path.is_relative_to(NGSENV_BASEDIR):
+            config_dirs.append(config_path)
+            configfile = config_path / 'config.yaml'
+            if configfile.is_file():
+                configfiles.append(configfile)
+            config_path = config_path.parent
+
+    # get panel configuration and set as base configuration from configs/
+    if args.panel:
+        args.base_config = 'configs/' + args.panel + '.yaml'
+
+    if args.base_config:
+        configfiles.append(NGSENV_BASEDIR / args.base_config)
+
+    if not any(configfiles):
+        cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
+
+    configfiles.reverse()
+
+    if args.showconfigfiles:
+        cerr('Config files to read:')
+        cerr(yaml.dump([cf.as_posix() for cf in configfiles]))
+        cexit('\n')
+
+    # for profile purposes
+
+    if 'SNAKEMAKE_PROFILE' in os.environ:
+        if args.profile is None:
+            args.profile = os.environ['SNAKEMAKE_PROFILE']
+
+    if args.nocluster:
+        # nocluster means prevent from running using batch/job scheduler
+        args.profile = None
+
+    try:
+        # set with --profile first
+        if args.profile:
+            argv = ['--profile', args.profile]
+        else:
+            argv = []
+
+        print(argv)
+
+        # XXX: need to modify to use snakemake API
+        parser, cargs = cli.parse_args(argv)
+
+        # set cargs further from args
+        cargs.snakefile = get_snakefile_path(
+            args.snakefile,
+            from_module=ngs_pipeline
+        )
+        cargs.configfiles = configfiles
+        cargs.config = setup_config(config)
+        cargs.targets = [args.target]
+
+        # running mode
+        cargs.dryrun = args.dryrun
+        cargs.touch = args.touch
+        cargs.rerun_incomplete = args.rerun
+        cargs.unlock = args.unlock
+
+        # running parameters
+        cargs.cores = args.j
+        cargs.printshellcmds = args.showcmds
+
+        start_time = datetime.datetime.now()
+        status = cli.args_to_api(cargs, parser)
+        finish_time = datetime.datetime.now()
+
+        return (status, finish_time - start_time)
+
+    except Exception as e:
+        cli.print_exception(e)
+        sys.exit(1)
+
+    raise RuntimeError('FATAL ERROR: should not execute this part of code')
 
 
 def scan_for_config_keywords(path):
