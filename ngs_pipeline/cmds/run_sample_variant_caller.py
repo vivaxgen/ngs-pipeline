@@ -156,7 +156,7 @@ def run_sample_variant_caller(args):
 
     cerr('\n============================== RUN REPORT ====================================\n')
     finish_time = datetime.datetime.now()
-    cerr(f'[WGS pipeline was running for {finish_time - start_time}]')
+    cerr(f'[run-sample-variant-caller was running for {finish_time - start_time}]')
 
     cwd = pathlib.Path.cwd()
 
