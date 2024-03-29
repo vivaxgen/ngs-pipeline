@@ -3,8 +3,8 @@
 # set prompt and history
 
 
-if [ -n ${NGS_PROMPT:-} ]; then
-    
+if [ ! -z ${NGS_PROMPT:-} ]; then
+
     PS1="(${NGS_PROMPT}) [\u@\h \W]\$ "
     HIST_EXT=${NGS_PROMPT}
 
@@ -12,7 +12,7 @@ fi
 
 # set history
 
-if [ -n ${HIST_EXT:-} ]; then
+if [ ! -z ${HIST_EXT:-} ]; then
 
     export HISTFILE=${HOME}/.bash_history.${HIST_EXT}
 
