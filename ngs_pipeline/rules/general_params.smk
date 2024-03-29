@@ -16,6 +16,6 @@ thread_allocations = config.get('thread_allocations', {})
 # wildcard constraints:
 wildcard_constraints:
     sample = r'[.\w-]+',
-    idx = '\d',
+    idx = r'\d',
 
 # EOF
