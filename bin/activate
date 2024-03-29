@@ -16,6 +16,7 @@ if [ ${SPAWN_SHELL:-0} -ge 1 ]; then
     set -o pipefail
     set -o nounset
 
+    echo "Spawning new shell..."
     bash --init-file <(echo "
         . /etc/profile;
         . ~/.bashrc;
