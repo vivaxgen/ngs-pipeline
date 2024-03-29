@@ -16,4 +16,12 @@ export NGS_PIPELINE_CMD_MODS=${NGS_PIPELINE_CMD_MODS:-}
 # register bash autocomplete
 eval "$(register-python-argcomplete ngs-pl)"
 
+if [ ! -z ${NGSENV_BASEDIR:-} ]; then
+    # source bashrc on NGSENV_BASEDIR if the file exists
+    if [ -f ${NGSENV_BASEDIR}/bashrc ]; then
+
+        . ${NGSENV_BASEDIR}/bashrc
+    fi
+fi
+
 # EOF

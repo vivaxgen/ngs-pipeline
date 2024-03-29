@@ -33,12 +33,6 @@ else
 
     . ${NGS_PIPELINE_BASE}/etc/bashrc.d/95-prompt-history
 
-    # source bashrc on NGSENV_BASEDIR if the file exists
-    if [ -f ${NGSENV_BASEDIR}/bashrc ]; then
-
-        . ${NGSENV_BASEDIR}/bashrc
-    fi
-
 fi
 
 # EOF
