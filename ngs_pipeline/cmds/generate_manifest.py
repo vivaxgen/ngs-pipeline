@@ -40,7 +40,10 @@ def init_argparser():
     p.add_argument('--ask-confirmation', default=False, action='store_true',
                    help='ask confirmation to continue saving to output file')
 
-    p.add_argument('infiles', nargs='+')
+    p.add_argument('-i', '--initial-manifest', default=None, type=str,
+                   help='optional initial manifest file to be appended')
+
+    p.add_argument('infiles', nargs='*')
     return p
 
 
@@ -57,7 +60,16 @@ def generate_manifest(args):
     import pandas as pd
     from ngs_pipeline import fileutils
 
+    initial_df = None
+    if args.initial_manifest:
+        cerr(f'[Reading initial manifest file: {args.initial_manifest}]')
+        initial_df = pd.read_table(args.initial_manifest)
+        if not (('SAMPLE' in initial_df.columns) and ('FASTQ' in initial_df.columns)):
+            cexit('[Initial manifest file does not have SAMPLE and/or FASTQ columns]')
+
     cerr(f'[Receiving {len(args.infiles)} source files]')
+    if (initial_df is None) and (len(args.infiles) == 0):
+        cexit('[No source files as input, please check your input files]')
 
     if args.single:
         mode = fileutils.ReadMode.SINGLETON
@@ -84,6 +96,8 @@ def generate_manifest(args):
         fastq_series.append(';'.join(items))
 
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
+    if initial_df is not None:
+        df = pd.concat([initial_df, df])
     df.to_csv(args.outfile, sep='\t', index=False)
 
     # print at least 5 rows

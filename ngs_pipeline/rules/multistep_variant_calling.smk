@@ -9,6 +9,7 @@ infiles = config['infiles']
 underscore = config.get('underscore', 0)
 singleton = config.get('singleton', False)
 paired_end = config.get('paired_end', False)
+manifest = config.get('manifest', None)
 jobs = config.get('jobs', 32)
 
 include: 'utilities.smk'
@@ -51,16 +52,17 @@ rule generate_manifest:
         underscore = f'--underscore {underscore}' if underscore else '',
         singleton = '--single' if singleton else '',
         paired_end = '--paired' if paired_end else '',
+        manifest = f'-i {manifest}' if manifest else '',
         infiles = ' '.join(infiles)
     shell:
-        'ngs-pl generate-manifest -o {output} {params.underscore} --pause 3 '
-        '{params.singleton} {params.paired_end} --pause 3 {infiles}'
+        'ngs-pl generate-manifest -o {output} {params.underscore} --pause 5 '
+        '{params.singleton} {params.paired_end} {params.manifest} {infiles}'
 
 
 rule run_prepare_sample_directory:
     localrule: True
     input:
-        f'{outdir}/metafile/manifest.tsv'
+        f'{outdir}/metafile/manifest.tsv',
     output:
         f'{outdir}/analysis/._prepared_'
     params:

@@ -31,9 +31,12 @@ def init_argparser():
                    help='no of consecutive underscore to be stripped from '
                    'filenames to form sample code, counted in reverse')
     
+    p.add_argument('-i', '--manifest', default=None,
+                   help='manifest file  as input')
+
     p.add_argument('-o', '--outdir',
                    help='output directory')
-    p.add_argument('infiles', nargs='+',
+    p.add_argument('infiles', nargs='*',
                    help="read files")
     
     return p
@@ -45,6 +48,7 @@ def run_multistep_variant_caller(args):
     from ngs_pipeline import get_snakefile_path, snakeutils
     
     config=dict(
+        manifest=args.manifest,
         underscore=args.underscore,
         singleton=args.single,
         paired_end=args.paired,
