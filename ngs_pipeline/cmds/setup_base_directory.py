@@ -82,7 +82,7 @@ def setup_base_directory(args):
             '-o', (basedir / 'activate').as_posix(),
             '-b', VVG_BASEDIR,
             '-e', f'NGSENV_BASEDIR={basedir.resolve()} ',
-            '-e', f'NGS_PROMPT={basedir.name}'
+            '-e', f'NGS_PROMPT={basedir.name.lower()}'
         ])
         
     else:
