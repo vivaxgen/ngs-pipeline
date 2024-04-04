@@ -21,6 +21,9 @@ def init_argparser():
     p.add_argument('-l', '--length', type=int, default=-1,
                    help='maximum genome length to be called by individual '
                    'joint variant caller')
+    p.add_argument('-k', '--key', default='regions',
+                   choices=['regions', 'contaminant_regions'],
+                   help='dictionary key to be used in the YAML file')
 
     p.add_argument('-o', '--outfile', required=True,
                    help='YAML-formated output filename')
@@ -71,11 +74,13 @@ def setup_references(args):
 
     import yaml
     
+    partitioned = False
     seq_labels = get_labels_from_fasta(args.fasta)
     if args.length > 0:
         seq_labels = partition_regions(seq_labels, args.length)
+        partitioned = True
     yaml.dump({'regions': seq_labels}, open(args.outfile, 'w'),
-              default_flow_style=None)
+              default_flow_style=None if partitioned else False)
 
 
 def main(args):
