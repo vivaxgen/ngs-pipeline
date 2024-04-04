@@ -48,7 +48,7 @@ The base environment directory can be prepared with automatic method (with
 preset settings) or manual method (with custom settings).
 
 Regardless of whether using automatic or manual method, the following are
-the mandatory steps to prepare the base environment directory::
+the mandatory steps to prepare the base environment directory:
 
 #.  Activate the vivaxGEN NGS-Pipeline environment by running its activation
     script, as noted after the automatic installation finished, eg::
@@ -76,7 +76,7 @@ the mandatory steps to prepare the base environment directory::
 
 To continue preparing the base enviroment directory with automatic method
 using preset settings for P vivax with PvP01_v1 reference sequence, change to
-base environment directory and run the setup script:
+base environment directory and run the setup script::
 
       cd $NGSENV_BASEDIR
       bash <(curl PvP01_v1.sh)>
