@@ -2,75 +2,148 @@ TUTORIAL
 ========
 
 The tutorial assumes that the pipeline has been installed as described in the
-Quick Installation section of README.rst. The tutorial will work through
-setting up a pipeline to process *Plasmodium vivax* sequence data.
+Quick Installation section of README.rst.
+The tutorial will work through setting up a pipeline to process *Plasmodium
+vivax* sequence data.
 
+Base Enviroment directory
+-------------------------
 
-Setting-up Environment
-----------------------
-
-To set up a working environment, vivaxGEN ngs-pipeline requires that all
-necessary files reside in a single hierarchical directory.
+For normal workflows, vivaxGEN NGS-Pipeline requires that all necessary files,
+with the exception of the pipeline and all supporting software themselves, to
+reside in a single hierarchical directory (unless the pipeline has been set up
+with specific settings).
+The root of the hierarchical directory is called base environment directory,
+and can be accessed with NGSENV_BASEDIR environment variabel.
+All necessary files include the configuration, reference, data set (read files)
+and the analysis result.
 Since UNIX-based systems treat symbolic link files in identical ways as real
 files, it is possible that the actual files reside in other directory and only
-the symbolic links reside in the vivaxGEN ngs-pipeline environment directory.
+the symbolic links reside in the base environment directory.
 
-The recommended structure of the base working directory is::
+The recommended structure of the base environment directory is::
 
-    BASEDIR/
-            activate.sh
-            config.yaml
-            configs/
-            refs/
-            sets/
+    NGSENV_BASEDIR/
+                   activate
+                   bashrc
+                   config.yaml
+                   configs/
+                   refs/
+                   sets/
 
-Note that only ``config.yaml`` and ``configs`` are the mandatory name to be
-used for the config file and directory, while the rest of the file and
-directory names can be anything.
+Note that only ``bashrc``, ``config.yaml`` and ``configs`` are the mandatory
+names to be used for the bash source file, main config file and configuration
+directory, while the rest of the file and directory names can be anything.
 However, for consistency purposes, it is recommended to use the above file
 and directory names.
+The ``refs`` directory is used to keep all reference files, including the
+reference sequence and its index files, region files and any oher settings.
+The ``sets`` directory is the main working directory to perform the analysis.
 
-The following are step-by-step instructions to in setting up the environment:
 
-1.  Activate the vivaxGEN NGS-Pipeline environment by running its activation
+Preparing Base Environment Directory
+------------------------------------
+
+The base environment directory can be prepared with automatic method (with
+preset settings) or manual method (with custom settings).
+
+Regardless of whether using automatic or manual method, the following are
+the mandatory steps to prepare the base environment directory::
+
+#.  Activate the vivaxGEN NGS-Pipeline environment by running its activation
     script, as noted after the automatic installation finished, eg::
 
-      source NGS-PIPELINE_INSTALL_DIR/activate.sh
+      NGS-PIPELINE_INSTALL_DIR/activate
 
-2.  Create the base working directory, eg: ``/data/Pvivax``::
+#.  Setup the base working directory, eg: ``/data/Pv-wgs``::
 
-      export BASEDIR=/data/Pvivax
-      mkdir $BASEDIR
+      ngs-pl setup-base-directory /data/Pv-wgs
 
-3.  Generate activation script from the base directory::
+#.  Change to ``/data/Pv-wgs`` directory and edit the ``activate`` script as
+    necessary (eg, changing the prompt notification).
+    Note that any text editor (eg: nano, vim, etc) can be used::
 
-      ngs-pl generate-activation-script -o $BASEDIR/activate.sh
+      cd /data/Pv-wgs
+      vi activate
 
-4.  Edit the activation script as necessary, following the comments and notes
-    in the activation script::
+#.  Exit and activate the environment using the new ``activate`` file::
 
-      vim $BASEDIR/activate.sh
+      exit
+      /data/Pv-wgs/activate
 
-5.  Activate the new activation script::
+    Once activated, the environment directory can be accessed using environment
+    variable ``NGSENV_BASEDIR``.
 
-      source $BASEDIR/activate.sh
+To continue preparing the base enviroment directory with automatic method
+using preset settings for P vivax with PvP01_v1 reference sequence, change to
+base environment directory and run the setup script:
 
-6.  Prepare reference directory and populate the directory as necessary::
+      cd $NGSENV_BASEDIR
+      bash <(curl PvP01_v1.sh)>
 
-      mkdir $BASEDIR/refs
 
-7.  Copy config file templates::
+To continue peparing the base enviroment directory with manual method (eg, when
+there is no preset settings from the vivaxGEN github repository), use the
+following steps:
 
-      ngs-pl generate-config-file -o $BASEDIR/config.yaml
+#.  Prepare the reference sequence in ``/data/Pv-wgs/refs`` directory.
+    A P vivax reference sequence (PvP01) can be downloaded from PlasmoDB
+    with the following commands::
 
-8.  Edit the config file as necessary following the comments and notes in
-    config file::
+      cd $NGSENV_BASEDIR/refs
+      curl -O https://plasmodb.org/common/downloads/release-50/PvivaxP01/fasta/data/PlasmoDB-50_PvivaxP01_Genome.fasta
+      ln -s PlasmoDB-50_PvivaxP01_Genome.fasta PvP01_v1.fasta
 
-      vim $BASEDIR/config.yaml
+#.  Generate a YAML file denoting the sequence labels for the P vivax genomes,
+    and edit the YAML output file accordingly to remove regions that are not
+    to be analyzed (remove all regions started with ``Transfer``).
+    The following command use ``sed`` to remove regions, but any text editor
+    can be used instead as well::
 
-9.  Check the configuration file::
+      ngs-pl setup-references -o regions.yaml -f PvP01_v1.fasta
+      sed -i.bak '/Transfer/d' regions.yaml
 
-      ngs-pl check-config-file $BASEDIR/config.yaml
+#.  Obtain a list of high-quality variants (chromosomes and base positions) of
+    P vivax genome from other source.
+    For P vivax, a bed file based on PASS variants of Pv4 data set from MalariaGEN
+    project has been prepared and can be obtained using the following command:
+
+    curl -O 
+   
+
+#.  NGS-Pipeline has the ability to filter out unwanted, or contaminant reads.
+    As WGS of plasmodium parasite will also sequence the host (human) DNA,
+    the host reference sequence can be downloaded as well (in this case,
+    the human reference genome from NCBI ftp site)::
+
+      cd $NGSENV_BASEDIR/refs
+      curl -O https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/latest_assembly_versions/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+      gunzip GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+      ln -s GCF_000001405.40_GRCh38.p14_genomic.fna GRCh38.p14.fasta
+
+#.  Likewise, generate a YAML file for the human regions, but denote this
+    as contaminants::
+
+      ngs-pl setup-references -k contaminant_regions -o contaminants.yaml -f GRCh38.p14.fasta
+
+#.  Concatenate both P vivax and human reference sequence to a single fasta file::
+
+      cat PvP01_v1.fasta GRCh38.p14.fasta > PvP01_v1-GRCh38.p14.fasta
+
+#.  Copy template config.yaml to the base environment directory and edit the config
+    file as necessary, especially the path to the reference (the default values are
+    suitable for many sequencing project)::
+
+      cp $NGS_PIPELINE_BASE/config/config.yaml $NGENV_BASEDIR
+      vim $NGSENV_BASEDIR/config.yaml
+
+#.  Concatenate both ``regions.yaml`` and ``contaminants.yaml`` to config.yaml::
+
+      cat regions.yaml contaminants.yaml >> $NGSENV_BASEDIR/config.yaml
+
+#.  Check the configuration file::
+
+      ngs-pl check-config-file $NGSENV_BASEDIR/config.yaml
 
     Fix any errors by editing the config.yaml, and then rerun the checking
     command until no more errors are reported.
@@ -79,15 +152,15 @@ The following are step-by-step instructions to in setting up the environment:
 Running the Multi-Step Mode
 ---------------------------
 
-#.  Open a new shell, and activate the environment by sourcing the activation
-    script::
+#.  Activate the environment by exectuing the ``activate`` script if the
+    environment has not been activated::
 
-	  source /data/Pvivax/activate.sh
+	  /data/Pv-wgs/activate.sh
 
 #.  Enter the directory for containing data sets, and create a new directory,
     and enter to the new directory::
 
-      cd /data/Pvivax/sets
+      cd $NGSENV_BASEDIR/sets
       mkdir my-tutorial
       cd my-tutorial
 
