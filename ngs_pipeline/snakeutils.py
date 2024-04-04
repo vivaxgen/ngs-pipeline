@@ -191,6 +191,17 @@ def run_snakefile_8(args, config={}, workdir=None,
     from snakemake import cli
     import yaml
 
+    # monkey-patch snakemake
+    cli_parse_config = cli.parse_config
+
+    def parse_config(entries):
+        if type(entries) == dict:
+            return entries
+        return cli_parse_config(entries)
+
+    cli.parse_config = parse_config
+    # end of monkey patching
+
     # check sanity
     if not args.snakefile:
         cexit('ERR: Please provide snakefile to ecexute using --snakefile argument.')
@@ -269,7 +280,8 @@ def run_snakefile_8(args, config={}, workdir=None,
             from_module=ngs_pipeline
         )
         cargs.configfile = configfiles
-        cargs.config = [f'{k}={v}' for k, v in setup_config(config).items()]
+        #cargs.config = [f'{k}={v}' for k, v in setup_config(config).items()]
+        cargs.config = setup_config(config)
         cargs.targets = [args.target]
 
         # running mode
