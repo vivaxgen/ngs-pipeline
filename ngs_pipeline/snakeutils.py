@@ -269,8 +269,6 @@ def run_snakefile_8(args, config={}, workdir=None,
         else:
             argv = []
 
-        print(argv)
-
         # XXX: need to modify to use snakemake API
         parser, cargs = cli.parse_args(argv)
 
