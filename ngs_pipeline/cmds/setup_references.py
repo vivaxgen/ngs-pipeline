@@ -24,13 +24,15 @@ def init_argparser():
     p.add_argument('-k', '--key', default='regions',
                    choices=['regions', 'contaminant_regions'],
                    help='dictionary key to be used in the YAML file')
+    p.add_argument('-n', '--nolength', default=False, action='store_true',
+                   help='no need to calculate the length of each sequences')
 
     p.add_argument('-o', '--outfile', required=True,
                    help='YAML-formated output filename')
     return p
 
 
-def get_labels_from_fasta(infile):
+def get_labels_from_fasta(infile, count_length=True):
     """ return list of [(label, length)] """
 
     sequences = {}
@@ -46,7 +48,8 @@ def get_labels_from_fasta(infile):
                 curr_label = line[1:].strip().split()[0]
                 curr_len = 0
                 continue
-            curr_len += len(line.replace(' ',''))
+            if count_length:
+                curr_len += len(line.replace(' ',''))
 
         if curr_label:
             sequences[curr_label] = curr_len
@@ -75,11 +78,13 @@ def setup_references(args):
     import yaml
     
     partitioned = False
-    seq_labels = get_labels_from_fasta(args.fasta)
+    seq_labels = get_labels_from_fasta(args.fasta, not args.nolength)
     if args.length > 0:
         seq_labels = partition_regions(seq_labels, args.length)
         partitioned = True
-    yaml.dump({'regions': seq_labels}, open(args.outfile, 'w'),
+    if args.nolength:
+        seq_labels = list(seq_labels.keys())
+    yaml.dump({args.key: seq_labels}, open(args.outfile, 'w'),
               default_flow_style=None if partitioned else False)
 
 
