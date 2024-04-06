@@ -1,3 +1,8 @@
+# jointvarcall_split_gatk.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
 # prepare global params
 
@@ -23,11 +28,10 @@ for a_dir in srcdirs:
 
 
 # additional settings and parameters
-
-variant_file = config.get('variant_file', None)
-interval_file = config.get('interval_file', None)
-interval_dir = config.get('interval_dir', None)
+ggvcf_flags = config.get('ggvcf_flags', '-stand-call-conf 10 -new-qual')
 ggvcf_extra_flags = config.get('ggvcf_extra_flags', '')
+
+regpart = GATKRegPartition(PARTIALS)
 
 
 def get_interval(w):
@@ -63,7 +67,7 @@ rule all:
 
 
 # get the list of all gvcfs
-rule prepare_gvcf_files:
+rule prepare_gvcf_list:
     threads: 2
     input:
         lambda w: get_gvcf_files(w.reg)
@@ -83,11 +87,12 @@ rule combine_gvcf:
     input:
         f"{destdir}/maps/{{reg}}.tsv"
     output:
-        directory(f"{destdir}/dbs/{{reg}}")
+        directory(f"{destdir}/dbs/{regpart.notation}")
     log:
-        f"{destdir}/logs/genomicsdbimport-{{reg}}.log"
+        f"{destdir}/logs/genomicsdbimport-{regpart.notation}.log"
     params:
-        reg = get_interval,
+        #reg = get_interval,
+        reg = regpart.get_interval
     shell:
         "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} "
         "--sample-name-map {input} {params.reg} 2> {log}"
@@ -96,16 +101,35 @@ rule combine_gvcf:
 rule jointvarcall_gatk:
     threads: 3
     input:
-        f"{destdir}/dbs/{{reg}}"
+        f"{destdir}/dbs/{regpart.notation}"
     output:
-        f"{destdir}/vcfs/{{reg}}.vcf.gz"
+        regpart.region_vcf
     params:
         variantfile = f'--variant {variant_file}' if variant_file else '',
-        reg = get_interval,
+        reg = regpart.get_interval,
+        flags = ggvcf_flags,
+        extra_flags = ggvcf_extra_flags
     log:
-        f"{destdir}/logs/genotypegvcfs-{{reg}}.log"
+        f"{destdir}/logs/genotypegvcfs-{regpart.notation}.log"
     shell:
-        "gatk GenotypeGVCFs -stand-call-conf 10 -new-qual -R {refseq} -V gendb://{input} "
-        "-O {output} {params.variantfile} {params.reg} {ggvcf_extra_flags} 2> {log}"
+        "gatk GenotypeGVCFs {params.flags} -R {refseq} -V gendb://{input} "
+        "-O {output} {params.variantfile} {params.reg} {params.extra_flags} 2> {log}"
+
+
+rule concat_vcfs:
+    threads: 2
+    input:
+        regpart.get_all_region_vcf
+    output:
+        f"{destdir}/vcfs/{{reg}}.vcf.gz"
+    log:
+        f"{destdir}/logs/bcftools-concat-{{reg}}.log"
+    shell:
+        "bcftools concat -o {output} {input} 2> {log}"
+
+
+# order of the rules for {reg}.vcf.gz
+ruleorder: jointvarcall_gatk > concat_vcfs
+
 
 # EOF
