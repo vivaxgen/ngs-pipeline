@@ -31,7 +31,7 @@ for a_dir in srcdirs:
 ggvcf_flags = config.get('ggvcf_flags', '-stand-call-conf 10 -new-qual')
 ggvcf_extra_flags = config.get('ggvcf_extra_flags', '')
 
-regpart = GATKRegPartition(PARTIALS)
+regpart = RegPartition(PARTIALS)
 
 
 def get_interval(w):
