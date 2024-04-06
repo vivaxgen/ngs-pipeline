@@ -18,33 +18,6 @@ import os
 from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR, snakeutils
 
 
-def init_argparser_XXX():
-    p = arg_parser(desc='run WGS varcalling pipeline')
-    p.add_argument('-j', type=int, default=196)
-    p.add_argument('--dryrun', default=False, action='store_true')
-    p.add_argument('--touch', default=False, action='store_true',
-                   help='touch all output files, to avoid re-running the ngs-pipeline '
-                   'such as after modifying/debugging snakemake file')
-    p.add_argument('--showcmds', default=False, action='store_true')
-    p.add_argument('--unlock', default=False, action='store_true')
-    p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('--cluster',
-                   default='sbatch --cpus-per-task={threads} --job-name=smk-{rule}-{wildcards.reg} --output=.slurm-%j.out')
-    p.add_argument('--nocluster', default=False, action='store_true',
-                   help='run without cluster support (eg. only on local node')
-    p.add_argument('-o', '--outdir', default='vcfs',
-                   help='directory ouput, default to "vcfs"')
-    p.add_argument('--snakefile', default=None,
-                   choices=['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk'],
-                   help='snakemake file to be called [jointvarcall_gatk.smk]')
-    p.add_argument('-c', '--config', default=[], action='append',
-                   help='config file(s) to append')
-    p.add_argument('--target', default='all')
-    p.add_argument('source_dirs', nargs='+',
-                   help='source directories containing sample directories')
-    return p
-
-
 def init_argparser():
     p = snakeutils.init_argparser(desc='run joint variant calling')
     p.arg_dict['snakefile'].choices = ['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk']
