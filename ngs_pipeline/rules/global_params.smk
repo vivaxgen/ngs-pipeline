@@ -28,7 +28,12 @@ correction = config.get('correction', False)
 instrument = config.get('instrument', None)
 read_filters = config.get('read_filters', '')
 
+# parameter for joint variant calling
+variant_file = config.get('variant_file', None)
+interval_file = config.get('interval_file', None)
+interval_dir = config.get('interval_dir', None)
 
+# generic parameters
 java_opts = ''
 
 # check available read files
@@ -45,6 +50,67 @@ CONTAMINANT_REGIONS = config.get('contaminant_regions', [])
 
 wildcard_constraints:
     idx = r'\d+',
-    sample = r'[.\w-]+'
+    sample = r'[.\w-]+',    # dot, alphanumerics, underscore and dash
+    reg = r'[.\w-]+',       # dot, alphanumerics, underscore and dash
+
+
+class RegPartition(object):
+
+    def __init__(self, partial_regions):
+        self.split = False
+        self.partitions = {}
+
+        # sanity check
+        if type(partial_regions) == dict:
+            for reg, positions in partial_regions.items():
+                if type(positions) != list:
+                    break
+                intervals = []
+                start_pos = 1
+                for pos in positions:
+                    intervals.append((start_pos, pos))
+                    start_pos = pos + 1
+                self.partitions[reg] = intervals
+            else:
+                self.split = True
+
+    def get_all_region_vcf(self, w):
+        if not self.split:
+            raise RuntimeError('Region is not split!')
+        return list(
+            [f"{destdir}/split/{w.reg}~{idx}.vcf.gz"
+             for idx in range(len(self.partitions[w.reg]))
+             ]
+        )
+
+    @property
+    def region_vcf(self):
+        if self.split:
+            return temp(f"{destdir}/split/{{reg}}~{{idx}}.vcf.gz")
+        return f"{destdir}/vcfs/{{reg}}.vcf.gz"
+
+    @property
+    def notation(self):
+        if self.split:
+            return '{reg}~{idx}'
+        return '{reg}'
+
+    def get_interval(self, w):
+        if self.split:
+            # we will have w.reg and w.idx
+            if not hasattr(w, 'idx'):
+                raise RuntimeError('wildcards do not have idx variable')
+            idx = int(w.idx)
+            start, end = self.partitions[w.reg][idx]
+            return f'-L {w.reg}:{start}-{end}'
+
+        if interval_dir:
+            return f'-L {interval_dir}/{w.reg}.bed'
+
+        if interval_file:
+            return f'-L {interval_file}'
+
+        return f'-L {w.reg}'
+
 
 # EOF
