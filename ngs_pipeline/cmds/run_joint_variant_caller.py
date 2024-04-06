@@ -2,7 +2,7 @@ __copyright__ = '''
 run_joint_variant_caller.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022-2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2024 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -20,7 +20,9 @@ from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR, snakeuti
 
 def init_argparser():
     p = snakeutils.init_argparser(desc='run joint variant calling')
-    p.arg_dict['snakefile'].choices = ['jointvarcall_gatk.smk', 'jointvarcall_freebayes.smk']
+    p.arg_dict['snakefile'].choices = ['jointvarcall_gatk.smk',
+                                       'jointvarcall_freebayes.smk',
+                                       ]
 
     # input/output options
     p.add_argument('-o', '--outdir', default='joint',
@@ -74,7 +76,8 @@ def run_joint_variant_caller(args):
         cerr('ERROR:')
         cerr('Found duplicated sample code(s):')
         cerr(yaml.dump(duplicated_sample_codes))
-        cexit('Pleae remove or rename the directory of those sample(s) to remove the duplication')
+        cexit('Pleae remove or rename the directory of those sample(s) to '
+              'avoid the duplication')
 
     config = dict(srcdirs=source_dirs, destdir=args.outdir.removesuffix('/'))
     status, elapsed_time = snakeutils.run_snakefile(args, config=config)
