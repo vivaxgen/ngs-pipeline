@@ -54,6 +54,9 @@ def plot_depth(args):
     import matplotlib
     matplotlib.use('Cairo')
     from matplotlib import pyplot as plt
+    import matplotlib.style as mplstyle
+    mplstyle.use('fast')
+
 
     chroms = args.chroms.split(',')
     if not any(chroms):
