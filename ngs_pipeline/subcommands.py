@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = '2024.03.10'
+__version__ = '2024.04.07.01'
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
@@ -136,10 +136,18 @@ class SubCommands(object):
             M = importlib.import_module(module)
             cmd_directory = pathlib.Path(M.__path__[0])
             cmd_files += cmd_directory.iterdir()
-        cmds = set(
-            [p.name.removesuffix('.py').replace('_', '-') for p in cmd_files]
-        ) - {'--init--', '--pycache--'}
-        return sorted(cmds)
+        cmds = []
+        for p in cmd_files:
+            if p.suffix != '.py':
+                continue
+            if p.name.startswith('_'):
+                continue
+            if '-' in p.name:
+                _cerr('Warning: found command module filename containing dash: '
+                      f'{p.name}')
+                continue
+            cmds.append(p.stem.replace('_', '-'))
+        return sorted(set(cmds))
 
     def show_commands(self):
         _cout('Available commands:')
@@ -255,7 +263,7 @@ class SubCommands(object):
             import IPython
             IPython.embed()
 
-        if cmd == '-l':
+        elif cmd == '-l':
             # show available commands
             self.show_commands()
 
