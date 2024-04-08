@@ -3,8 +3,9 @@ vivaxGEN NGS-Pipeline
 =====================
 
 
-The vivaxGEN NGS-Pipeline is a flexible pipeline for upstream processing (variant calling) of WGS or
-targeted-sequencing data from paired-end short reads or singleton long reads NGS experiments.
+The vivaxGEN NGS-Pipeline is a flexible pipeline for upstream processing
+(variant calling) of WGS or targeted-sequencing data from paired-end short
+reads or singleton long reads NGS experiments.
 
 
 Quick Installation
@@ -54,7 +55,8 @@ There are two modes of working with the pipeline:
 
   1.  Preparing sample directory structure
 
-      This step involves generating sample directory structures as working directory for the pipeline.
+      This step involves generating sample directory structures as working
+      directory for the pipeline.
       Each sample will be processed in its own directory.
       The basic command for this step is::
 
@@ -70,9 +72,11 @@ There are two modes of working with the pipeline:
 
   3.  Running joint variant caller combining all samples
 
-      This step involves running a joint-variant calling for all samples after each sample
-      has been variant-called individually from the previous above steps.
-      The final result would be a set of VCF files containing the variants of all samples.
+      This step involves running a joint-variant calling for all samples after
+      each sample has been variant-called individually from the previous above
+      steps.
+      The final result would be a set of VCF files containing the variants of
+      all samples.
       The basic command is::
 
         ngs-pl run-joint-variant-caller -o OUTPUT_DIR DIRECTORY_1 [DIRECTORY_2 ...]
@@ -85,8 +89,8 @@ There are two modes of working with the pipeline:
 
 * single-step mode
 
-  A single-step mapping/variant-calling suitable for targeted sequencing, such as panel and
-  amplicon sequencing, with smaller number of samples.
+  A single-step mapping/variant-calling suitable for targeted sequencing, such
+  as panel and amplicon sequencing, with smaller number of samples.
   The basic command for this mode is::
 
     ngs-pl run-targeted-variant-caller -o OUTPUT_DIR INPUT_DIR/*.fastq.gz
@@ -98,8 +102,9 @@ See the documentation for available `commands <docs/commands.rst>`_.
 Overview of ngs-pipeline Setting Up
 -----------------------------------
 
-Since ngs-pipeline is a variant-calling pipeline, it requires one to setup a proper environment
-with reference sequences and any other settings before it can be run properly.
+Since ngs-pipeline is a variant-calling pipeline, it requires one to setup a
+proper environment with reference sequences and any other settings before it
+can be run properly.
 
 Steps to performed in setting-up ngs-pipeline are:
 
@@ -183,8 +188,8 @@ Extending ngs-pipeline
 ----------------------
 
 The ngs-pipeline can be extended using Python and additional snakemake files.
-The Python modules and the snakemake files in the ngs-pipeline can also be imported to be used
-by other custom Python scripts and/or snakemake files.
+The Python modules and the snakemake files in the ngs-pipeline can also be
+imported to be used by other custom Python scripts and/or snakemake files.
 
 To learn more about extending the pipeline or developing custom pipeline based
 on ngs-pipeline, see `documentation <docs/extending.rst>`_.
