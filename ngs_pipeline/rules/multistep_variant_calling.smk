@@ -12,6 +12,9 @@ paired_end = config.get('paired_end', False)
 manifest = config.get('manifest', None)
 jobs = config.get('jobs', 32)
 
+prepare_sample_directory_flags = config.get('prepare_sample_directory_flags', '')
+sample_variant_caller_flags = config.get('sample_variant_caller_flags', '')
+
 include: 'utilities.smk'
 
 
@@ -66,9 +69,9 @@ rule run_prepare_sample_directory:
     output:
         touch(f'{outdir}/analysis/._prepared_')
     params:
-        extra_opts = '--force'
+        extra_flags = prepare_sample_directory_flags
     shell:
-        'ngs-pl prepare-sample-directory {params.extra_opts} '
+        'ngs-pl prepare-sample-directory {params.extra_flags} '
         '-o {outdir}/analysis -i {input} .'
 
 
@@ -80,8 +83,9 @@ rule run_sample_variant_caller:
         touch(f'{outdir}/analysis/._completed_')
     params:
         jobs = jobs,
+        extra_flags = sample_variant_caller_flags
     shell:
-        'ngs-pl run-sample-variant-caller --force --no-config-cascade '
+        'ngs-pl run-sample-variant-caller {params.extra_flags} '
         '-j {params.jobs} '
         '--target all {outdir}/analysis'
 
