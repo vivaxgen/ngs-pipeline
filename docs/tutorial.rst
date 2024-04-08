@@ -101,7 +101,7 @@ Running the Multi-Step Mode
       cd batch-1
       ls
 
-    The following is the layout od the output directory:
+    The following is the layout of the output directory:
 
     ``analysis``
       This directory contains sample directory, eg. each sample and their
@@ -144,3 +144,5 @@ Running the Multi-Step Mode
     ``stats.tsv``
       This file contains the statistis of the process.
 
+The main output file(s) of this whole variant calling process are VCF files
+inside ``joint/vcfs`` and ``concatenated.vcf.gz``.
