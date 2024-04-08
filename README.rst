@@ -7,6 +7,31 @@ The vivaxGEN NGS-Pipeline is a flexible pipeline for upstream processing (varian
 targeted-sequencing data from paired-end short reads or singleton long reads NGS experiments.
 
 
+Quick Installation
+------------------
+
+To install ngs-pipeline with all of its dependencies, run the following command
+on shell/terminal::
+
+    "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/install/main/ngs-pl.sh)
+
+When prompted for the directory to install the pipeline, enter the directory
+where the pipeline will be installed.
+Make sure that the installation process finish successfully.
+Take a note of the directory where the pipeline is installed and the full path
+of its activation script.
+
+The installation takes about 5-15 minutes (depending on internet speed), and
+uses about 5-6 GB of storage.
+
+
+Tutorial
+--------------
+
+A quick tutorial on setting up the environment and running the variant calling
+process with the pipeline using *P vivax* data is `available here <docs/tutorial.rst>`_.
+
+
 Quick Overview
 --------------
 
@@ -66,25 +91,8 @@ There are two modes of working with the pipeline:
 
     ngs-pl run-targeted-variant-caller -o OUTPUT_DIR INPUT_DIR/*.fastq.gz
 
-To learn more about running the pipeline, please consult the `tutorial <docs/tutorial.rst>`_.
 
 See the documentation for available `commands <docs/commands.rst>`_.
-
-
-Quick Installation
-------------------
-
-To install ngs-pipeline with all of its dependencies, run the following command on shell/terminal::
-
-    "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/install/main/ngs-pl.sh)
-
-When prompted for the directory to install the pipeline, enter the directory where the pipeline
-will be installed.
-Make sure that the installation process finish successfully.
-Take a note of the directory where the pipeline is installed and the full path of its activation script.
-
-The installation takes about 5-15 minutes (depending on internet speed), and
-uses about 5-6 GB of storage.
 
 
 Overview of ngs-pipeline Setting Up
