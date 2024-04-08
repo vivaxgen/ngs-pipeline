@@ -42,7 +42,7 @@ rule reads_mapping:
         mode = '--remove' if CONTAMINANT_REGIONS else ''
     shell:
         "bwa-mem2 mem -M -t {threads} {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
-        " | filter_reads_region.py --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
+        " | ngs-pl filter-reads-region --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
         " | samtools fixmate -m - {output.bam} 2> {log.log4}"
 
 # EOF
