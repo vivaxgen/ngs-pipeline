@@ -7,48 +7,13 @@ The tutorial will work through setting up a pipeline to process *Plasmodium
 vivax* sequence data using PvP01_v1 reference sequence.
 
 
-Base Enviroment directory
--------------------------
+Preparing Base Environment Directory
+------------------------------------
 
 For normal workflows, vivaxGEN NGS-Pipeline requires that all necessary files,
 with the exception of the pipeline and all supporting software themselves, to
 reside in a single hierarchical directory (unless the pipeline has been set up
 with specific settings).
-The root of the hierarchical directory is called base environment directory,
-and can be accessed with NGSENV_BASEDIR environment variabel.
-All necessary files include the configuration, reference, data set (read files)
-and the analysis result.
-Since UNIX-based systems treat symbolic link files in identical ways as real
-files, it is possible that the actual files reside in other directory and only
-the symbolic links reside in the base environment directory.
-This scheme was chosen to accomodate the cascading configuration mechanism,
-where the pipeline process will walk across directory hierarchy to get
-configuration file ``config.yaml`` from the working directory (or the sample
-directory) to the base environment directory.
-
-The recommended structure of the base environment directory is::
-
-    NGSENV_BASEDIR/
-                   activate
-                   bashrc
-                   config.yaml
-                   configs/
-                   refs/
-                   sets/
-
-Note that only ``bashrc``, ``config.yaml`` and ``configs`` are the mandatory
-names to be used for the bash source file, main config file and configuration
-directory, while the rest of the file and directory names can be anything.
-However, for consistency purposes, it is recommended to use the above file
-and directory names.
-The ``refs`` directory is used to keep all reference files, including the
-reference sequence and its index files, region files and any oher settings.
-The ``sets`` directory is the main working directory to perform the analysis.
-
-
-Preparing Base Environment Directory
-------------------------------------
-
 The base environment directory can be prepared with automatic method (with
 preset settings) or manual method (with custom settings).
 
@@ -98,7 +63,7 @@ continued using manual method following steps described in
 Running the Multi-Step Mode
 ---------------------------
 
-#.  Activate the environment by exectuing the ``activate`` script if the
+#.  Activate the environment by executing the ``activate`` script if the
     environment has not been activated::
 
 	  /data/Pv-wgs/activate.sh
@@ -119,35 +84,63 @@ Running the Multi-Step Mode
     `SRA-Repo <https://github.com/vivaxgen/sra-repo>`_ to manage and
     automatically download the read files)::
 
+      cd reads
       wget [url]
+      cd ..
 
+#.  Run the multi-step mode variant calling process by executing this single
+    command::
 
-#.  Generate a manifest file from the read files::
+      ngs-pl run-multistep-variant-caller -o batch-1 --paired reads/*.fastq.gz
 
-      ngs-pl generate-manifest-file -o manifest.tsv reads/*.fastq.gz
+    Wait until the process finishes.
 
-#.  Edit the manifest file as necessary, such as changing the sample code.
+#.  Inspect the ``batch-1`` directory by entering the directory and perform
+    directory listing::
 
-#.  Run the sample directory preparation step (step-1)::
+      cd batch-1
+      ls
 
-      ngs-pl prepare-sample-directory -o analysis -i manifest.tsv reads/
+    The following is the layout od the output directory:
 
-#.  Check for errors or warnings from the command.
+    ``analysis``
+      This directory contains sample directory, eg. each sample and their
+      associated files (input/output/log) are in their own directory.
 
-#.  Run the sample variant-calling step (step-2)::
+    ``completed_samples``
+      This directory contains symbolic links to samples in ``analysis``
+      directory that have been successfully called.
+      The joint variant calling is performed only on samples in this
+      directory.
 
-      ngs-pl run-sample-variant-caller analysis
+    ``concatenated.vcf.gz``
+      This is the concatenated VCF file from chromosome-based VCF files
+      inside ``joint/vcfs`` directory.
 
-#.  Run the joint variant-calling step (step-3)::
+    ``failed_samples``
+      This directory contains symbolic links to samples in ``analysis``
+      that are failed during individual sample calling process.
 
-      ngs-pl run-joint-variant-caller -o joint analysis/
+    ``joint``
+      This directory contains all files related to joint variant calling
+      process.
+      The final output of the joint variant calling is the per-chromosome
+      VCF files in ``joint/vcfs`` directory, which is being concatenated
+      as ``concatenated.vcf.gz``.
 
-#.  Check the final VCF files in ``joint/vcfs`` directory.
+    ``metafile``
+      This directory contains metafiles necessary for performing the whole
+      variant calling process.
+      Currently it holds the manifest file describing the sample name and its
+      associated read files.
 
+    ``reports``
+      This directory contains consolidated report files from completed samples
+      in the ``completed_samples`` directory.
+      Currently, it holds ``maps`` directory (which links to BAM files of each
+      samples) and ``depth-base`` directory (which links to depth files
+      generated by sambamba).
 
-Running the Single-Step Mode
-----------------------------
-
-
-
+    ``stats.tsv``
+      This file contains the statistis of the process.
 
