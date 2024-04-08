@@ -39,9 +39,11 @@ rule reads_mapping:
         sample = sample,
         rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'",
         regions = ' '.join(CONTAMINANT_REGIONS) if CONTAMINANT_REGIONS else ' '.join(REGIONS),
-        mode = '--remove' if CONTAMINANT_REGIONS else ''
+        mode = '--remove' if CONTAMINANT_REGIONS else '',
+        flags = config.get('bwamem2_flags', ''),
+        extra_flags = config.get('bwamem2_extra_flags', ''),
     shell:
-        "bwa-mem2 mem -M -t {threads} {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
+        "bwa-mem2 mem -M -t {threads} {params.flags} {params.extra_flags} {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
         " | ngs-pl filter-reads-region --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
         " | samtools fixmate -m - {output.bam} 2> {log.log4}"
 
