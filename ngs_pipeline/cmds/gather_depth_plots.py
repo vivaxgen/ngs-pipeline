@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from ngsutils import cerr, arg_parser
+from ngs_pipeline import cerr, arg_parser
 
 from pathlib import Path
 from PIL import Image

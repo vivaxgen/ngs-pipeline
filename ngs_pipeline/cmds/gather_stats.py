@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngsutils import cerr, arg_parser
+from ngs_pipeline import cerr, arg_parser
 
 
 def init_argparser():
