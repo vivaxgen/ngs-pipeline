@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
-run_amtofastq.py - ngs-pipeline command line
+amtofastq.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2024 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -19,25 +16,18 @@ Please read the README.txt of this software.
 import sys
 import os
 
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: please set proper shell enviroment by sourcing activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-from ngs_pipeline import cerr, cexit, run_main, arg_parser
+import ngs_pipeline
+from ngs_pipeline import cerr, cexit, arg_parser, snakeutils, get_snakefile_path
 
 
 # usage: run_amtofastq.py
 
 def init_argparser():
-    p = arg_parser(desc='convert alignment map file (SAM/BAM/CRAM) to fastq files')
-    p.add_argument('-j', type=int, default=72)
-    p.add_argument('--dryrun', default=False, action='store_true')
-    p.add_argument('--showcmds', default=False, action='store_true')
-    p.add_argument('--unlock', default=False, action='store_true')
-    p.add_argument('--rerun', default=False, action='store_true')
-    p.add_argument('--target', default='all')
+    p = snakeutils.init_argparser(
+        'convert alignment map file (SAM/BAM/CRAM) to fastq files')
+    
+    #p.add_argument('-j', type=int, default=72)
+
     p.add_argument('--srcdir', default='.',
                    help="Set source directory, where all the source files reside")
     p.add_argument('-s', default=None,
@@ -49,10 +39,8 @@ def init_argparser():
     return p
 
 
-def run_amtofastq(args):
+def amtofastq(args):
 
-    import pathlib
-    import snakemake
     from pathlib import Path
 
     # set SOURCE data
@@ -73,22 +61,24 @@ def run_amtofastq(args):
         cexit('Please either provide INFILE or use -s & -i')
 
     # run smk
-
-    snakemake.snakemake(
-        pathlib.Path(os.environ['NGS_PIPELINE_BASE']) / 'rules' / 'amtofastq.smk',
-        config=dict(SOURCES=sources),
-        dryrun=args.dryrun,
-        printshellcmds=args.showcmds,
-        unlock=args.unlock,
-        force_incomplete=args.rerun,
-        cores=args.j,
-        cluster=os.environ.get('JOBCMD', ''),
-        cluster_cancel="scancel",
-        targets=[args.target],
+    
+    config=dict(
+        SOURCES=sources,
     )
 
+    args.snakefile = get_snakefile_path(
+        'amtofastq.smk',
+        from_module=ngs_pipeline
+    )
 
-if __name__ == '__main__':
-    run_main(init_argparser, run_amtofastq)
+    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+
+    if not status:
+        cerr('[ERR: amtofastq did not successfully complete]')
+    cerr(f'[Finish full run of amtofastq (time: {elapsed_time})]')
+
+
+def main(args):
+    amtofastq(args)
 
 # EOF
