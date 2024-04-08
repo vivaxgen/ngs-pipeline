@@ -15,6 +15,9 @@ maxlen: 325
 # use base correction for fastp (eg. for denovo-assembling, etc)
 correction: False
 
+# for WGS data, deduplicate is important
+deduplicate: True
+
 # whether to keep bam files in any of the steps 
 keep_paired_bam: False
 keep_proper_bam: False
@@ -28,6 +31,43 @@ refmap_file: refs/PvP01_v1.mmi
 knownsites_file: refs/pv-known-variants.bed.gz
 knownvariants_dir: refs/known-variants
 
+# parameter for bwa-mem2
+bwamem2_flags: null
+bwamem2_extra_flags: null
+
+# filter to apply for deduplicated BAM
+# read_filters options:
+# --remove_FR --remove_RF --remove_FF --remove_RR : removing by orientation (Front, Reverse)
+# --remove_trans : remove pair of reads that map to different chromosomes
+# --remove_unmapped : remove pair or reads whose any of the pair is unmapped
+# --remove_secondary --remove_supplementary : remove secondary & supplementary maps
+# for below, we keep FR, RF, FF and RR orientation for future SV analysis
+read_filters: --remove_trans --remove_unmapped --remove_secondary --remove_supplementary
+
+# snakemake to use:
+
+reads_trimmer_wf: trimmer_null.smk
+reads_mapper_wf: mapper_bwa-mem2.smk
+
+# parameter for joint variant calling
+variant_file: null
+interval_file: null
+interval_dir: null
+ggvcf_flags: -stand-call-conf 10 -new-qual
+ggvcf_extra_flags: 
+
+# java options (for GATK)
+java_opts: 
+
+# -- options for multistep variant calling --
+
+# if we need to run outside NGSENV_BASEDIR, set to: --force
+prepare_sample_directory_flags: null
+
+# if we need to run outside NGSENV_BASEDIR, set to: --force --no-config-cascade
+sample_variant_caller_flags: null
+
+# -- options for regions to filter --
 
 # regions to be analyzed
 regions:
@@ -78,41 +118,6 @@ contaminant_regions:
   - NC_000024.10
   - NC_012920.1
 
-# filter to apply for deduplicated BAM
-# read_filters options:
-# --remove_FR --remove_RF --remove_FF --remove_RR : removing by orientation (Front, Reverse)
-# --remove_trans : remove pair of reads that map to different chromosomes
-# --remove_unmapped : remove pair or reads whose any of the pair is unmapped
-# --remove_secondary --remove_supplementary : remove secondary & supplementary maps
-# for below, we keep FR, RF, FF and RR orientation for future SV analysis
-read_filters: --remove_trans --remove_unmapped --remove_secondary --remove_supplementary
 
-
-# snakemake to use:
-
-reads_trimmer_wf: trimmer_null.smk
-reads_mapper_wf: mapper_bwa-mem2.smk
-
-# -- snakemake configuration --
-
-# example for slurm batch manager
-
-cluster:
-  sbatch
-    --cpus-per-task={threads}
-    --job-name=smk-{rule}-{sample}-{wildcards}
-    --time={resources.time}
-default-resources:
-  - time="48:00:00"
-restart-times: 3
-max-jobs-per-second: 10
-max-status-checks-per-second: 1
-local-cores: 1
-latency-wait: 60
-jobs: 500
-keep-going: True
-rerun-incomplete: True
-printshellcmds: True
-scheduler: greedy
 
 # EOF
