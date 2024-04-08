@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
 .py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2024 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -19,13 +16,7 @@ Please read the README.txt of this software.
 import sys
 import os
 
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: please set proper shell enviroment by sourcing activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
-
-from ngsutils import cerr, run_main, arg_parser
+from ngs_pipeline import cerr, arg_parser
 
 
 def init_argparser():
@@ -187,7 +178,7 @@ def calculate_depths(infiles, mindepth=5):
     return (L, average, q1)
 
 
-def collect_stats(args):
+def calculate_stats(args):
 
     # import heavy modules here if required
 
@@ -197,8 +188,6 @@ def collect_stats(args):
     mapped_reads, proper_mapped_reads = parse_mapping_stats(args.mapped)[:2]
     mapped_r = (mapped_reads / trimmed_reads) if trimmed_reads > 0 else 0
     proper_r = (proper_mapped_reads / mapped_reads) if mapped_reads > 0 else 0
-
-
 
     _, proper_dedup_reads, insert_size, insert_size_sd, avg_qual, inward, outward, other, trans = parse_mapping_stats(args.final)
     dedup_r = proper_dedup_reads / proper_mapped_reads if proper_mapped_reads > 0 else 0
@@ -248,8 +237,8 @@ def collect_stats(args):
     )
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, collect_stats)
+def main(args):
+    calculate_stats(args)
 
 
 # EOF

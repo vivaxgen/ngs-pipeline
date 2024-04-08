@@ -101,7 +101,7 @@ rule map_filter:
         sample = sample,
         args = config.get('read_filters', '') or '--remove_unmapped',
     shell:
-        "filter_reads_orientation.py --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
+        "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
         "| samtools sort -@4 -o {output} 2> {log.log2} "
 
 
@@ -184,7 +184,7 @@ rule collect_stats:
     output:
         'logs/stats.tsv'
     shell:
-        'collect_stats.py -o {output} --mindepth {min_depth} '
+        'ngs-pl calculate-stats -o {output} --mindepth {min_depth} '
         '{params.trimmed} {params.mapped} {params.deduped} {params.finaled} {params.depthed} {sample}'
 
 
@@ -198,7 +198,7 @@ rule depth_plot:
     output:
         'logs/depths.png'
     shell:
-        'plot_depth.py --outplot {output} {params.chroms} --sort --infile {input} {sample}'
+        'ngs-pl plot-depth --outplot {output} {params.chroms} --sort --infile {input} {sample}'
 
 
 # EOF

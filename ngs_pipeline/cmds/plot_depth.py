@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-
 __copyright__ = '''
 plot_depth.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
@@ -19,13 +16,8 @@ Please read the README.txt of this software.
 import sys
 import os
 
-# check that we have NGS_PIPELINE_BASE environemt
-if 'NGS_PIPELINE_BASE' not in os.environ:
-    print('ERROR: please set proper shell enviroment by sourcing activate.sh',
-          file=sys.stderr)
-    sys.exit(1)
 
-from ngsutils import cexit, cerr, run_main, arg_parser
+from ngs_pipeline import cexit, cerr, arg_parser
 
 
 def init_argparser():
@@ -97,8 +89,8 @@ def plot_depth(args):
     fig.savefig(args.outplot)
 
 
-if __name__ == '__main__':
-    run_main(init_argparser, plot_depth)
+def main(args):
+    plot_depth(args)
 
 
 # EOF
