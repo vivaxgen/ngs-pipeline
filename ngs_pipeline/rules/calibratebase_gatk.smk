@@ -16,8 +16,11 @@ rule gatk_baserecalibrator:
         sample = sample,
         known = f"--known-sites {knownvariants_dir}/{{reg}}.bed.gz",
         region_opts = '-L {reg}',
+        flags = config.get('baserecalibrator_flags', ''),
+        extra_flags = config.get('baserecalibrator_extra_flags', ''),
     shell:
-        "gatk BaseRecalibrator -R {refseq} {params.known} {params.region_opts} -I {input.bam} -O {output} 2>{log}"
+        "gatk {java_opts} BaseRecalibrator {params.flags} {params.extra_flags} "
+        "-R {refseq} {params.known} {params.region_opts} -I {input.bam} -O {output} 2>{log}"
 
 
 rule gatk_gatherbsqr:
@@ -31,10 +34,14 @@ rule gatk_gatherbsqr:
         "logs/gatk-GatherBSQRReports.log"
     params:
         sample = sample,
+        flags = config.get('gatherbqsrr_flags', ''),
+        extra_flags = config.get('gatherbqsrr_extra_flags', ''),
         n_input = lambda wildcards, input: len(input),
-    run:
-        input_opts = '-I ' + ' -I '.join(input)
-        shell("gatk {java_opts} GatherBQSRReports {input_opts} -O {output} 2>{log}")
+        input_files = lambda wildcards, input: '-I ' + ' -I '.join(input),
+    shell:
+        #input_opts = '-I ' + ' -I '.join(input)
+        "gatk {java_opts} GatherBQSRReports {params.flags} {params.extra_flags} "
+        "{params.input_files} -O {output} 2>{log}"
 
 
 rule gatk_applybqsr:
@@ -47,9 +54,12 @@ rule gatk_applybqsr:
         "maps/mapped-final-recal.bam" if keep_recalibrated_bam else temp("maps/mapped-final-recal.bam")
     params:
         sample = sample,
+        flags = config.get('applybqsr_flags', ''),
+        extra_flags = config.get('applybqsr_extra_flags', '')
     log:
         "logs/gatk-ApplyBQSR.log"
     shell:
-        "gatk {java_opts} ApplyBQSR -R {refseq} -I {input.bam} --bqsr-recal-file {input.table} -O {output} 2>{log}"
+        "gatk {java_opts} ApplyBQSR {params.flags} {params.extra_flags} "
+        "-R {refseq} -I {input.bam} --bqsr-recal-file {input.table} -O {output} 2>{log}"
 
 # EOF
