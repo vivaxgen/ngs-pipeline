@@ -82,10 +82,12 @@ def consolidate_samples(args):
          ' REPORT '
          '====================================\n')
     if any(uncompleted):
-        cerr('\n  - '.join(['Uncompleted:'] + uncompleted))
+        uncompleted_report = [f'{name}: {path}' for name, path in uncompleted]
+        cerr('\n  - '.join(['Uncompleted:'] + uncompleted_report))
         cerr('')
     if any(unknown):
-        cerr('\n  - '.join(['Unknown:'] + unknown))
+        unknown_report = [f'{name}: {path}' for name, path in unknown]
+        cerr('\n  - '.join(['Unknown:'] + unknown_report))
         cerr('')
 
     cerr(f'[Completed: {len(completed)}, Uncompleted: {len(uncompleted)}, Unknown: {len(unknown)}]')
