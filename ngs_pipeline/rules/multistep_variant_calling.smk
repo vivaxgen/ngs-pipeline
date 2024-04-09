@@ -14,13 +14,14 @@ jobs = config.get('jobs', 32)
 
 prepare_sample_directory_flags = config.get('prepare_sample_directory_flags', '')
 sample_variant_caller_flags = config.get('sample_variant_caller_flags', '')
+joint_variant_caller_flags = config.get('joint_variant_caller_flags', '')
 
 include: 'utilities.smk'
 
 
 rule all:
     input:
-        f'{outdir}/concatenated.vcf.gz.tbi',
+        f'{outdir}/joint/concatenated.vcf.gz.tbi',
         f'{outdir}/stats.tsv',
         f'{outdir}/reports/._completed_',
 
@@ -42,9 +43,10 @@ rule VCF:
         f'{outdir}/joint/._completed_',
         f'{outdir}/reports/._completed_',
 
+
 rule concatenated_VCF:
     input:
-        f'{outdir}/concatenated.vcf.gz.tbi',
+        f'{outdir}/joint/concatenated.vcf.gz.tbi',
         f'{outdir}/reports/._completed_',
 
 
@@ -56,9 +58,6 @@ rule consolidated_reports:
         f'{outdir}/reports/._completed_'
     shell:
         'touch {output}'
-
-
-
 
 
 rule generate_manifest:
@@ -122,8 +121,10 @@ rule run_joint_variant_caller:
         f'{outdir}/completed_samples/._completed_'
     output:
         touch(f'{outdir}/joint/._completed_')
+    params:
+        extra_flags = joint_variant_caller_flags
     shell:
-        'ngs-pl run-joint-variant-caller --force --no-config-cascade '
+        'ngs-pl run-joint-variant-caller {params.extra_flags} '
         '-o {outdir}/joint {outdir}/analysis/'
 
 
@@ -132,7 +133,7 @@ rule concat_vcfs:
     input:
         f'{outdir}/joint/._completed_'
     output:
-        f'{outdir}/concatenated.vcf.gz'
+        f'{outdir}/joint/concatenated.vcf.gz'
     shell:
         'bcftools concat -o {output} {outdir}/joint/vcfs/*.vcf.gz'
 
