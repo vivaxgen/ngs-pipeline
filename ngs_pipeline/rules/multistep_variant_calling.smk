@@ -29,12 +29,23 @@ rule varcall_result:
     input:
         f'{outdir}/metafile/manifest.tsv',
         f'{outdir}/analysis/._completed_',
-        f'{outdir}/joint/._completed_'
+        f'{outdir}/joint/._completed_',
 
 
-rule concat_result:
+rule GVCF:
     input:
-        f'{outdir}/concatenated.vcf.gz.tbi'
+        f'{outdir}/completed_samples/._completed_'
+
+
+rule VCF:
+    input:
+        f'{outdir}/joint/._completed_',
+        f'{outdir}/reports/._completed_',
+
+rule concatenated_VCF:
+    input:
+        f'{outdir}/concatenated.vcf.gz.tbi',
+        f'{outdir}/reports/._completed_',
 
 
 rule consolidated_reports:
@@ -45,6 +56,9 @@ rule consolidated_reports:
         f'{outdir}/reports/._completed_'
     shell:
         'touch {output}'
+
+
+
 
 
 rule generate_manifest:
