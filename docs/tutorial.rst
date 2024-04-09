@@ -85,7 +85,10 @@ Running the Multi-Step Mode
     automatically download the read files)::
 
       cd reads-1
-      wget [url]
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR111/ERR111714/ERR111714_1.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR111/ERR111714/ERR111714_1.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR113/004/ERR1138854/ERR1138854_1.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR113/004/ERR1138854/ERR1138854_2.fastq.gz
       cd ..
 
 #.  Run the multi-step mode variant calling process by executing this single
@@ -154,7 +157,10 @@ and then do joint variant calling with the previous batch::
 
       mkdir reads-2
       cd reads-2
-      wget [urls]
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR527/ERR527357/ERR527357_1.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR527/ERR527357/ERR527357_2.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR152/ERR152414/ERR152414_1.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR152/ERR152414/ERR152414_2.fastq.gz
       cd ..
 
 #.  Run the multi-step variant calling with the new data, but only to the step
@@ -182,4 +188,52 @@ Working with SRA Data
 
 For working with many published FASTQ read files from SRA databases (NCBI SRA
 or EMBL ENA), `SRA-Repo <https://github.com/vivaxgen/sra-repo>` can be used to
-help downloading and managing 
+help downloading and managing SRA read files.
+
+This part of tutorial requires ``SRA-Repo`` to be installed.
+Follow the installation step in ``SRA-Repo`` github repository to install it
+properly.
+
+Open a new terminal/shell and change to the the tutorial directory.
+Generate a tab-delimited sample file named ``my-samples.tsv`` with the content
+as follow::
+
+    SAMPLE      COUNTRY   SRA
+    PH0098-C    C1        ERR216478,ERR490276
+    PY0074-C    C2        ERR1138883
+
+Activate SRA-Repo by activating its activation script, and fetch the SRA read
+files in ``my-samples.tsv`` above::
+
+    <YOUR_SRA_REPO_INSTALLATION>/bin/activate
+    sra-repo.py fetch --ntasks 6 --samplefile my-samples.tsv:SAMPLE,SRA
+
+The above command will download the SRA read files and store it inside the
+``SRA-Repo`` installation directory.
+After the download finishes, link the SRA read files to a new directory and
+generate a manifest file::
+
+    sra-repo.py link -o manifest-3.tsv --outdir reads-3 --samplefile my-samples.tsv:SAMPLE,SRA
+
+In the terminal/shell with active NGS-Pipeline environment, perform sample
+variant calling::
+
+    ngs-pl run-multistep-variant-caller -o batch-3 --target GVCF -i manifest-3.tsv .
+
+Note the dot (indicating current directory) at the last part of the above command.
+
+Once the sample variant calling finishes, perform joint variant calling with the
+previous batches::
+
+    ngs-pl run-joint-variant-caller -o new-joint --target concatenated_VCF batch-1/completed_samples batch-2/completed_samples batch-3/completed_samples
+
+Once the joint variant calling process finishes, inspect the result in the 
+``new-joint``directory.
+
+
+Expoloring Further
+------------------
+
+To read more about ``NGS-Pipeline`` features, please consult the rest of the
+documentation.
+
