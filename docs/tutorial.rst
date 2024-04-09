@@ -150,7 +150,7 @@ inside ``joint/vcfs`` and ``concatenated.vcf.gz``.
 
 Now let assume that another batch of samples are available.
 The following steps provide instructions to perform sample variant calling
-and then do joint variant calling with the previous batch::
+and then do joint variant calling with the previous batch:
 
 #.  Download read files related to another 2 of *P vivax* sequence data from
     SRA database::
