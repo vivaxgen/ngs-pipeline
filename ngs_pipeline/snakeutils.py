@@ -280,7 +280,7 @@ def run_snakefile_8(args, config={}, workdir=None,
         cargs.configfile = configfiles
         #cargs.config = [f'{k}={v}' for k, v in setup_config(config).items()]
         cargs.config = setup_config(config)
-        cargs.targets = [args.target]
+        cargs.targets = args.target if type(args.target) == list else [args.target]
 
         # running mode
         cargs.dryrun = args.dryrun
