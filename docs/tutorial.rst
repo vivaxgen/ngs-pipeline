@@ -114,22 +114,24 @@ Running the Multi-Step Mode
       The joint variant calling is performed only on samples in this
       directory.
 
-    ``concatenated.vcf.gz``
-      This is the concatenated VCF file from chromosome-based VCF files
-      inside ``joint/vcfs`` directory.
-
     ``failed_samples/``
       This directory contains symbolic links to samples in ``analysis``
       that are failed during individual sample calling process.
 
     ``joint/``
-      This directory contains all files related to joint variant calling
+      This directory contains all files pertinent to joint variant calling
       process.
-      The final output of the joint variant calling is the per-chromosome
-      VCF files in ``joint/vcfs/`` directory, which is being concatenated
-      as ``concatenated.vcf.gz``.
 
-    ``metafile``
+    ``joint/concatenated.vcf.gz``
+      This is the concatenated VCF file from chromosome-based VCF files
+      inside ``joint/vcfs`` directory.
+      This file is only available with ``--target concatenated_vcf`` option.
+
+    ``joint/vcfs/``
+      The final output of the joint variant calling is the per-chromosome
+      VCF files in this directory.
+
+    ``metafile/``
       This directory contains metafiles necessary for performing the whole
       variant calling process.
       Currently it holds the manifest file describing the sample name and its
