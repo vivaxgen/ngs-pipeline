@@ -68,6 +68,10 @@ class RegPartition(object):
                 intervals = []
                 start_pos = 1
                 for pos in positions:
+                    if pos < start_pos:
+                        raise RuntimeError(
+                            f'ERR: in region {reg}, {pos} < {start_pos}!!'
+                        )
                     intervals.append((start_pos, pos))
                     start_pos = pos + 1
                 self.partitions[reg] = intervals
