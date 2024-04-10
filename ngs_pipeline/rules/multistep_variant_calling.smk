@@ -141,7 +141,7 @@ rule concat_vcfs:
 rule gather_stats:
     localrule: True
     input:
-        f'{outdir}/completed_samples/._completed_'
+        f'{outdir}/analysis/._completed_'
     output:
         f'{outdir}/stats.tsv'
     shell:
