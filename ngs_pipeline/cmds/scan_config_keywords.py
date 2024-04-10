@@ -16,8 +16,10 @@ from ngs_pipeline import (cerr, cexit, arg_parser,
 
 def init_argparser():
     p = arg_parser(desc='scan configuration keywords on snakefiles')
-    p.add_argument('-o', '--outfile', default='keywords.txt',
-                   help='the name of the output file')
+    p.add_argument('-o', '--outfile', default=None,
+                   help='the name of the output file (eg. keywords.txt)')
+    p.add_argument('-c', '--configfile', default=None,
+                   help='configuration file to match against')
     p.add_argument('indirs', nargs='+')
 
     return p
@@ -25,11 +27,34 @@ def init_argparser():
 
 def scan_config_keywords(args):
 
+    import yaml
+
     keywords = []
     for indir in args.indirs:
         keywords += snakeutils.scan_for_config_keywords(indir)
 
-    print(keywords)
+    if args.outfile:
+        with open(args.outfile, 'w') as f_out:
+            keywords = sorted(keywords)
+            f_out.write('\n'.join(keywords))
+
+    if args.configfile:
+        keywords = set(keywords)
+        with open(args.configfile) as f_in:
+            configs = yaml.safe_load(f_in)
+            in_configs = set(configs.keys())
+            unused = keywords - in_configs
+            unknown = in_configs - keywords
+
+        if any(unused):
+            cerr('Unused configuration keys:')
+            cerr('\n'.join(sorted(unused)))
+            cerr('')
+
+        if any(unknown):
+            cerr('Unknown configuration keys:')
+            cerr('\n'.join(sorted(unknown)))
+            cerr('')
 
 
 def main(args):
