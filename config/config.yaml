@@ -21,9 +21,11 @@ deduplicate: True
 # whether to keep bam files in any of the steps 
 keep_paired_bam: False
 keep_proper_bam: False
+keep_filtered_bam: False
+keep_deduplicated_bam: False
+keep_final_bam: False
 keep_recalibrated_bam: False
-keep_deduplicated_bam: True
-keep_realigned_bam: False
+
 
 # reference sequence, reference map, known variants for base recalibration, etc
 refseq_file: refs/PvP01_v1.fasta
@@ -53,19 +55,39 @@ reads_mapper_wf: mapper_bwa-mem2.smk
 variant_file: null
 interval_file: null
 interval_dir: null
+
+# java options (for GATK)
+java_opts:
+
+# -- options for individual software in used --
+applybqsr_extra_flags:
+applybqsr_flags:
+
+baserecalibrator_extra_flags:
+baserecalibrator_flags:
+
+freebayes_extra_flags:
+
+gatherbqsrr_extra_flags:
+gatherbqsrr_flags:
+
+haplotypecaller_extra_flags:
+haplotypecaller_flags:
+
 ggvcf_flags: -stand-call-conf 10 -new-qual
 ggvcf_extra_flags: 
 
-# java options (for GATK)
-java_opts: 
+
 
 # -- options for multistep variant calling --
 
 # if we need to run outside NGSENV_BASEDIR, set to: --force
-prepare_sample_directory_flags: null
+prepare_sample_directory_flags:
 
 # if we need to run outside NGSENV_BASEDIR, set to: --force --no-config-cascade
-sample_variant_caller_flags: null
+sample_variant_caller_flags:
+joint_variant_caller_flags:
+
 
 # -- options for regions to filter --
 
