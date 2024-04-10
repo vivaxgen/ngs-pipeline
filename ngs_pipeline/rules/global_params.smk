@@ -34,7 +34,7 @@ interval_file = config.get('interval_file', None)
 interval_dir = config.get('interval_dir', None)
 
 # generic parameters
-java_opts = ''
+java_opts = config.get('java_opts', '')
 
 # check available read files
 
