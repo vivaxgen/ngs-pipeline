@@ -66,6 +66,11 @@ rule all:
         get_final_file
 
 
+rule concatenated_VCF:
+    input:
+        f'{destdir}/concatenated.vcf.gz'
+
+
 # get the list of all gvcfs
 rule prepare_gvcf_list:
     threads: 2
@@ -116,7 +121,9 @@ rule jointvarcall_gatk:
         "-O {output} {params.variantfile} {params.reg} {params.extra_flags} 2> {log}"
 
 
-rule concat_vcfs:
+rule concat_split_vcfs:
+    # this rule concatenate split-based VCF files into correspoding region
+    # or chromosome-based VCF files
     threads: 2
     input:
         regpart.get_all_region_vcf
@@ -129,7 +136,21 @@ rule concat_vcfs:
 
 
 # order of the rules for {reg}.vcf.gz
-ruleorder: jointvarcall_gatk > concat_vcfs
+ruleorder: jointvarcall_gatk > concat_split_vcfs
+
+
+rule concat_region_vcfs:
+    # this rule concatenate all region/chromosome-based VCF files
+    # into single VCF file
+    threads: 2
+    input:
+        get_final_file
+    output:
+        f'{destdir}/concatenated.vcf.gz'
+    log:
+        f'{destdir}/logs/bcftools-concat.log'
+    shell:
+        'bcftools concat -o {output} {input} 2> {log}'
 
 
 # EOF
