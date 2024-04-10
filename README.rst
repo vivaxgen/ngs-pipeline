@@ -27,10 +27,22 @@ uses about 5-6 GB of storage.
 
 
 Tutorial
---------------
+--------
 
 A quick tutorial on setting up the environment and running the variant calling
 process with the pipeline using *P vivax* data is `available here <docs/tutorial.rst>`_.
+
+
+Updating the Pipeline
+---------------------
+
+The pipeline can be updated by executing the command::
+
+    $VVGBIN/update-pipeline.sh
+
+Do note that this only updates the pipeline but does not necessarily update
+the dependencies installed by ``micromamba`` and ``python pip``.
+To fully update everything, a full installation needs to be performed.
 
 
 Quick Overview
