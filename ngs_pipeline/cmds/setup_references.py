@@ -29,6 +29,10 @@ def init_argparser():
 
     p.add_argument('-o', '--outfile', required=True,
                    help='YAML-formated output filename')
+    p.add_argument('-p', '--pattern', default=None,
+                   help='pattern to match')
+    p.add_argument('--outfasta', default='')
+
     return p
 
 
@@ -57,6 +61,44 @@ def get_labels_from_fasta(infile, count_length=True):
     return sequences
 
 
+def filter_sequences(infile, outfile, pattern, count_length=False):
+    """ return list of [(label, length)] """
+
+    import re
+
+    sequences = {}
+    regex = re.compile(pattern)
+    with open(infile) as f_in, open(outfile, 'w') as f_out:
+
+        curr_label = None
+        curr_len = 0
+        save_flag = False
+        for line in f_in:
+            stripped_line = line.strip()
+            if stripped_line.startswith('>'):
+                if curr_label:
+                    if save_flag:
+                        sequences[curr_label] = curr_len
+                curr_label = stripped_line[1:].strip().split()[0]
+                curr_len = 0
+                save_flag = True if regex.match(curr_label) else False
+                if save_flag:
+                    f_out.write(line)
+                continue
+
+            if count_length:
+                curr_len += len(stripped_line.replace(' ',''))
+
+            if save_flag:
+                f_out.write(line)
+
+        if curr_label:
+            if save_flag:
+                sequences[curr_label] = curr_len
+
+    return sequences
+
+
 def generate_ranges(total_length, avg_length):
     rv = round(total_length / avg_length / 1.1)
     if rv == 0:
@@ -78,12 +120,19 @@ def setup_references(args):
     import yaml
     
     partitioned = False
-    seq_labels = get_labels_from_fasta(args.fasta, not args.nolength)
+    if args.pattern and args.outfasta:
+        seq_labels = filter_sequences(args.fasta, args.outfasta,
+                                      args.pattern, True)
+    else:
+        seq_labels = get_labels_from_fasta(args.fasta, not args.nolength)
+
     if args.length > 0:
         seq_labels = partition_regions(seq_labels, args.length)
         partitioned = True
+
     if args.nolength:
         seq_labels = list(seq_labels.keys())
+
     yaml.dump({args.key: seq_labels}, open(args.outfile, 'w'),
               default_flow_style=None if partitioned else False)
 
