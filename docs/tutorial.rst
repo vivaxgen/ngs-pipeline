@@ -49,7 +49,7 @@ using preset settings for *P vivax* with PvP01_v1 reference sequence, change to
 base environment directory and run the setup script::
 
       cd $NGSENV_BASEDIR
-      bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/setup.sh)>
+      bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/setup.sh)
 
 The above step will take some time as it needs to download both the PvP01 genome
 sequence (~ 23MB), human GRCh38.p14 genome (~ 928MB), uncompress the human genome,
