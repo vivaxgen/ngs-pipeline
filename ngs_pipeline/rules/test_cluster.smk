@@ -11,7 +11,7 @@ rule send_to_cluster:
     output:
         'test-cluster-{idx}'
     shell:
-        'hostname > {output}'
+        'sleep 5 && hostname > {output}'
 
 
 # EOF
