@@ -44,7 +44,7 @@ def plot_depth(args):
     import pandas as pd
     import numpy as np
     import matplotlib
-    matplotlib.use('Cairo')
+    #matplotlib.use('Cairo')
     from matplotlib import pyplot as plt
     import matplotlib.style as mplstyle
     mplstyle.use('fast')
