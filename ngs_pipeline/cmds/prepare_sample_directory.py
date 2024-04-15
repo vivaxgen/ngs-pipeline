@@ -89,6 +89,19 @@ def prepare_samples(args):
         sample = r['SAMPLE']
         reads = r['FASTQ']
 
+        if type(reads) != str or type(sample) != str:
+            cexit(f'ERROR: invalid values in the row with SAMPLE: {sample} '
+                  f'and FASTQ: {reads}',
+                  err_code=11)
+
+        sample = sample.strip()
+        reads = reads.strip()
+
+        if not reads or not sample:
+            cexit(f'ERROR: missing values in the row with SAMPLE: {sample} '
+                  f'and FASTQ: {reads}',
+                  err_code=12)
+
         if sample.startswith('#'):
             continue
 
