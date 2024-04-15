@@ -24,9 +24,9 @@ def cerr(msg):
     sys.stderr.flush()
 
 
-def cexit(msg):
+def cexit(msg, err_code=1):
     cerr(msg)
-    sys.exit(1)
+    sys.exit(err_code)
 
 
 def greet():
