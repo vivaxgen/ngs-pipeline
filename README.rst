@@ -14,7 +14,7 @@ Quick Installation
 To install ngs-pipeline with all of its dependencies, run the following command
 on shell/terminal::
 
-    "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/install/main/ngs-pl.sh)
+    "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
 
 When prompted for the directory to install the pipeline, enter the directory
 where the pipeline will be installed.
