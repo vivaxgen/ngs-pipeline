@@ -41,7 +41,7 @@ def init_argparser():
     return p
 
 
-def run_targeted_variant_caller(args):
+def run_targeted_variant_caller(args, optional_config={}):
 
     # get default snakefile from environment if none is provided
     if not args.snakefile:
@@ -53,7 +53,7 @@ def run_targeted_variant_caller(args):
         infiles=args.infiles,
         underscore=args.underscore,
         outdir=args.outdir
-    )
+    ) | optional_config
     status, elapsed_time = snakeutils.run_snakefile(args, config=config)
 
     if not status:
