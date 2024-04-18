@@ -220,7 +220,7 @@ def run_snakefile_8(args, config={}, workdir=None,
     if not args.force and not cwd.is_relative_to(NGSENV_BASEDIR):
         cexit(f'ERROR: current directory {cwd} is not relative to {NGSENV_BASEDIR}')
 
-    configfiles = list(reversed(args.config))
+    configfiles = [pathlib.Path(cf) for cf in reversed(args.config)]
 
     if args.no_config_cascade:
         configfiles.append(NGSENV_BASEDIR / 'config.yaml')
