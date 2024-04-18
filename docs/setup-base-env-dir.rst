@@ -61,8 +61,21 @@ it is recommended to obtain the variant list from other documents or sources.
 The following are the step-by-step instruction on how to prepare the setting of
 base environment directory using *P vivax* PvP01 reference sequence as an
 example.
-It is assumed that the base environment has been activated so that enviroment
-variable NGSENV_BASEDIR is already set::
+
+Perform the initial step to create the base environment directory as follows.
+The ``NGS-PIPELINE_INSTALL_DIR`` is assumed to be the directory where the
+NGS-Pipeline is installed, while ``/data/Pv-wgs`` is the new base environment
+directory::
+
+      NGS-PIPELINE_INSTALL_DIR/bin/activate
+      ngs-pl setup-base-directory /data/Pv-wgs
+      exit
+      # edit /data/Pv-wgs/activate if necessary
+      /data/Pv-wgs/activate
+
+Once the new base environment has been activated, NGSENV_BASEDIR environment
+variable will be accessible.
+The next steps are as follow::
 
 #.  Create the directories to hold the reference sequence and all related files
     and change to the directory:
@@ -70,14 +83,14 @@ variable NGSENV_BASEDIR is already set::
       mkdir -p $NGSENV_BASEDIR/refs/PvP01_v1/known_variants
       cd $NGSENV_BASEDIR/refs/PvP01_v1/
 
-#.  Prepare the reference sequence in ``/data/Pv-wgs/refs`` directory.
-    A P vivax reference sequence (PvP01_v1) can be downloaded from PlasmoDB
+#.  Prepare the reference sequence in ``/data/Pv-wgs/refs/PvP01_v1`` directory.
+    A *P vivax* reference sequence (PvP01_v1) can be downloaded from PlasmoDB
     with the following commands::
 
       curl -O https://plasmodb.org/common/downloads/release-50/PvivaxP01/fasta/data/PlasmoDB-50_PvivaxP01_Genome.fasta
       ln -s PlasmoDB-50_PvivaxP01_Genome.fasta PvP01_v1.fasta
 
-#.  Generate a YAML file denoting the sequence labels for the P vivax genomes,
+#.  Generate a YAML file denoting the sequence labels for the ^P vivax* genomes,
     and edit the YAML output file accordingly to remove regions that are not
     to be analyzed (remove all regions started with ``Transfer``).
     The following command use ``sed`` to remove regions, but any text editor
