@@ -14,7 +14,10 @@ import pathlib
 import importlib
 import argparse
 import argcomplete
+import logging
 from typing import Callable
+
+L = logging.getLogger(__name__)
 
 
 def _cout(msg: str):
@@ -76,6 +79,7 @@ class SubCommands(object):
         help_func: Callable | None = None
     ):
 
+        L.debug('initializing SubCommands class')
         self.allow_any_script = allow_any_script
         self.allow_shell = allow_shell
         self.greet = greet_func or self.generic_greet
@@ -199,6 +203,7 @@ class SubCommands(object):
         """ this method will run module init_argparser() and main() """
 
         command = args[0].replace('-', '_')
+        L.debug("searching for module: %s", command)
         for module in self.modules:
             try:
                 module_name = f'{module}.{command}'
