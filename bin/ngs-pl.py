@@ -14,12 +14,15 @@ Please read the README.txt of this software.
 
 import sys
 import os
+import logging
 
 # check that we have NGS_PIPELINE_BASE environemt
 if 'NGS_PIPELINE_BASE' not in os.environ:
     print('ERROR: please set proper shell enviroment by sourcing activate.sh',
           file=sys.stderr)
     sys.exit(1)
+
+logging.basicConfig(level=int(os.environ.get('NGS_PIPELINE_LOGLEVEL', 20)))
 
 
 #from ngs_pipeline import cerr, cexit, subcommands
