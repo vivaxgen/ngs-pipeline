@@ -13,11 +13,13 @@ import os
 import sys
 import pathlib
 import datetime
+import logging
 import ngs_pipeline
 from ngs_pipeline import (cerr, cexit, arg_parser,
                           check_NGSENV_BASEDIR, check_NGS_PIPELINE_BASE,
                           get_snakefile_path, setup_config)
 
+L = logging.getLogger(__name__)
 
 def init_argparser(desc, p=None):
     """ provide common arguments for snakemake-based cli"""
@@ -187,6 +189,8 @@ def run_snakefile_8(args, config={}, workdir=None,
                   show_configfiles=False):
     """ execute snakefile based on args """
 
+    L.debug('importing snakemake libraries')
+
     import snakemake
     from snakemake import cli
     import yaml
@@ -207,6 +211,7 @@ def run_snakefile_8(args, config={}, workdir=None,
         cexit('ERR: Please provide snakefile to ecexute using --snakefile argument.')
 
     # getting values from environment
+    L.debug('processing environment variables')
     NGS_PIPELINE_BASE = check_NGS_PIPELINE_BASE()
     NGSENV_BASEDIR = pathlib.Path(check_NGSENV_BASEDIR())
     if 'NGS_PIPELINE_FORCE' in os.environ:
@@ -225,6 +230,7 @@ def run_snakefile_8(args, config={}, workdir=None,
     if args.no_config_cascade:
         configfiles.append(NGSENV_BASEDIR / 'config.yaml')
     else:
+        L.debug('processing cascading configuration')
         # for each config directory, check config file existence
         config_dirs = []
         config_path = cwd
@@ -270,6 +276,7 @@ def run_snakefile_8(args, config={}, workdir=None,
             argv = []
 
         # XXX: need to modify to use snakemake API
+        L.debug('parsing snakemake arguments')
         parser, cargs = cli.parse_args(argv)
 
         # set cargs further from args
@@ -292,6 +299,7 @@ def run_snakefile_8(args, config={}, workdir=None,
         cargs.cores = args.j
         cargs.printshellcmds = args.showcmds
 
+        L.debug('invoking snakemake client')
         start_time = datetime.datetime.now()
         status = cli.args_to_api(cargs, parser)
         finish_time = datetime.datetime.now()
