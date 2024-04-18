@@ -57,6 +57,8 @@ rule index_ont_mmi:
         fasta = "{pfx}/{fn}.fasta"
     output:
         index = "{pfx}/{fn}.fasta.ont.mmi"
+    resources:
+        mem_mb = config.get('index_mem_gb', 16) * 1024
     shell:
         "minimap2 -x map-ont -d {output.index} {input.fasta}"
 
@@ -67,8 +69,22 @@ rule index_bwamem2:
         fasta = "{pfx}/{fn}.fasta"
     output:
         index = "{pfx}/{fn}.fasta.bwt.2bit.64"
+    resources:
+        mem_mb = config.get('index_mem_gb', 16) * 1024
     shell:
         "bwa-mem2 index {input.fasta}"
+
+
+rule index_bwa:
+    threads: 1
+    input:
+        fasta = "{pfx}/{fn}.fasta"
+    output:
+        index = "{pfx}/{fn}.fasta.bwt"
+    resources:
+        mem_mb = config.get('index_mem_mb', 16384)
+    shell:
+        "bwa index {input.fasta}"
 
 
 rule bunzip2:

@@ -19,6 +19,8 @@ def init_argparser():
 
     p = run_snakefile.init_argparser(
         'prepare and initialize all required files and settings')
+    p.add_argument('--mem_gb', type=int, default=16,
+                   help='required memory (in MB)')
     return p
 
 
@@ -30,7 +32,7 @@ def initialize(args):
     args.no_config_cascade = True
     args.force = True
 
-    run_snakefile.main(args)
+    run_snakefile.run_snakefile(args, dict(index_mem_gb=args.mem_gb))
 
 
 def main(args):
