@@ -66,6 +66,7 @@ applybqsr_flags:
 baserecalibrator_extra_flags:
 baserecalibrator_flags:
 
+freebayes_flags:
 freebayes_extra_flags:
 
 gatherbqsrr_extra_flags:
