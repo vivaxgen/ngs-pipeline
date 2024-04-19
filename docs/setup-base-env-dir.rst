@@ -75,7 +75,7 @@ directory::
 
 Once the new base environment has been activated, NGSENV_BASEDIR environment
 variable will be accessible.
-The next steps are as follow::
+The next steps are as follow:
 
 #.  Create the directories to hold the reference sequence and all related files
     and change to the directory:
