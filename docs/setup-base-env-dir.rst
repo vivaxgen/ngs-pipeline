@@ -78,7 +78,7 @@ variable will be accessible.
 The next steps are as follow:
 
 #.  Create the directories to hold the reference sequence and all related files
-    and change to the directory:
+    and change to the directory::
 
       mkdir -p $NGSENV_BASEDIR/refs/PvP01_v1/known_variants
       cd $NGSENV_BASEDIR/refs/PvP01_v1/
@@ -103,12 +103,12 @@ The next steps are as follow:
     *P vivax* genome from other source.
     For *P vivax*, a bed file based on PASS variants of Pv4 data set from
     MalariaGEN project has been prepared in BED format and can be obtained
-    using the following command:
+    using the following command::
 
 	curl -O https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/known-variants.bed.gz
 
 #.  Split the variants based on their chromosome names into disctint files
-    to speed up the base calibration process:
+    to speed up the base calibration process::
 
       python3 -c "import yaml; [open(f'known-variants/{reg}.bed', 'w') for reg in yaml.safe_load(open('regions.yaml'))['regions']]"
       zcat known-variants.bed.gz | awk '{print > "known-variants/" $1 ".bed"}'
