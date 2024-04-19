@@ -10,7 +10,7 @@ with the exception of the pipeline and all supporting software themselves, to
 reside in a single hierarchical directory (unless the pipeline has been set up
 with specific settings).
 The root of the hierarchical directory is called base environment directory,
-and can be accessed with NGSENV_BASEDIR environment variabel.
+and can be accessed with NGSENV_BASEDIR environment variable.
 All necessary files include the configuration, reference, data set (read files)
 and the analysis result.
 Since UNIX-based systems treat symbolic link files in identical ways as real
@@ -90,7 +90,7 @@ The next steps are as follow:
       curl -O https://plasmodb.org/common/downloads/release-50/PvivaxP01/fasta/data/PlasmoDB-50_PvivaxP01_Genome.fasta
       ln -s PlasmoDB-50_PvivaxP01_Genome.fasta PvP01_v1.fasta
 
-#.  Generate a YAML file denoting the sequence labels for the ^P vivax* genomes,
+#.  Generate a YAML file denoting the sequence labels for the *P vivax* genomes,
     and edit the YAML output file accordingly to remove regions that are not
     to be analyzed (remove all regions started with ``Transfer``).
     The following command use ``sed`` to remove regions, but any text editor
