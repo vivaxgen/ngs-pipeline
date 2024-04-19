@@ -104,8 +104,8 @@ The next steps are as follow:
     For *P vivax*, a bed file based on PASS variants of Pv4 data set from
     MalariaGEN project has been prepared in BED format and can be obtained
     using the following command::
-
-	curl -O https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/known-variants.bed.gz
+      
+      curl -O https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/known-variants.bed.gz
 
 #.  Split the variants based on their chromosome names into disctint files
     to speed up the base calibration process::
@@ -115,20 +115,35 @@ The next steps are as follow:
 	for fn in known-variants/*.bed; do echo "Processing ${fn}"; bgzip -f ${fn}; tabix ${fn}.gz; done
 
 #.  NGS-Pipeline has the ability to filter out unwanted, or contaminant reads.
-    As WGS of plasmodium parasite will also sequence the host (human) DNA,
-    the host reference sequence can be downloaded as well (in this case,
-    the human reference genome from NCBI ftp site)::
+    As WGS of plasmodium parasite will also sequence the host (human) DNA, the
+    reads from the host DNA might need to be mapped to the host reference
+    sequences and later being removed.
+    NGS-Pipeline will perform the mapping to both plasmodium and host reference
+    sequences simultaneously, and will discard reads that map to the host
+    reference sequences.
+    Without providing the host reference sequences, there are possibility that
+    some reads from host DNA might accidently being mapped to the plasmodium
+    reference sequences.
+    However, a caution that handling and generating index for human reference
+    sequences might take a considerable amount of memory and processing power,
+    so it is not advised to perform this on computers whose memory is lower
+    than 32GB.
+    In case that the installed computer has lower than 32GB of memory, the
+    following 3 steps of handling the host reference sequences can be skipped.
+
+#.  [host DNA] Download the host reference sequence (in this case, the human reference
+    genome) from NCBI ftp site::
 
       curl -O https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/latest_assembly_versions/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
       gunzip GCF_000001405.40_GRCh38.p14_genomic.fna.gz
       ln -s GCF_000001405.40_GRCh38.p14_genomic.fna GRCh38.p14.fasta
 
-#.  Likewise, generate a YAML file for the human regions, but denote this
+#.  [host DNA] Likewise, generate a YAML file for the human regions, but denote this
     as contaminants::
 
       ngs-pl setup-references -n -k contaminant_regions -o contaminants.yaml -f GRCh38.p14.fasta
 
-#.  Concatenate both P vivax and human reference sequence to a single fasta file::
+#.  [host DNA] Concatenate both P vivax and human reference sequence to a single fasta file::
 
       cat PvP01_v1.fasta GRCh38.p14.fasta > PvP01_v1-GRCh38.p14.fasta
 
@@ -139,7 +154,8 @@ The next steps are as follow:
       cp $NGS_PIPELINE_BASE/config/config.yaml $NGENV_BASEDIR
       vim $NGSENV_BASEDIR/config.yaml
 
-#.  Concatenate both ``regions.yaml`` and ``contaminants.yaml`` to config.yaml::
+#.  Concatenate both ``regions.yaml`` and ``contaminants.yaml`` to config.yaml, or just
+    ``regions.yaml`` if the host DNA is not being prepared::
 
       cat regions.yaml contaminants.yaml >> $NGSENV_BASEDIR/config.yaml
 
