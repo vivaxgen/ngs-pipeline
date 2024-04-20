@@ -19,7 +19,7 @@ rule wgs:
     input:
         f"{refseq}",
         f"{refseq}.fai",
-        f"{refseq}.bwt.2bit.64",
+        f"{refseq}.{idx_extension}",
         f"{refseq.removesuffix('.fasta')}.dict"
 
 

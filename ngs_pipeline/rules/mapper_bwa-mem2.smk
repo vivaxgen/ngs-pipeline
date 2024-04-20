@@ -2,7 +2,7 @@
 # parameters needed:
 # keep_paired_bam = True/False
 
-# BWA-MEM2 mapper
+# BWA / BWA-MEM2 mapper
 #
 # RG: read groups needs to be defined for proper GATK operation
 # ID: unique ID of a collection of reads sequenced together
@@ -17,13 +17,13 @@ rule reads_mapping:
     # - regions mentioned in regions filtered-in
     # no further filtering is done (eg. secondary/trans/CPP)
     # the final bam file is suitable for uploading to SRA public database
-    threads: thread_allocations.get('mapping', 16)
+    threads: thread_allocations.get('bwa_mapping', 16)
     input:
         read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz",
         # the following is for sanity check purposes
         refseq = refseq,
-        refmap = f"{refseq}.bwt.2bit.64",
+        refmap = f"{refseq}.{idx_extension}"
 
     output:
         bam = "maps/mapped-{idx}.bam" if keep_paired_bam else temp("maps/mapped-{idx}.bam"),
