@@ -63,6 +63,17 @@ continued using manual method following steps described in
 Running the Multi-Step Mode
 ---------------------------
 
+This section of the tutorial shows the use of ``run-multistep-variant-caller``
+single command, which provides the simple and quick way to perform multi-step
+mode of the variant calling.
+In this section, 2 samples of *P vivax* WGS data will be processed to get the
+final result as a concatenated VCF file (a single VCF file containing all
+chromosomes).
+For larger number of samples, it is advisable to have the final result as
+multiple VCF files, each contains a specific chromosome, since the downstream
+analysis then can be performed individually on each chromosome in parallel to
+speed up the analysis.
+
 #.  Activate the environment by executing the ``activate`` script if the
     environment has not been activated::
 
