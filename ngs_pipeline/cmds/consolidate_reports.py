@@ -11,7 +11,7 @@ __license__ = "MIT"
 
 import os
 import pathlib
-from ngs_pipeline import arg_parser
+from ngs_pipeline import arg_parser, cerr
 
 
 filetypes = {
@@ -42,13 +42,26 @@ def consolidate_reports(args):
     outdir = pathlib.Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
+    total_dir = 0
+    consolidated = 0
+    failed = 0
     for indir in args.indirs:
         indir = pathlib.Path(indir)
         for sampledir in indir.iterdir():
+            if not sampledir.is_dir():
+                continue
+            total_dir += 1
             sample = sampledir.name
             srcfile = sampledir / src
+            if not srcfile.exists():
+                failed += 1
+                continue
             dstfile = outdir / dst.format(sample=sample)
             create_relative_symlink(dstfile, srcfile)
+            consolidated += 1
+
+    cerr(f'[Consolidated reports: {consolidated}, failed: {failed} '
+         f'from total: {total_dir} sample directories]')
 
 
 def main(args):
