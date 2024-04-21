@@ -43,8 +43,8 @@ def init_argparser(desc, p=None):
                    help='run without cluster support (eg. only on local node), useful for debugging')
 
     # general options
-    p.arg_dict['target'] = p.add_argument('--target', default='all',
-                                          help='target rule in the snakefile [all]')
+    p.arg_dict['target'] = p.add_argument('--target', default=[], action='append',
+                                          help='target rule(s) in the snakefile [all]')
     p.arg_dict['snakefile'] = p.add_argument('--snakefile', default=None,
                                              help='snakemake file to be called')
 
@@ -155,7 +155,13 @@ def run_snakefile(args, config={}, workdir=None,
     else:
         for k in ['cluster', 'cluster_status', 'cluster_cancel', 'jobscript']:
             setattr(args, k, None)
-    
+
+    # set targets
+    if type(args.target) != list:
+        targets = [args.target]
+    else:
+        targets = args.target if any(args.target) else ['all']
+
     # run snakefile
     start_time = datetime.datetime.now()
     status = snakemake.snakemake(
@@ -174,7 +180,7 @@ def run_snakefile(args, config={}, workdir=None,
         cluster_status=args.cluster_status,
         cluster_cancel=args.cluster_cancel,
         jobscript=args.jobscript,
-        targets=[args.target],
+        targets=targets,
     )
     finish_time = datetime.datetime.now()
 
@@ -243,6 +249,8 @@ def run_snakefile_8(args, config={}, workdir=None,
 
     # get panel configuration and set as base configuration from configs/
     if args.panel:
+        if args.base_config:
+            cexit(f'ERROR: cannot use both --panel and --base-config')
         args.base_config = 'configs/' + args.panel + '.yaml'
 
     if args.base_config:
@@ -268,6 +276,12 @@ def run_snakefile_8(args, config={}, workdir=None,
         # nocluster means prevent from running using batch/job scheduler
         args.profile = None
 
+    # set targets
+    if type(args.target) != list:
+        targets = [args.target]
+    else:
+        targets = args.target if any(args.target) else ['all']
+
     try:
         # set with --profile first
         if args.profile:
@@ -287,7 +301,7 @@ def run_snakefile_8(args, config={}, workdir=None,
         cargs.configfile = configfiles
         #cargs.config = [f'{k}={v}' for k, v in setup_config(config).items()]
         cargs.config = setup_config(config)
-        cargs.targets = args.target if type(args.target) == list else [args.target]
+        cargs.targets = targets
 
         # running mode
         cargs.dryrun = args.dryrun
