@@ -22,7 +22,12 @@ if 'NGS_PIPELINE_BASE' not in os.environ:
           file=sys.stderr)
     sys.exit(1)
 
-logging.basicConfig(level=int(os.environ.get('NGS_PIPELINE_LOGLEVEL', 20)))
+# prepare logging ahead of everything else
+if (LOGLEVEL := int(os.environ.get('NGS_PIPELINE_LOGLEVEL', 0))) > 0:
+    if (LOGFILE := os.environ.get('NGS_PIPELINE_LOGFILE', '')):
+        logging.basicConfig(filename=LOGFILE, level=LOGLEVEL)
+    else:
+        logging.basicConfig(level=LOGLEVEL)
 
 
 #from ngs_pipeline import cerr, cexit, subcommands
