@@ -28,6 +28,12 @@ for a_dir in srcdirs:
 
 
 # additional settings and parameters
+
+# GenomicsDBImport
+gdbi_flags = config.get('gdbi_flags', '')
+gdbi_extra_flags = config.get('gdbi_extra_flags', '')
+
+# GenotypeGVCFs
 ggvcf_flags = config.get('ggvcf_flags', '-stand-call-conf 10 -new-qual')
 ggvcf_extra_flags = config.get('ggvcf_extra_flags', '')
 
@@ -88,7 +94,7 @@ rule prepare_gvcf_list:
 
 
 rule combine_gvcf:
-    threads: 8
+    threads: thread_allocations.get('combine_gvcf', 5)
     input:
         f"{destdir}/maps/{{reg}}.tsv"
     output:
@@ -97,10 +103,15 @@ rule combine_gvcf:
         f"{destdir}/logs/genomicsdbimport-{regpart.notation}.log"
     params:
         #reg = get_interval,
-        reg = regpart.get_interval
+        reg = regpart.get_interval,
+        threads = lambda w, threads: max(threads - 1, 2),
+        flags = gdbi_flags,
+        extra_flags = gdbi_extra_flags,
     shell:
-        "gatk GenomicsDBImport --reader-threads 5 --genomicsdb-workspace-path {output} "
-        "--sample-name-map {input} {params.reg} 2> {log}"
+        "gatk GenomicsDBImport --reader-threads {params.threads} "
+        "--genomicsdb-workspace-path {output} --sample-name-map {input} "
+        "{gdbi_flags} {gdbi_extra_flags} "
+        "{params.reg} 2> {log}"
 
 
 rule jointvarcall_gatk:
