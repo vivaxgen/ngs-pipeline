@@ -58,6 +58,8 @@ class RegPartition(object):
 
     def __init__(self, partial_regions):
         self.split = False
+        self.reg_arg_name = '-L'
+        self.tgt_arg_name = '-L'
         self.partitions = {}
 
         # sanity check
@@ -87,6 +89,13 @@ class RegPartition(object):
              ]
         )
 
+    def set_arg_name(self, reg_arg_name, tgt_arg_name):
+        ''' set the command line argument name for setting region
+            and bed filename
+        '''
+        self.reg_arg_name = reg_arg_name
+        self.tgt_arg_name = tgt_arg_name
+
     @property
     def region_vcf(self):
         if self.split:
@@ -106,15 +115,15 @@ class RegPartition(object):
                 raise RuntimeError('wildcards do not have idx variable')
             idx = int(w.idx)
             start, end = self.partitions[w.reg][idx]
-            return f'-L {w.reg}:{start}-{end}'
+            return f'{self.reg_arg_name} {w.reg}:{start}-{end}'
 
         if interval_dir:
-            return f'-L {interval_dir}/{w.reg}.bed'
+            return f'{self.tgt_arg_name} {interval_dir}/{w.reg}.bed'
 
         if interval_file:
-            return f'-L {interval_file}'
+            return f'{self.tgt_arg_name} {interval_file}'
 
-        return f'-L {w.reg}'
+        return f'{self.reg_arg_name} {w.reg}'
 
 
 # EOF
