@@ -24,8 +24,8 @@ include: "msf_trimmer_lr.smk"
 include: "msf_mapper_minimap2_lr.smk"
 include: "msf_merge_map.smk"
 
-# use FreeBayes panel variant-calling
-include: "msf_varcall_freebayes.smk"
+# use FreeBayes panel variant-calling as default
+include: config.get('msf_varcall_wf', 'msf_varcall_freebayes.smk')
 
 # include report-generating stuff and report merging
 include: "msf_panel_genreport.smk"
