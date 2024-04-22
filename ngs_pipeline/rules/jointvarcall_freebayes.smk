@@ -1,53 +1,32 @@
+# jointvarcall_freebayes.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
 
-# prepare global params
+__copyright__ = "(C) 2023-2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
 
-include: "global_params.smk"
-
-
-# source directories would be provided using config=dict() args of snakemake()
-
-srcdirs = config['srcdirs']
-destdir = config.get('destdir', 'vcfs')
-
-# get all samples and sample directories
-
-SAMPLES = []
-SAMPLE_DIRS = []
-for a_dir in srcdirs:
-    S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
-    SAMPLES += [s for s in S if s != 'config.yaml']
-    SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
+# jointvarcall_utils.smk will provide the following:
+# variables:
+#   srcdirs
+#   destdir
+#   SAMPLE_DIRS
+#   regpart
+# functions:
+#   get_final_file
+#   get_bam_files
+# rules:
+#   concat_split_vcfs
+#   concat_region_vcfs
 
 
-# get regions
-variant_file = config.get('variant_file', None)
-interval_file = config.get('interval_file', None)
-interval_dir = config.get('interval_dir', None)
+include: "jointvarcall_utils.smk"
+
+freebayes_flags = config.get('freebayes_flags', '')
 freebayes_extra_flags = config.get('freebayes_extra_flags', '')
 
-
-def get_interval(w):
-    global interval_dir, interval_file
-    if interval_dir:
-        return f'--targets {interval_dir}/{w.reg}.bed'
-    if interval_file:
-        return f'--targets {interval_file}'
-    return f'--region {w.reg}'
-
-# final output of this workflow
-
-def get_final_file(w):
-    return [f"{destdir}/vcfs/{reg}.vcf.gz" for reg in REGIONS]
-
-
-def get_bam_files():
-    # traversing on all source directories
-    return [f'{a_dir}/maps/mapped-final.bam' for (a_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
-
-
-# define local rules
-
-localrules: all, prepare_bam_list
+# freebayes argument is --region chrom:start-end or --targets bed_file
+# so we need to setup the regpart using
+# set_arg_name(region_argument_name, bedfile_argument_name)
+regpart.set_arg_name('--region', '--targets')
 
 
 # list of rules
@@ -63,7 +42,7 @@ rule prepare_bam_list:
     input:
         lambda w: get_bam_files()
     output:
-        f"{destdir}/bam_list.txt"
+        f"{destdir}/meta/bam_list.txt"
     run:
         # check format for freebayes bam file list
         # write {input} to ??
@@ -73,19 +52,26 @@ rule prepare_bam_list:
             for s, a_file in zip(SAMPLES, input):
                 f_out.write(f'{a_file}\n')
 
+
 rule jointvarcall_freebayes:
-    threads: 3
+    # freebayes can only work with single thread
+    threads: 1
     input:
-        f"{destdir}/bam_list.txt"
+        f"{destdir}/meta/bam_list.txt"
     output:
-        f"{destdir}/vcfs/{{reg}}.vcf.gz"
+        # regpart.region_vcf() will return either:
+        #    temp(f"{destdir}/split/{{reg}}~{{idx}}.vcf.gz")
+        # or
+        #    f"{destdir}/vcfs/{{reg}}.vcf.gz"
+        regpart.region_vcf
     params:
-        reg = get_interval,
-        fb_args = "--haplotype-length -1 --min-coverage 10 " + freebayes_extra_flags
+        # regpart.get_interval() will return either one of the following:
+        # --region CHROM, --region CHROM:START-END, --targets BEDFILE_PATH
+        reg = regpart.get_interval,
+        flags = freebayes_flags + ' ' + freebayes_extra_flags,
     shell:
         "freebayes --fasta-reference {refseq} -L {input} --ploidy {ploidy} --min-alternate-count 2 {params.reg} "
-        "{params.fb_args} "
-        "| bcftools view -o {output} "
-        "&& sleep 1 && bcftools index {output}"
+        "{params.flags} "
+        "| bcftools view -o {output}"
 
 # EOF
