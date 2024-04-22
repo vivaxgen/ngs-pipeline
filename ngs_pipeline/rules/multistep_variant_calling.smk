@@ -4,6 +4,7 @@
 __copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
 
+# input/output arguments
 outdir = config['outdir']
 infiles = config['infiles']
 underscore = config.get('underscore', 0)
@@ -12,9 +13,15 @@ paired_end = config.get('paired_end', False)
 manifest = config.get('manifest', None)
 jobs = config.get('jobs', 32)
 
+# extra flags for each steps
 prepare_sample_directory_flags = config.get('prepare_sample_directory_flags', '')
 sample_variant_caller_flags = config.get('sample_variant_caller_flags', '')
 joint_variant_caller_flags = config.get('joint_variant_caller_flags', '')
+
+# specific targets and rules
+sample_variant_caller_target = config.get('sample_variant_caller_target', 'all')
+joint_variant_caller_target = config.get('joint_variant_caller_target', 'all')
+joint_variant_caller_smk = config.get('joint_variant_caller_smk', '')
 
 include: 'utilities.smk'
 
@@ -33,9 +40,10 @@ rule varcall_result:
         f'{outdir}/joint/._completed_',
 
 
-rule GVCF:
+rule sample_processing:
     input:
-        f'{outdir}/completed_samples/._completed_'
+        f'{outdir}/completed_samples/._completed_',
+        f'{outdir}/stats.tsv',
 
 
 rule VCF:
@@ -96,11 +104,12 @@ rule run_sample_variant_caller:
         touch(f'{outdir}/analysis/._completed_')
     params:
         jobs = jobs,
+        target = sample_variant_caller_target,
         extra_flags = sample_variant_caller_flags
     shell:
         'ngs-pl run-sample-variant-caller {params.extra_flags} '
         '-j {params.jobs} '
-        '--target all {outdir}/analysis'
+        '--target {params.target} {outdir}/analysis'
 
 
 rule run_check_sample_variant_result:
@@ -109,7 +118,7 @@ rule run_check_sample_variant_result:
         f'{outdir}/analysis/._completed_'
     output:
         touch(f'{outdir}/completed_samples/._completed_'),
-        touch(f'{outdir}/failed_samples/._completed_')
+        touch(f'{outdir}/failed_samples/._completed_'),
     shell:
         'ngs-pl consolidate-samples -o {outdir}/completed_samples '
         '-f {outdir}/failed_samples {outdir}/analysis/'
@@ -122,10 +131,12 @@ rule run_joint_variant_caller:
     output:
         touch(f'{outdir}/joint/._completed_')
     params:
-        extra_flags = joint_variant_caller_flags
+        extra_flags = joint_variant_caller_flags,
+        snakefile = (f'--snakefile {joint_variant_caller_smk}'
+                     if joint_variant_caller_smk else '')
     shell:
         'ngs-pl run-joint-variant-caller {params.extra_flags} '
-        '-o {outdir}/joint {outdir}/analysis/'
+        '{params.snakefile} -o {outdir}/joint {outdir}/analysis/'
 
 
 rule concat_vcfs:
