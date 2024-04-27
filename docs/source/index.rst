@@ -26,8 +26,8 @@ heterozygotes or no data).
 
 vivaxGEN NGS-Pipeline can be installed on laptops, servers or cluster/HPC
 system without the need of administrator/root privileges.
-The only requirement is a UNIX-based system supported by `micromamba
-<https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html>`_
+The only requirement is a UNIX-based system supported by 
+`micromamba <https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html>`_
 (eg. various Linux distributions, WSL2, MacOSX) with preinstalled ``curl``
 and ``bash`` (these two programs are usually installed in the base system).
 
