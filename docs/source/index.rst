@@ -1,11 +1,11 @@
 vivaxGEN NGS-Pipeline Documentation
 ===================================
 
-vivaxGEN NGS-Pipeline is an open-source, non-opiniated pipeline for variant
+vivaxGEN NGS-Pipeline is an open-source, non-opinionated pipeline for variant
 calling (upstream/secondary processing) for paired-end short reads or singleton
 long reads NGS data.
 
-As an non-opiniated pipeline, vivaxgen NGS-Pipeline supports the following
+As a non-opinionated pipeline, vivaxgen NGS-Pipeline supports the following
 program/system:
 
 * read trimmers: fastp, cutadapt, chopper
