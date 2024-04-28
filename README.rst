@@ -36,9 +36,7 @@ Quick Installation
 ------------------
 
 To install ngs-pipeline with all of its dependencies, run the following command
-on shell/terminal:
-
-.. code-block:: console
+on shell/terminal::
 
     "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
 
@@ -67,7 +65,7 @@ To fully update everything, a full installation needs to be performed.
 
 
 Getting Started
---------
+---------------
 
 A quick tutorial on setting up the environment and running the variant calling
 process with the pipeline using *P vivax* data is 
