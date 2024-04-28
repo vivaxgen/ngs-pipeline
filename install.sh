@@ -111,7 +111,7 @@ echo
 echo `realpath ${BASEDIR}`
 echo
 echo "To activate the basic NGS-Pipeline environment (eg. for installing"
-echo "or setting up base enviroment directory, execute the command:"
+echo "or setting up base enviroment directory), execute the command:"
 echo
 echo `realpath ${BASEDIR}`/bin/activate
 echo
