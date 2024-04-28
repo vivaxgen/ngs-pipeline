@@ -3,16 +3,42 @@ vivaxGEN NGS-Pipeline
 =====================
 
 
-The vivaxGEN NGS-Pipeline is a flexible pipeline for upstream processing
-(variant calling) of WGS or targeted-sequencing data from paired-end short
-reads or singleton long reads NGS experiments.
+The vivaxGEN NGS-Pipeline is an open-source, unopinionated pipeline for variant
+calling (upstream/secondary processing) of paired-end short reads or singleton
+long reads NGS data.
+
+The vivaxGEN NGS-Pipeline can be installed on laptops, servers or cluster/HPC
+system without the need of administrator/root privileges.
+The only requirement is a UNIX-based system supported by 
+`micromamba <https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html>`_
+(eg. various Linux distributions, WSL2, MacOSX) with preinstalled ``curl``
+and ``bash`` (these two programs are usually installed in the base system).
+
+The pipeline can be installed in any directory.
+The installation process will not clutter the home directory of the user who
+performs the installation, with the exception of cache directory which usually
+resides in ``~/.cache`` and additional environment line in
+``~/.conda/environment.txt`` (if the file already exists), both can be removed
+manually.
+Once installed, the pipeline can be used by any users who have read access to
+the installation directory.
+
+
+Documentation
+-------------
+
+For extensive documentation with tutorials, usage instructions and developer
+guide (for extending the pipeline), please visit the
+`main documentation site <https://vivaxgen-ngs-pipeline.readthedocs.io/en/latest/>`_.
 
 
 Quick Installation
 ------------------
 
 To install ngs-pipeline with all of its dependencies, run the following command
-on shell/terminal::
+on shell/terminal:
+
+.. code-block:: console
 
     "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
 
@@ -25,12 +51,7 @@ of its activation script.
 The installation takes about 5-15 minutes (depending on internet speed), and
 uses about 5-6 GB of storage.
 
-
-Tutorial
---------
-
-A quick tutorial on setting up the environment and running the variant calling
-process with the pipeline using *P vivax* data is `available here <docs/tutorial.rst>`_.
+To uninstall the pipeline, simply remove the whole installation directory.
 
 
 Updating the Pipeline
@@ -45,19 +66,30 @@ the dependencies installed by ``micromamba`` and ``python pip``.
 To fully update everything, a full installation needs to be performed.
 
 
+Getting Started
+--------
+
+A quick tutorial on setting up the environment and running the variant calling
+process with the pipeline using *P vivax* data is 
+`available here <https://vivaxgen-ngs-pipeline.readthedocs.io/en/latest/userdocs/getting_started.html>`_.
+
+
+
 Quick Overview
 --------------
 
-The vivaxGEN NGS-Pipeline was developed to cater the need to do upstream
-processing for sequencing data produced within vivaxGEN project.
+Initally, the vivaxGEN NGS-Pipeline was developed to cater the need to perform
+upstream processing of sequencing data produced within vivaxGEN project.
+However, the pipeline is generic enough to be used for any kind of sequencing
+projects that require variant-calling processing.
 The pipeline uses snakemake for its workflow system and relies on micromamba to
 provide its dependencies.
-The micromamba dependencies is arranged using mechanism as described in this
-`repo <https://github.com/vivaxgen/install>`_.
+The micromamba dependencies and all settings is arranged using mechanism as
+described in this `repo <https://github.com/vivaxgen/vvg-base>`_.
 
 There are two modes of working with the pipeline:
 
-* multi-step mode
+* multi-stage mode
 
   The multi-step mode allows users to process samples incrementally from
   different sample batches in consistent ways, and is suitable for processing
