@@ -12,9 +12,9 @@ rule gen_report:
     output:
         tsv = '{pfx}/genetic_report.tsv'
     params:
-        extra_flags = config.get('generate_variant_report_extra_flags', '')
-        min_var_qual = config.get('min_variant_qual', 30)
-        min_depth = config.get('min_depth', 10)
+        extra_flags = config.get('generate_variant_report_extra_flags', ''),
+        min_var_qual = config.get('min_variant_qual', 30),
+        min_depth = config.get('min_depth', 10),
     shell:
         "ngs-pl generate-variant-report --mindepth {params.min_depth} --min-var-qual {params.min_var_qual} {params.extra_flags} -o {output.tsv} "
         "--infofile {variant_info} {input.vcf}"
