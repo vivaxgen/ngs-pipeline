@@ -30,6 +30,8 @@ def init_argparser():
                    help='minimum quality for variants')
     p.add_argument('infile',
                    help='input file in vcf.gz format')
+    p.add_argument('--clair3_gvcf', action='store_true',
+                   help='input file is in Clair3 gvcf format')
     return p
 
 
@@ -54,7 +56,7 @@ def generate_variant_report(args):
 
     vcf = VCF(args.infile, gts012=True)
     sample = vcf.samples[0]
-
+    is_clair3_gvcf = args.clair3_gvcf
     for v in vcf:
 
         try:
@@ -62,8 +64,15 @@ def generate_variant_report(args):
             info_row = info_df.loc[(v.CHROM, v.POS)]
             variants.append(info_row.Name)
 
+            if is_clair3_gvcf:
+                # if GT != 0/0, assert that the ALT is not <NON_REF>
+                ALT = max(v.genotypes[0][0:2])
+                if ALT > 0:
+                    assert(v.ALT[ALT] != "<NON_REF>")
+
+
             # check if depth is sufficent
-            if v.INFO.get('DP') < args.mindepth:
+            if (v.format('DP') or v.format('MIN_DP'))[0][0] or (v.INFO.get('DP')) < 10:
                 alleles.append('?')
                 continue
 
