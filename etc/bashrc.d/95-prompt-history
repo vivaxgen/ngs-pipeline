@@ -5,8 +5,8 @@
 
 if [ ! -z ${NGS_PROMPT:-} ]; then
 
-    PS1="(${NGS_PROMPT}) [\u@\h \W]\$ "
-    HIST_EXT=${NGS_PROMPT}
+    export PS1="(${NGS_PROMPT}) [\u@\h \W]\$ "
+    export HIST_EXT=${NGS_PROMPT}
 
 fi
 
@@ -16,8 +16,8 @@ if [ ! -z ${HIST_EXT:-} ]; then
 
     export HISTFILE=${HOME}/.bash_history.${HIST_EXT}
 
-    HISTSIZE=20000
-    HISTFILESIZE=20000
+    export HISTSIZE=20000
+    export HISTFILESIZE=20000
     history -c; history -r
 
 fi
