@@ -68,7 +68,7 @@ def generate_variant_report(args):
                 # if GT != 0/0, assert that the ALT is not <NON_REF>
                 ALT = max(v.genotypes[0][0:2])
                 if ALT > 0:
-                    assert(v.ALT[ALT] != "<NON_REF>")
+                    assert([v.REF, *v.ALT][ALT] != "<NON_REF>")
 
 
             # check if depth is sufficent
