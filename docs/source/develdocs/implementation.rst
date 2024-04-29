@@ -1,4 +1,4 @@
-Design and Implementation of ngs-pipeline
+Design and Implementation of NGS-Pipeline
 =========================================
 
 [TBW]

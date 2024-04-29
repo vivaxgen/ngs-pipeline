@@ -1,8 +1,8 @@
-TUTORIAL
-========
+Getting Started
+===============
 
 The tutorial assumes that the pipeline has been installed as described in the
-Quick Installation section of README.rst.
+Quick Installation section.
 The tutorial will work through setting up a pipeline to process *Plasmodium
 vivax* sequence data using PvP01_v1 reference sequence.
 
@@ -25,18 +25,22 @@ the mandatory steps to prepare the base environment directory:
 
       NGS-PIPELINE_INSTALL_DIR/activate
 
-#.  Setup the base working directory, eg: ``/data/Pv-wgs``::
+#.  Setup the base working directory, eg: ``/data/Pv-wgs``, and change to
+    the directory::
 
       ngs-pl setup-base-directory /data/Pv-wgs
-
-#.  Change to ``/data/Pv-wgs`` directory and edit the ``activate`` script as
-    necessary (eg, changing the prompt notification).
-    Note that any text editor (eg: nano, vim, etc) can be used::
-
       cd /data/Pv-wgs
-      vi activate
 
-#.  Exit and activate the environment using the new ``activate`` file::
+#.  If necessary, edit the ``activate`` script as (eg, changing the prompt
+    notification) using any available text editor (eg: nano, vim, etc).
+    However, the default content of ``activate`` script is suitable for most
+    usage.
+    Important environment variables are set in the script, such as::
+
+       export NGSENV_BASEDIR=/data/Pv-wgs 
+       export NGS_PROMPT=pv-wgs
+
+#.  Exit and activate the new environment using the new ``activate`` file::
 
       exit
       /data/Pv-wgs/activate
