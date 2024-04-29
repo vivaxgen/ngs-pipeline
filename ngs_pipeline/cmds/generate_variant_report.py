@@ -72,7 +72,7 @@ def generate_variant_report(args):
 
 
             # check if depth is sufficent
-            if ((v.format('DP') or v.format('MIN_DP'))[0][0] or v.INFO.get('DP') or 0) < 10:
+            if ((v.format('DP') or v.format('MIN_DP'))[0][0] or v.INFO.get('DP') or 0) < args.mindepth:
                 alleles.append('?')
                 continue
 
