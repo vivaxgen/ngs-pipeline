@@ -72,7 +72,7 @@ def generate_variant_report(args):
 
 
             # check if depth is sufficent
-            if ((v.format('DP') or v.format('MIN_DP'))[0][0] or v.INFO.get('DP') or 0) < args.mindepth:
+            if ((v.format('DP') or v.format('MIN_DP') or [[None]])[0][0] or v.INFO.get('DP') or 0) < args.mindepth:
                 alleles.append('?')
                 continue
 
@@ -100,6 +100,12 @@ def generate_variant_report(args):
         
         except KeyError:
             raise
+
+    # Append those variants that are not present in the VCF
+    variant_not_in_vcf = [a for a in list(info_df.Name) if not a in variants]
+    variants.extend(variant_not_in_vcf)
+    alleles.extend(['?' for _ in variant_not_in_vcf])
+
 
     report_df = pd.DataFrame([[sample] + alleles], columns=['SAMPLE'] + variants)
     report_df.to_csv(args.outfile, index=False, sep='\t')
