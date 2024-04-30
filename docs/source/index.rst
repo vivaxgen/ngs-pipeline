@@ -37,8 +37,8 @@ performs the installation, with the exception of cache directory which usually
 resides in ``~/.cache`` and additional environment line in
 ``~/.conda/environment.txt`` (if the file already exists), both can be removed
 manually.
-Once installed, the pipeline can be used by any users who have read privilege
-to the installation directory.
+Once installed, the pipeline can be used by any users who have read access to
+the installation directory.
 To uninstall the pipeline, simply remove the whole installation directory.
 
 
@@ -46,7 +46,9 @@ Quick Installation
 ------------------
 
 To install ngs-pipeline with all of its dependencies, run the following command
-on shell/terminal::
+on shell/terminal:
+
+.. code-block:: console
 
     "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
 
@@ -66,18 +68,32 @@ pipeline to work with the correct workload manager/job scheduler (currently
 only SLURM and PBSPro, however manual setting can be done for other manager).
 
 
+Updating the Pipeline
+---------------------
+
+The pipeline can be updated by executing the following command in an active
+environment:
+
+.. code-block:: console
+
+    $VVGBIN/update-pipeline.sh
+
+Do note that this only updates the pipeline but does not necessarily update
+the dependencies installed by ``micromamba`` and ``python pip``.
+To fully update everything, a full installation needs to be performed.
+
 
 .. toctree::
-    :maxdepth: 2
-    :caption: User Documentation
+   :maxdepth: 2
+   :caption: User Documentation
 
-    userdocs/getting_started.rst
-    userdocs/installation.rst
+   userdocs/getting_started.rst
+   userdocs/installation.rst
 
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Developer Documentation
+   :maxdepth: 2
+   :caption: Developer Documentation
 
-    develdocs/implementation.rst
+   develdocs/implementation.rst
 

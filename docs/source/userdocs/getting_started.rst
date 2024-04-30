@@ -1,10 +1,62 @@
 Getting Started
 ===============
 
-The tutorial assumes that the pipeline has been installed as described in the
-Quick Installation section.
-The tutorial will work through setting up a pipeline to process *Plasmodium
-vivax* sequence data using PvP01_v1 reference sequence.
+The document will work through setting up a pipeline to process *Plasmodium
+vivax* sequence data using PvP01_v1 reference sequence and perform some
+processing of *P vivax* sequence data.
+
+Quick Installation
+------------------
+
+If vivaxGEN NGS-Pipeline has not been installed in your system, run the
+following command to install it:
+
+.. code-block:: console
+
+    "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
+
+Enter the target directory at the prompt (or just press Enter to use the
+default).
+The installation will take about 5-15 minutes depending on the internet speed
+and will use about 5-6 GB of storage.
+Take a note of the directory where the pipeline is installed and the full path
+of its activation script.
+
+Try to activate the NGS-Pipeline environment by executing its activation script:
+
+.. code-block:: console
+
+  YOUR_INSTALATION_DIRECTORY/bin/activate
+
+
+Checking and Setting the Profile
+--------------------------------
+
+The installation process checks and sets the correct cluster profile for
+Snakemake workflow if the a workload manager/job scheduler is installed in
+a HPC/cluster system.
+
+If it detects SLURM or PBSPro installed in the system, it will try to set up
+a default setting.
+Some HPC settings require additional flags or arguments for job submission, in
+which case the flags/arguments can be supplied with environment variable
+``SNAKEMAKE_CLUSTER_EXTRA_FLAGS``, by following instructions in this section.
+If the installer can not detect existing workload manager, please follow this
+link to manually set the cluster profile.
+
+If the installer could not detect any workload managers/job schedulers, it will
+set the profiler based on the available cores and memory of the system.
+
+To see which profile set by the installer, activate the NGS-Pipeline environment
+and check the link to the Snakefile profile by running the following command:
+
+.. code-block:: console
+
+  ls -l $VVG_BASEDIR/etc/bashrc.d/99-snakemake-profile
+
+The link should point to the correct profile.
+If the link is not correct, adjust the link accordingly following the
+instruction in this section.
 
 
 Preparing Base Environment Directory
