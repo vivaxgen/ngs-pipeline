@@ -175,7 +175,3 @@ Configurations
       -
       - False
       - True
-
-
-
-

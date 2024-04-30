@@ -89,6 +89,7 @@ To fully update everything, a full installation needs to be performed.
 
    userdocs/getting_started.rst
    userdocs/installation.rst
+   userdocs/setting_configs.rst
 
 
 .. toctree::
