@@ -33,10 +33,10 @@ and ``bash`` (these two programs are usually installed in the base system).
 
 The pipeline can be installed in any directory.
 The installation process will not clutter the home directory of the user who
-performs the installation, with the exception of cache directory which usually
-resides in ``~/.cache`` and additional environment line in
-``~/.conda/environment.txt`` (if the file already exists), both can be removed
-manually.
+performs the installation, with the exception of additional environment line in
+``~/.conda/environments.txt`` (if the file already exists).
+The additional line can be removed manually without affecting the working of the
+pipeline.
 Once installed, the pipeline can be used by any users who have read access to
 the installation directory.
 To uninstall the pipeline, simply remove the whole installation directory.

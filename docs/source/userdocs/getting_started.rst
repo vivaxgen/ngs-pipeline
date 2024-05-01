@@ -56,7 +56,7 @@ and check the link to the Snakefile profile by running the following command:
 
 The link should point to the correct profile.
 If the link is not correct, adjust the link accordingly following the
-instruction in this section.
+instruction in :ref:`cluster_extra_flags`.
 
 
 Preparing Base Environment Directory
@@ -133,7 +133,7 @@ speed up the analysis.
 #.  Activate the environment by executing the ``activate`` script if the
     environment has not been activated::
 
-	  /data/Pv-wgs/activate.sh
+	  /data/Pv-wgs/activate
 
 #.  Enter the directory for containing data sets, and create a new directory,
     and enter to the new directory::

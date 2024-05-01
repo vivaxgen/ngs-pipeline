@@ -66,7 +66,7 @@ project, but then customized for certain sample sets down to individual sample.
 To illustrate how the cascading configuration works, assume that we have the
 following directory layout:
 
-.. code-blocks:: console
+.. code-block:: console
 
     NGSENV_BASEDIR
     ├── config.yaml (1)
@@ -95,9 +95,9 @@ following directory layout:
 
 When ``run-sample-variant-caller`` command is executed to perform per sample
 processing (mapping, genotyping) to samples in the ``clinical-samples``,
-``public-samples`` and ``study-A`` directory, a snakemake workflow is being run
-for each sample with the respective sample directory as working directory.
-For ``patient-00`` sample, the workflow will encounter ``config.yaml (2)``,
+``public-samples`` and ``study-A`` directories, a snakemake workflow is being
+run for each sample with the respective sample directory as working directory.
+For ``patient-001`` sample, the workflow will encounter ``config.yaml (2)``,
 then ``config.yaml (3)``, and the base ``config.yaml (1)``.
 The settings in the ``config.yaml (1)`` will be overridden with any settings in
 ``config.yaml (3)``, which then will be overridden by any settings in
@@ -162,7 +162,7 @@ Configurations
     * - refmap_file
       -
       -
-      -1
+      -
     * - deduplicate
       -
       - True
