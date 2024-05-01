@@ -40,9 +40,10 @@ If it detects SLURM or PBSPro installed in the system, it will try to set up
 a default setting.
 Some HPC settings require additional flags or arguments for job submission, in
 which case the flags/arguments can be supplied with environment variable
-``SNAKEMAKE_CLUSTER_EXTRA_FLAGS``, by following instructions in this section.
-If the installer can not detect existing workload manager, please follow this
-link to manually set the cluster profile.
+``SNAKEMAKE_CLUSTER_EXTRA_FLAGS``, by following instructions in
+:ref:`cluster_extra_flags`.
+If the installer can not detect existing workload manager, please follow
+:ref:`profile_manual_setup` to manually set the cluster profile.
 
 If the installer could not detect any workload managers/job schedulers, it will
 set the profiler based on the available cores and memory of the system.
@@ -56,7 +57,7 @@ and check the link to the Snakefile profile by running the following command:
 
 The link should point to the correct profile.
 If the link is not correct, adjust the link accordingly following the
-instruction in :ref:`cluster_extra_flags`.
+instruction in :ref:`snakemake_profile_setting`.
 
 
 Preparing Base Environment Directory
