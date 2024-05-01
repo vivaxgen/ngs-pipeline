@@ -68,7 +68,7 @@ Some workload manager require additional flags in their job script submission
 in order for proper execution of the job script.
 For example, PBSPro in a system might require additional flags to access the
 shared file system, such as ``-l storage:shared_fs``.
-To inject additional flags for job scrip submission, create a resource file in
+To inject additional flags for job script submission, create a resource file in
 ``$VVG_BASEDIR/etc/bashrc.d/95-cluster-extra-flags`` with the following
 content:
 
