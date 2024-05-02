@@ -234,7 +234,8 @@ def run_snakefile_8(args, config={}, workdir=None,
     configfiles = [pathlib.Path(cf) for cf in reversed(args.config)]
 
     if args.no_config_cascade:
-        configfiles.append(NGSENV_BASEDIR / 'config.yaml')
+        if (configfile := NGSENV_BASEDIR / 'config.yaml').is_file():
+            configfiles.append(configfile)
     else:
         L.debug('processing cascading configuration')
         # for each config directory, check config file existence
