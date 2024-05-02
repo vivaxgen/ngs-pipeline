@@ -49,8 +49,7 @@ rule prepare_bam_list:
     output:
         f"{destdir}/meta/bam_list.txt"
     run:
-        # check format for freebayes bam file list
-        # write {input} to ??
+        # SAMPLES is the list of sample IDs defined in jointvarcall_utils.smk
         if len(SAMPLES) != len(input):
             raise ValueError('SAMPLES and input files do not have identical length')
         with open(output[0], 'w') as f_out:
