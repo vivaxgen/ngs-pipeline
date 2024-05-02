@@ -40,7 +40,7 @@ rule varcall_result:
         f'{outdir}/joint/._completed_',
 
 
-rule sample_processing:
+rule sample_variant_calling:
     input:
         f'{outdir}/completed_samples/._completed_',
         f'{outdir}/stats.tsv',
