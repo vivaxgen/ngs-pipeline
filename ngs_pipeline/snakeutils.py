@@ -256,6 +256,11 @@ def run_snakefile_8(args, config={}, workdir=None,
     if args.base_config:
         configfiles.append(NGSENV_BASEDIR / args.base_config)
 
+    # get config file at root of NGSENV_BASEDIR
+    # this config file can be overridden by base/panel/custom config files
+    if (root_configfile := NGSENV_BASEDIR / 'configs' / 'config.yaml').is_file():
+        configfiles.append(root_configfile)
+
     if not any(configfiles):
         cexit(f'ERROR: cannot find any config.yaml in {config_dirs}')
 
