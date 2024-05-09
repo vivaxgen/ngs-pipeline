@@ -8,10 +8,11 @@ Environment Variables
 The activation script of NGS-Pipeline sets several environement variables
 in the activated shell as following:
 
-VVG_BASEDIR
-VVGBIN
-NGS_PIPELINE_BASE
-NGSENV_BASEDIR
+- VVG_BASEDIR
+- VVG_REPODIR
+- VVGBIN
+- NGS_PIPELINE_BASE
+- NGSENV_BASEDIR
 
 Users can set some environment variables either in a profile file under
 ``$VVG_BASEDIR/etc/bashrc.d/`` directory, in ``$NGSENV_BASEDIR/profile``, or

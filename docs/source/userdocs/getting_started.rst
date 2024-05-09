@@ -33,11 +33,11 @@ Checking and Setting the Profile
 --------------------------------
 
 The installation process checks and sets the correct cluster profile for
-Snakemake workflow if the a workload manager/job scheduler is installed in
+Snakemake workflow if a workload manager/job scheduler is installed in
 a HPC/cluster system.
 
-If it detects SLURM or PBSPro installed in the system, it will try to set up
-a default setting.
+If SLURM or PBSPro is installed in the system, the installation script will
+try to set up a default setting.
 Some HPC settings require additional flags or arguments for job submission, in
 which case the flags/arguments can be supplied with environment variable
 ``SNAKEMAKE_CLUSTER_EXTRA_FLAGS``, by following instructions in
