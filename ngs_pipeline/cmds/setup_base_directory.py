@@ -62,12 +62,8 @@ def setup_base_directory(args):
     
     # create directory structure
     basedir = Path(args.basedir)
-    basedir.mkdir(exist_ok=True)
-
-
-    (basedir / 'configs').mkdir(exist_ok=True)
-    (basedir / 'sets').mkdir(exist_ok=True)
-    (basedir / 'refs').mkdir(exist_ok=True)
+    (basedir / 'configs' / 'refs').mkdir(exist_ok=True, parents=True)
+    (basedir / 'sets').mkdir(exist_ok=True, parents=True)
 
     # check if we are under vivaxGEN base install
 
@@ -82,7 +78,7 @@ def setup_base_directory(args):
             '-o', (basedir / 'activate').as_posix(),
             '-b', VVG_BASEDIR,
             '-e', f'NGSENV_BASEDIR={basedir.resolve()} ',
-            '-e', f'NGS_PROMPT={basedir.name.lower()}'
+            '-e', f'NGS_PROMPT={basedir.name}'
         ])
         
     else:
@@ -101,7 +97,7 @@ def setup_base_directory(args):
             )
         activation_file.chmod(0o775)
 
-    with open(basedir / 'bashrc', 'w') as f_out:
+    with open(basedir / 'configs' / 'bashrc', 'w') as f_out:
         f_out.write(bashrc_source_template)
 
 
