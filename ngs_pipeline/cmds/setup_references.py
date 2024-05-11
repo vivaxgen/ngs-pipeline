@@ -30,8 +30,10 @@ def init_argparser():
     p.add_argument('-o', '--outfile', required=True,
                    help='YAML-formated output filename')
     p.add_argument('-p', '--pattern', default=None,
-                   help='pattern to match')
-    p.add_argument('--outfasta', default='')
+                   help='regex pattern to match labels of oontigs/segments')
+    p.add_argument('--outfasta', default='',
+                   help='FASTA outfile for contigs/segments filtered by '
+                   'pattern')
 
     return p
 
