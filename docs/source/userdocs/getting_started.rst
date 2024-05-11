@@ -88,30 +88,30 @@ the mandatory steps to prepare the base environment directory:
 #.  Activate the vivaxGEN NGS-Pipeline environment by running its activation
     script, as noted after the automatic installation finished, eg:
 
-.. code-block:: console
+    .. prompt:: bash
 
-      NGS-PIPELINE_INSTALL_DIR/activate
+          NGS-PIPELINE_INSTALL_DIR/activate
 
 #.  Setup the base working directory, eg: ``/data/Pv-wgs/PvP01_v1``:
 
-.. code-block:: console
+    .. prompt:: bash
 
-      ngs-pl setup-base-directory /data/Pv-wgs/PvP01_v1
-      cd /data/Pv-wgs/PvP01_v1
+          ngs-pl setup-base-directory /data/Pv-wgs/PvP01_v1
+          cd /data/Pv-wgs/PvP01_v1
 
-.. tip::
+    .. tip::
 
-  To easily identify and differentiate between several base environemnt
-  directory, it is recommended to use the reference genome name as part of the
-  directory name.
+      To easily identify and differentiate between several base environemnt
+      directory, it is recommended to use the reference genome name as part
+      of the directory name.
 
 #.  Exit the current environment and activate the new environment using
     the new ``activate`` file:
 
-.. code-block:: console
+    .. prompt:: bash
 
-      exit
-      /data/Pv-wgs/PvP01_v1/activate
+          exit
+          /data/Pv-wgs/PvP01_v1/activate
 
     Once activated, the environment directory can be accessed using environment
     variable ``NGSENV_BASEDIR``.
@@ -155,7 +155,7 @@ sequences.
   settings.
   However, if none of the preset settings are suitable, then the setup can be
   continued using manual method following steps described in
-  :doc:`setup-base-env-dir.rst`
+  :doc:`setup-base-env-dir`.
 
 
 Running the Multi-Step Mode
