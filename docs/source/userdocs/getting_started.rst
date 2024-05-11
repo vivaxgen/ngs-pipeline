@@ -5,6 +5,13 @@ The document will work through setting up a pipeline to process *Plasmodium
 vivax* sequence data using PvP01_v1 reference sequence and perform some
 processing of *P vivax* sequence data.
 
+.. note::
+
+  Run this tutorial under a terminal multiplexer such as ``tmux`` or ``screen``
+  when using a remote system to avoid termination of a running program if the
+  network is disrupted.
+
+
 Quick Installation
 ------------------
 
@@ -154,7 +161,7 @@ speed up the analysis.
 
       cd reads-1
       wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR111/ERR111714/ERR111714_1.fastq.gz
-      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR111/ERR111714/ERR111714_1.fastq.gz
+      wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR111/ERR111714/ERR111714_2.fastq.gz
       wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR113/004/ERR1138854/ERR1138854_1.fastq.gz
       wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR113/004/ERR1138854/ERR1138854_2.fastq.gz
       cd ..
@@ -236,7 +243,7 @@ and then do joint variant calling with the previous batch:
 #.  Run the multi-step variant calling with the new data, but only to the step
     of sample variant calling::
 
-      ngs-pl run-multistep-variant-caller -o batch-2 --target GVCF reads-2/*.fastq.gz
+      ngs-pl run-multistep-variant-caller -o batch-2 --target sample_variant_calling reads-2/*.fastq.gz
 
     Wait until the process finishes.
 
@@ -252,12 +259,15 @@ and then do joint variant calling with the previous batch:
     directory, while the concatenated VCF file containing all chromosomes in
     a single file would be ``joint-batches/concatenated.vcf.gz``.
 
+Congratulation!
+You now have sucessfully perform joint variant calling between 2 sample batches.
+
 
 Working with SRA Data
 ---------------------
 
 For working with many published FASTQ read files from SRA databases (NCBI SRA
-or EMBL ENA), `SRA-Repo <https://github.com/vivaxgen/sra-repo>` can be used to
+or EMBL ENA), `SRA-Repo <https://github.com/vivaxgen/sra-repo>`_ can be used to
 help downloading and managing SRA read files.
 
 This part of tutorial requires ``SRA-Repo`` to be installed.
@@ -288,14 +298,14 @@ generate a manifest file::
 In the terminal/shell with active NGS-Pipeline environment, perform sample
 variant calling::
 
-    ngs-pl run-multistep-variant-caller -o batch-3 --target GVCF -i manifest-3.tsv .
+    ngs-pl run-multistep-variant-caller -o batch-3 --target sample_variant_calling -i manifest-3.tsv .
 
 Note the dot (indicating current directory) at the last part of the above command.
 
 Once the sample variant calling finishes, perform joint variant calling with the
 previous batches::
 
-    ngs-pl run-joint-variant-caller -o new-joint --target concatenated_VCF batch-1/completed_samples batch-2/completed_samples batch-3/completed_samples
+    ngs-pl run-joint-variant-caller -o new-joint --target concatenated_vcf batch-1/completed_samples batch-2/completed_samples batch-3/completed_samples
 
 Once the joint variant calling process finishes, inspect the result in the 
 ``new-joint``directory.
