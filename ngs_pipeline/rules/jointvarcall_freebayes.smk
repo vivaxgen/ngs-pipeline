@@ -8,6 +8,7 @@ __license__ = "MIT"
 # variables:
 #   srcdirs
 #   destdir
+#   SAMPLES
 #   SAMPLE_DIRS
 #   regpart
 # functions:
@@ -77,5 +78,9 @@ rule jointvarcall_freebayes:
         "freebayes --fasta-reference {refseq} -L {input} --ploidy {ploidy} "
         "{params.reg} {params.flags} "
         "| bcftools view -o {output}"
+
+
+# order of the rules for {reg}.vcf.gz in case of non-split joint calling
+ruleorder: jointvarcall_freebayes > concat_split_vcfs
 
 # EOF
