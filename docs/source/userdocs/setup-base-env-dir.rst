@@ -13,31 +13,39 @@ The root of the hierarchical directory is called base environment directory,
 and can be accessed with NGSENV_BASEDIR environment variable.
 All necessary files include the configuration, reference, data set (read files)
 and the analysis result.
-Since UNIX-based systems treat symbolic link files in identical ways as real
-files, it is possible that the actual files reside in other directory and only
-the symbolic links reside in the base environment directory.
 This scheme was chosen to accomodate the cascading configuration mechanism,
 where the pipeline process will walk across directory hierarchy to get
 configuration file ``config.yaml`` from the working directory (or the sample
 directory) to the base environment directory.
 
-The recommended structure of the base environment directory is::
+Since UNIX-based systems treat symbolic link files in identical ways as real
+files, it is possible that the actual files reside in other directory and only
+the symbolic links reside in the base environment directory.
 
-    NGSENV_BASEDIR/
-                   activate
-                   bashrc
-                   config.yaml
-                   configs/
-                   refs/
-                   sets/
+The recommended layout of the base environment directory is:
+
+.. codeblock:: console
+
+      NGSENV_BASEDIR
+      ├── activate
+      ├── configs
+      │   ├── bashrc
+      │   ├── config.yaml
+      │   └── refs
+      └── sets
 
 Note that only ``bashrc``, ``config.yaml`` and ``configs`` are the mandatory
 names to be used for the bash source file, main config file and configuration
 directory, while the rest of the file and directory names can be anything.
 However, for consistency purposes, it is recommended to use the above file
 and directory names.
-The ``refs`` directory is used to keep all reference files, including the
-reference sequence and its index files, region files and any oher settings.
+
+The ``configs/refs`` directory is used to keep all reference files, including
+the reference sequence and its index files, region files and any oher settings.
+Although this directory does not have to be under ``configs/``, having the
+directory here will ease the replication of the environment since only one
+whole ``configs/`` directory is then needed to be shared to other system. 
+
 The ``sets`` directory is the main working directory to perform the analysis.
 
 

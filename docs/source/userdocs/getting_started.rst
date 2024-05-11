@@ -31,7 +31,7 @@ of its activation script.
 
 Try to activate the NGS-Pipeline environment by executing its activation script:
 
-.. code-block:: console
+.. prompt:: bash
 
   YOUR_INSTALATION_DIRECTORY/bin/activate
 
@@ -63,7 +63,7 @@ set the profiler based on the available cores and memory of the system.
 To see which profile set by the installer, activate the NGS-Pipeline environment
 and check the link to the Snakefile profile by running the following command:
 
-.. code-block:: console
+.. prompt:: bash
 
   ls -l $VVG_BASEDIR/etc/bashrc.d/99-snakemake-profile
 
@@ -120,7 +120,7 @@ To continue preparing the base enviroment directory with automatic method
 using preset settings for *P vivax* with PvP01_v1 reference sequence, change to
 base environment directory:
 
-.. code-block:: console
+.. prompt:: bash
   
       cd $NGSENV_BASEDIR
 
@@ -128,7 +128,7 @@ If running in an HPC/cluster system or workstation/server with 16-core or more,
 use the following command to setup the base environment directory with full
 version of PvP01_v1 setting:
 
-.. code-block:: console
+.. prompt:: bash
 
       bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/setup.sh)
 
@@ -136,7 +136,7 @@ If running in a laptop or desktop with less than 16-core, use the following
 command to setup the base enviroment directory with lite version of PvP01_v1
 setting:
 
-.. code-block:: console
+.. prompt:: bash
 
       bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/setup-lite.sh)
 
@@ -176,25 +176,33 @@ chromosomes).
   speed up the analysis.
 
 #.  Activate the environment by executing the ``activate`` script if the
-    environment has not been activated::
+    environment has not been activated:
 
-	  /data/Pv-wgs/PvP01_v1/activate
+    .. prompt:: bash
+      
+      /data/Pv-wgs/PvP01_v1/activate
 
 #.  Enter the directory for containing data sets, and create a new directory,
-    and enter to the new directory::
+    and enter to the new directory:
+
+    .. prompt:: bash
 
       cd $NGSENV_BASEDIR/sets
       mkdir my-tutorial
       cd my-tutorial
 
-#.  Create a directory to hold the FASTQ read files::
+#.  Create a directory to hold the FASTQ read files:
 
-	  mkdir reads-1
+    .. prompt:: bash
+
+	    mkdir reads-1
 
 #.  Download read files related to 2 *P. vivax* sequence data from ENA (note
     that for working with public SRA read files, consider using
     `SRA-Repo <https://github.com/vivaxgen/sra-repo>`_ to manage and
-    automatically download the read files)::
+    automatically download the read files):
+
+    .. prompt:: bash
 
       cd reads-1
       wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR111/ERR111714/ERR111714_1.fastq.gz
@@ -204,13 +212,17 @@ chromosomes).
       cd ..
 
 #.  Run the multi-step mode variant calling process by executing this single
-    command::
+    command:
+
+    .. prompt:: bash
 
       ngs-pl run-multistep-variant-caller -o batch-1 --paired reads-1/*.fastq.gz
 
     Wait until the process finishes.
 
-#.  Inspect the ``batch-1`` directory by performing directorylisting::
+#.  Inspect the ``batch-1`` directory by performing directorylisting:
+
+    .. prompt:: bash
 
       ls batch-1
 
@@ -259,15 +271,23 @@ chromosomes).
     ``stats.tsv``
       This file contains the statistics of each step of the process.
 
+Congratulation!
+You have just performed your first variant calling analysis with the pipeline.
 The main output file(s) of this whole variant calling process are VCF files
 inside ``joint/vcfs`` and ``concatenated.vcf.gz``.
+
+
+Performing Joint Calling with New Sample Batches
+-----------------------------------------------
 
 Now let assume that another batch of samples are available.
 The following steps provide instructions to perform sample variant calling
 and then do joint variant calling with the previous batch:
 
 #.  Download read files related to another 2 of *P vivax* sequence data from
-    SRA database::
+    SRA database:
+
+    .. prompt:: bash
 
       mkdir reads-2
       cd reads-2
@@ -278,14 +298,18 @@ and then do joint variant calling with the previous batch:
       cd ..
 
 #.  Run the multi-step variant calling with the new data, but only to the step
-    of sample variant calling::
+    of sample variant calling:
+
+    .. prompt:: bash
 
       ngs-pl run-multistep-variant-caller -o batch-2 --target sample_variant_calling reads-2/*.fastq.gz
 
     Wait until the process finishes.
 
 #.  Run the joint-variant calling by combining the completed samples of
-    ``batch-1`` and ``batch-2`` together::
+    ``batch-1`` and ``batch-2`` together:
+
+    .. prompt:: bash
 
       ngs-pl run-joint-variant-caller -o joint-batches --target concatenated_vcf batch-1/completed_samples batch-2/completed_samples
 
@@ -313,14 +337,25 @@ properly.
 
 Open a new terminal/shell and change to the the tutorial directory.
 Generate a tab-delimited sample file named ``my-samples.tsv`` with the content
-as follow::
+as follow:
+
+.. code-block:: console
 
     SAMPLE      COUNTRY   SRA
     PH0098-C    C1        ERR216478,ERR490276
     PY0074-C    C2        ERR1138883
 
+.. note::
+
+  The sample ``PH0098-C`` has 2 SRA ids (meaning it will be called using two
+  FASTQ paired reads).
+  When a sample has been sequenced in more than one lane/flowcell, or been
+  re-sequenced, all FASTQ pairs can be used within single analysis directly.
+
 Activate SRA-Repo by activating its activation script, and fetch the SRA read
-files in ``my-samples.tsv`` above::
+files in ``my-samples.tsv`` above:
+
+.. prompt:: bash
 
     <YOUR_SRA_REPO_INSTALLATION>/bin/activate
     sra-repo.py fetch --ntasks 6 --samplefile my-samples.tsv:SAMPLE,SRA
@@ -328,19 +363,29 @@ files in ``my-samples.tsv`` above::
 The above command will download the SRA read files and store it inside the
 ``SRA-Repo`` installation directory.
 After the download finishes, link the SRA read files to a new directory and
-generate a manifest file::
+generate a manifest file:
+
+.. prompt:: bash
 
     sra-repo.py link -o manifest-3.tsv --outdir reads-3 --samplefile my-samples.tsv:SAMPLE,SRA
 
+.. note::
+
+  Inspect the content of ``my-samples.tsv``, and familiarize with the format.
+  Each FASTQ read file is separated by comma, and different pairs for the same
+  sample are sepeareted by semi-colon.
+
 In the terminal/shell with active NGS-Pipeline environment, perform sample
-variant calling::
+variant calling:
 
-    ngs-pl run-multistep-variant-caller -o batch-3 --target sample_variant_calling -i manifest-3.tsv .
+.. prompt:: bash
 
-Note the dot (indicating current directory) at the last part of the above command.
+    ngs-pl run-multistep-variant-caller -o batch-3 --target sample_variant_calling -i manifest-3.tsv
 
 Once the sample variant calling finishes, perform joint variant calling with the
-previous batches::
+previous batches:
+
+.. prompt:: bash
 
     ngs-pl run-joint-variant-caller -o new-joint --target concatenated_vcf batch-1/completed_samples batch-2/completed_samples batch-3/completed_samples
 
