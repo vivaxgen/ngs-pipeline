@@ -71,4 +71,8 @@ rule concat_region_vcfs:
         'bcftools concat -o {output} {input} 2> {log}'
 
 
+rule concatenated_vcf:
+    input:
+        f'{destdir}/concatenated.vcf.gz'
+
 # EOF
