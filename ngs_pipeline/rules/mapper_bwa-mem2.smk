@@ -33,8 +33,7 @@ rule reads_mapping:
         log2 = "logs/filter-reads-{idx}.json",
         log3 = "logs/filter_reads_region-{idx}.log",
         log4 = "logs/fixmate-{idx}.log"
-    benchmark:
-        "logs/bwa-mem2-{idx}.bm.txt"
+
     params:
         sample = sample,
         rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'",
