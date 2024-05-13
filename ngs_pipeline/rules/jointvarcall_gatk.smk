@@ -4,28 +4,22 @@
 __copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
 
-# prepare global params
+# jointvarcall_utils.smk will provide the following:
+# variables:
+#   srcdirs
+#   destdir
+#   SAMPLES
+#   SAMPLE_DIRS
+#   regpart
+# functions:
+#   get_final_file
+#   get_bam_files
+# rules:
+#   concat_split_vcfs
+#   concat_region_vcfs
 
-include: "global_params.smk"
-include: "utilities.smk"
 
-
-# source directories would be provided using config=dict() args of snakemake()
-
-srcdirs = set(config['srcdirs'])
-destdir = config.get('destdir', 'vcfs')
-
-# get all samples and sample directories
-
-SAMPLES = []
-SAMPLE_DIRS = []
-for a_dir in srcdirs:
-    S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
-    # filter for non-sample directories/files
-    S = [s for s in S if s != 'config.yaml']
-    SAMPLES += S
-    SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
-
+include: "jointvarcall_utils.smk"
 
 # additional settings and parameters
 
@@ -37,44 +31,18 @@ gdbi_extra_flags = config.get('gdbi_extra_flags', '')
 ggvcf_flags = config.get('ggvcf_flags', '-stand-call-conf 10 -new-qual')
 ggvcf_extra_flags = config.get('ggvcf_extra_flags', '')
 
-regpart = RegPartition(PARTIALS)
-
-
-def get_interval(w):
-    global interval_dir, interval_file
-    if interval_dir:
-        return f'-L {interval_dir}/{w.reg}.bed'
-    if interval_file:
-        return f'-L {interval_file}'
-    return f'-L {w.reg}'
-
-
-# final output of this workflow
-
-def get_final_file(w):
-    return [f"{destdir}/vcfs/{reg}.vcf.gz.csi" for reg in REGIONS]
-
 
 def get_gvcf_files(region):
     # traversing on all source directories
     return [f'{s_dir}/gvcf/{s}-{region}.g.vcf.gz' for (s_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
 
 
-# define local rules
-
-localrules: all, prepare_gvcf_files
-
-
 # list of rules
 
 rule all:
+    localrule: True
     input:
         get_final_file
-
-
-rule concatenated_VCF:
-    input:
-        f'{destdir}/concatenated.vcf.gz'
 
 
 # get the list of all gvcfs
@@ -132,36 +100,8 @@ rule jointvarcall_gatk:
         "-O {output} {params.variantfile} {params.reg} {params.extra_flags} 2> {log}"
 
 
-rule concat_split_vcfs:
-    # this rule concatenate split-based VCF files into correspoding region
-    # or chromosome-based VCF files
-    threads: 2
-    input:
-        regpart.get_all_region_vcf
-    output:
-        f"{destdir}/vcfs/{{reg}}.vcf.gz"
-    log:
-        f"{destdir}/logs/bcftools-concat-{{reg}}.log"
-    shell:
-        "bcftools concat -o {output} {input} 2> {log}"
-
-
-# order of the rules for {reg}.vcf.gz
+# order of the rules for {reg}.vcf.gz in case of non-split joint calling
 ruleorder: jointvarcall_gatk > concat_split_vcfs
-
-
-rule concat_region_vcfs:
-    # this rule concatenate all region/chromosome-based VCF files
-    # into single VCF file
-    threads: 2
-    input:
-        get_final_file
-    output:
-        f'{destdir}/concatenated.vcf.gz'
-    log:
-        f'{destdir}/logs/bcftools-concat.log'
-    shell:
-        'bcftools concat -o {output} {input} 2> {log}'
 
 
 # EOF
