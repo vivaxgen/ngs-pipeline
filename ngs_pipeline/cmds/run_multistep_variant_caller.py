@@ -34,7 +34,7 @@ def init_argparser():
     p.add_argument('-i', '--manifest', default=None,
                    help='manifest file  as input')
 
-    p.add_argument('-o', '--outdir',
+    p.add_argument('-o', '--outdir', required=True,
                    help='output directory')
     p.add_argument('infiles', nargs='*',
                    help="read files")
@@ -42,7 +42,7 @@ def init_argparser():
     return p
 
 
-def run_multistep_variant_caller(args):
+def run_multistep_variant_caller(args, console=True):
 
     import ngs_pipeline
     from ngs_pipeline import get_snakefile_path, snakeutils
@@ -63,11 +63,13 @@ def run_multistep_variant_caller(args):
     )
 
     status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+    if not console:
+        return status, elapsed_time
 
     if not status:
-        cerr('[WARNING: full run of discovery variant calling '
+        cerr('[WARNING: full run of multistep variant calling '
              'did not successfully complete]')
-    cerr(f'[Finish full run of discovery variant calling (time: {elapsed_time})]')
+    cerr(f'[Finish full run of multi-step variant calling (time: {elapsed_time})]')
 
 
 def main(args):
