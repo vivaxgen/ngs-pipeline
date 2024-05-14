@@ -55,6 +55,7 @@ def run_multistep_variant_caller(args, console=True):
         outdir=args.outdir,
         infiles=args.infiles,
         jobs=args.j,
+        rerun=(args.manifest is None) and not any(args.infiles),
     )
 
     args.snakefile = get_snakefile_path(
