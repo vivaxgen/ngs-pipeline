@@ -12,6 +12,8 @@ singleton = config.get('singleton', False)
 paired_end = config.get('paired_end', False)
 manifest = config.get('manifest', None)
 jobs = config.get('jobs', 32)
+rerun = config.get('rerun', False)
+unlock = config.get('unlock', False)
 
 # extra flags for each steps
 prepare_sample_directory_flags = config.get('prepare_sample_directory_flags', '')
@@ -22,6 +24,7 @@ joint_variant_caller_flags = config.get('joint_variant_caller_flags', '')
 sample_variant_caller_target = config.get('sample_variant_caller_target', 'all')
 joint_variant_caller_target = config.get('joint_variant_caller_target', 'all')
 joint_variant_caller_smk = config.get('joint_variant_caller_smk', '')
+
 
 include: 'utilities.smk'
 
@@ -71,7 +74,7 @@ rule consolidated_reports:
 rule generate_manifest:
     localrule: True
     output:
-        f'{outdir}/metafile/manifest.tsv'
+        f'{outdir}/metafile/manifest.tsv' if not rerun else []
     params:
         underscore = f'--underscore {underscore}' if underscore else '',
         singleton = '--single' if singleton else '',
@@ -104,11 +107,13 @@ rule run_sample_variant_caller:
         touch(f'{outdir}/analysis/._completed_')
     params:
         jobs = jobs,
+        rerun = '--rerun' if rerun else '',
+        unlock = '--unlock' if unlock else '',
         target = sample_variant_caller_target,
         extra_flags = sample_variant_caller_flags
     shell:
         'ngs-pl run-sample-variant-caller {params.extra_flags} '
-        '-j {params.jobs} '
+        '-j {params.jobs} {params.rerun} {params.unlock} '
         '--target {params.target} {outdir}/analysis'
 
 
@@ -131,11 +136,12 @@ rule run_joint_variant_caller:
     output:
         touch(f'{outdir}/joint/._completed_')
     params:
+        rerun = '--rerun' if rerun else '',
         extra_flags = joint_variant_caller_flags,
         snakefile = (f'--snakefile {joint_variant_caller_smk}'
                      if joint_variant_caller_smk else '')
     shell:
-        'ngs-pl run-joint-variant-caller {params.extra_flags} '
+        'ngs-pl run-joint-variant-caller {params.extra_flags} {params.rerun}'
         '{params.snakefile} -o {outdir}/joint {outdir}/analysis/'
 
 

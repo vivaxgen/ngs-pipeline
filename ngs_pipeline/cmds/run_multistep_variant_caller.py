@@ -63,6 +63,13 @@ def run_multistep_variant_caller(args, console=True):
         from_module=ngs_pipeline
     )
 
+    if config['rerun']:
+        cerr('[INFO: unlocking all working directories...]')
+        args.unlock = True
+        status, elapse_time = snakeutils.run_snakefile(args, config=config)
+        args.unlock = False
+        args.rerun = True
+
     status, elapsed_time = snakeutils.run_snakefile(args, config=config)
     if not console:
         return status, elapsed_time
