@@ -3,6 +3,7 @@ generate_variant_report.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
 (c) 2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2024 Ludwig Hoon <ldwgkshoon@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -47,7 +48,10 @@ def generate_variant_report(args):
     cerr(f'[Reading variant information from {args.infofile}]')
 
     info_df = pd.read_table(args.infofile)
+    info_df["var_name"] = info_df.Name + " (" + info_df["CHROM"] + ":" + info_df["POS"].astype(str) + ":" + info_df["Change"] + ")"
     info_df.set_index(['CHROM', 'POS'], inplace=True)
+    info_df.sort_index(inplace=True)
+    
 
     cerr(f'[Generating variant report from {args.infile}]')
 
@@ -61,55 +65,96 @@ def generate_variant_report(args):
 
         try:
 
-            info_row = info_df.loc[(v.CHROM, v.POS)]
-            variants.append(info_row.Name)
+            info_rows = info_df.loc[(v.CHROM, v.POS)] # could be multiple mutations at the same position
+            
+            var_name = list(info_rows.var_name)
+            var_change = list(info_rows.Change)
+            variants.extend(var_name)
+            # Get the interested variant (which could be ref)
 
             if is_clair3_gvcf:
                 # if GT != 0/0, assert that the ALT is not <NON_REF>
                 ALT = max(v.genotypes[0][0:2])
+                # Sanity check, if failed, something must have gone wrong
                 if ALT > 0:
                     assert([v.REF, *v.ALT][ALT] != "<NON_REF>")
 
+            if 'DP' in v.FORMAT:
+                allele_depth = v.format('DP')[0][0]
+            elif 'MIN_DP' in v.FORMAT:
+                allele_depth = v.format('MIN_DP')[0][0]
+            else:
+                try:
+                    allele_depth = v.INFO['DP']
+                except KeyError:
+                    allele_depth = 0
 
             # check if depth is sufficent
-            if ((v.format('DP') or v.format('MIN_DP') or [[None]])[0][0] or v.INFO.get('DP') or 0) < args.mindepth:
-                alleles.append('?')
+            if allele_depth < args.mindepth:
+                alleles.extend(['?' for _ in var_name])
                 continue
 
-            # check if allele is still ref, eg no variant
-            if v.gt_types[0] == 0:
-                alleles.append('-')
+            # if low variant quality, then mark as ?, since the interested variant could be the ref as well
+            # QUAL = 1 - P(locus is homozygous given the data)
+            # only check this if the variant is not ref
+            qual_fail = v.QUAL < args.min_var_qual
+
+            gt_changes = gts_to_gt_changes(v.genotypes[0][:-1], v.REF, v.ALT) # can GT be 1/2? e.g., 154535277	T>C and 154535277	T>A at the same time?
+
+            interested_variants = gt_changes & set(var_change)
+            
+            if len(interested_variants) == 0:
+                alleles.extend(['-' for _ in var_name])
+                continue
+            
+            non_ref_variants_index = [i for i, change in enumerate(var_change) if not change.endswith("=")]
+            # has interested variant
+            if len(interested_variants) > 0:
+                # hom
+                if len(gt_changes) == 1:
+                    temp = ["+" if change in interested_variants else "-" for change in var_change ]
+                # het
+                elif len(gt_changes) > 1:
+                    temp = ["-/+" if change in interested_variants else "-" for change in var_change ]
+
+                # Change "+" to "-" if the variant quality is low
+                if qual_fail:
+                    temp = ["?" if i in non_ref_variants_index else var for i, var in enumerate(temp) ]
+                alleles.extend(temp)
                 continue
 
-            # if low variant quality, then assume ref / no variant
-            if v.QUAL < args.min_var_qual:
-                alleles.append('-')
-                continue
-
-            # from now on, this is either loq qualhomo alternate of hets
-            if v.gt_types[0] == 2:
-                alleles.append('+')
-                continue
-
-            if v.gt_types[0] == 1:
-                alleles.append('-/+')
-                continue
-
+            # Didn't catch any condition, Sanity check
             alleles.append('!')
             # IPython.embed()
         
         except KeyError:
-            raise
+            cerr(f'[WARNING] is_clair_gvcf:{is_clair3_gvcf} - {v.CHROM}:{v.POS} '
+                 f'REF: {v.REF}, ALT: {v.ALT} is not found in the infofile, skipping')
+
 
     # Append those variants that are not present in the VCF
-    variant_not_in_vcf = [a for a in list(info_df.Name) if not a in variants]
+    variant_not_in_vcf = [a for a in list(info_df.var_name) if not a in variants]
     variants.extend(variant_not_in_vcf)
     alleles.extend(['?' for _ in variant_not_in_vcf])
 
-
     report_df = pd.DataFrame([[sample] + alleles], columns=['SAMPLE'] + variants)
+    ordered_columns = ['SAMPLE']
+    ordered_columns.extend(info_df.var_name.tolist())
+    report_df = report_df[ordered_columns]
     report_df.to_csv(args.outfile, index=False, sep='\t')
 
+
+
+def gts_to_gt_changes(gts, ref, alts):
+    changes = []
+    for gt in gts:
+        if gt == -1:
+            changes.append("?")
+        elif gt == 0:
+            changes.append(ref + "=")
+        else:
+            changes.append(ref + ">" + alts[gt-1])
+    return set(changes)
 
 def main(args):
     generate_variant_report(args)
