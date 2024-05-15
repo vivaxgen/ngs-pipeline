@@ -57,7 +57,7 @@ def consolidate_reports(args):
                 failed += 1
                 continue
             dstfile = outdir / dst.format(sample=sample)
-            create_relative_symlink(dstfile, srcfile)
+            create_relative_symlink(dstfile, srcfile, force=True)
             consolidated += 1
 
     cerr(f'[Consolidated reports: {consolidated}, failed: {failed} '

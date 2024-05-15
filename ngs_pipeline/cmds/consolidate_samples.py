@@ -48,13 +48,16 @@ def scan_directory_and_link(a_directory: str | pathlib.Path,
         name = sample_path.name
         if (sample_path / '.completed').is_file():
             completed.append((name, sample_path.as_posix()))
-            create_relative_symlink(completed_dir / name, sample_path)
+            create_relative_symlink(completed_dir / name, sample_path,
+                                    force=True)
         elif (sample_path / '.uncompleted').is_file():
             uncompleted.append((name, sample_dir.as_posix()))
-            create_relative_symlink(failed_dir / name, sample_path)
+            create_relative_symlink(failed_dir / name, sample_path,
+                                    force=True)
         else:
             unknown.append((name, sample_dir.as_posix()))
-            create_relative_symlink(failed_dir / name, sample_path)
+            create_relative_symlink(failed_dir / name, sample_path,
+                                    force=True)
 
     return (completed, uncompleted, unknown)
 
