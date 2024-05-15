@@ -147,7 +147,10 @@ def get_sample_name(filename, underline=0):
     return filename.name.removesuffix('.fastq.gz')
 
 
-def create_relative_symlink(dest: pathlib.Path, source: pathlib.Path):
+def create_relative_symlink(dest: pathlib.Path, source: pathlib.Path, force=False):
+
+    if force:
+        dest.unlink(missing_ok=True)
 
     # find common parent directory
     dest_abs = dest.resolve()
