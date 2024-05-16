@@ -28,4 +28,10 @@ elif bwa_bin == 'bwa':
 else:
     raise RuntimeError(f'ERR: the bwa_bin {bwa_bin} is not recognized')
 
+
+# for micromamba sub-environment
+
+shell_prefix_bowtie2 = 'eval "$(micromamba shell hook --shell bash)" && micromamba activate vvg-ngspl-bowtie2 && '
+shell_prefix_clair3 = 'eval "$(micromamba shell hook --shell bash)" && micromamba activate vvg-ngspl-clair3 && ''
+
 # EOF
