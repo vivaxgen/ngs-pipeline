@@ -81,6 +81,12 @@ directory::
       # edit /data/Pv-wgs/activate if necessary
       /data/Pv-wgs/activate
 
+.. warning::
+  If running under WSL/WSL2, please make sure that the base environment
+  directory is under Linux filesystems.
+  If the base environment directory is under Windows filesystems (such as
+  ``/mnt/c`` or ``/mnt/d``), the pipeline will fail to work.
+
 Once the new base environment has been activated, NGSENV_BASEDIR environment
 variable will be accessible.
 The next steps are as follow:

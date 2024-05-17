@@ -14,6 +14,13 @@ following command from terminal/shell:
 
     "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
 
+.. warning::
+
+  If installing under WSL/WSL2, please make sure that the target directory
+  is under Linux filesystems.
+  The installation will fail if the target directory is under Windows
+  filesystems, such as ``/mnt/c`` or ``/mnt/d``.
+
 
 If supplied with ``MAMBA_ROOT_PREFIX`` environment variable, the install script
 will use the directory to install and save the micromamba environment.

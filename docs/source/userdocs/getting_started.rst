@@ -29,6 +29,13 @@ and will use about 5-6 GB of storage.
 Take a note of the directory where the pipeline is installed and the full path
 of its activation script.
 
+.. warning::
+
+  If installing under WSL/WSL2, please make sure that the target directory
+  is under Linux filesystems.
+  The installation will fail if the target directory is under Windows
+  filesystems, such as ``/mnt/c`` or ``/mnt/d``.
+
 Try to activate the NGS-Pipeline environment by executing its activation script:
 
 .. prompt:: bash
@@ -104,6 +111,13 @@ the mandatory steps to prepare the base environment directory:
       To easily identify and differentiate between several base environemnt
       directory, it is recommended to use the reference genome name as part
       of the directory name.
+
+    .. warning::
+
+      If running under WSL/WSL2, please make sure that the base emvironment
+      directory is under Linux filesystems.
+      If the base environment directory is under Windows filesystems (such as
+      ``/mnt/c`` or ``/mnt/d``), the pipeline will fail to work.
 
 #.  Exit the current environment and activate the new environment using
     the new ``activate`` file:
