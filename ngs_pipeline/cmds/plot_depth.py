@@ -44,7 +44,6 @@ def plot_depth(args):
     import pandas as pd
     import numpy as np
     import matplotlib
-    #matplotlib.use('Cairo')
     from matplotlib import pyplot as plt
     import matplotlib.style as mplstyle
     mplstyle.use('fast')
@@ -90,7 +89,17 @@ def plot_depth(args):
 
 
 def main(args):
-    plot_depth(args)
+    use_cairo = False
+    try:
+        plot_depth(args)
+    except OverflowError:
+        use_cairo = True
 
+    if use_cairo:
+        import matplotlib
+        matplotlib.use('Cairo')
+        cerr('[WARN: retrying with Cairo backend since OverflowError]')
+        plot_depth(args)
 
+        
 # EOF

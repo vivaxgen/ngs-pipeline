@@ -197,8 +197,11 @@ rule depth_plot:
         chroms = ('--chrom ' + ','.join(REGIONS)) if any(REGIONS) else '',
     output:
         'logs/depths.png'
+    log:
+        'logs/plot-depth.txt'
     shell:
-        'ngs-pl plot-depth --outplot {output} {params.chroms} --sort --infile {input} {sample}'
+        'ngs-pl plot-depth --outplot {output} {params.chroms} --sort '
+        '--infile {input} {sample} 2> {log}'
 
 
 # EOF
