@@ -16,7 +16,7 @@ from ngs_pipeline import cexit, cerr, arg_parser
 def init_argparser():
     p = arg_parser('setting up reference sequence')
 
-    p.add_argument('-f', '--fasta', required=True,
+    p.add_argument('-f', '--fasta', default=None,
                    help='reference sequence')
     p.add_argument('-l', '--length', type=int, default=-1,
                    help='maximum genome length to be called by individual '
@@ -34,6 +34,12 @@ def init_argparser():
     p.add_argument('--outfasta', default='',
                    help='FASTA outfile for contigs/segments filtered by '
                    'pattern')
+
+    p.add_argument('--gff3file', default=None,
+                   help='GFF3 file for target reference sequence')
+    p.add_argument('--spacer-minlen', type=int, default=5000,
+                   help='minimum length of spacer DNA to be used for '
+                   'splitting')
 
     return p
 
@@ -109,10 +115,29 @@ def generate_ranges(total_length, avg_length):
     return list(range(1, total_length, actual_avg_length))[1:] + [total_length]
 
 
-def partition_regions(sequences, length):
+def find_ranges(possible_positions, total_length, avg_length):
+
+    import numpy as np
+
+    approx_positions = generate_ranges(total_length, avg_length)[:-1]
+    lst = np.asarray(possible_positions)
+
+    positions = []
+    for k in approx_positions:
+        positions.append(int(lst[(np.abs(lst - k)).argmin()]))
+
+    positions = list(sorted(set(positions))) + [total_length]
+    return positions
+
+
+def partition_regions(sequences, length, spacer=None):
     partitions = {}
     for r, l in sequences.items():
-        partitions[r] = generate_ranges(l, length)
+        if spacer is None:
+            partitions[r] = generate_ranges(l, length)
+        else:
+            s = spacer.loc[(spacer.chrom == r)]
+            partitions[r] = find_ranges(s.midpos, l, length)
 
     return partitions
 
@@ -120,16 +145,25 @@ def partition_regions(sequences, length):
 def setup_references(args):
 
     import yaml
+
+    if not (args.fasta or args.gff3file):
+        cexit('ERR: reguire -f/--fasta or --gff3file', 99)
     
     partitioned = False
+    regs = merged = spacer = None
     if args.pattern and args.outfasta:
         seq_labels = filter_sequences(args.fasta, args.outfasta,
                                       args.pattern, True)
+    elif args.gff3file:
+        from ngs_pipeline import gff3utils
+        regs, merged, spacer = gff3utils.gff3_to_spacer(args.gff3file)
+        spacer = spacer.loc[spacer.length >= args.spacer_minlen]
+        seq_labels = regs
     else:
         seq_labels = get_labels_from_fasta(args.fasta, not args.nolength)
 
     if args.length > 0:
-        seq_labels = partition_regions(seq_labels, args.length)
+        seq_labels = partition_regions(seq_labels, args.length, spacer)
         partitioned = True
 
     if args.nolength:
