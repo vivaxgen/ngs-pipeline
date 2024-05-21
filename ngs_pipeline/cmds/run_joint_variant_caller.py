@@ -27,7 +27,9 @@ def init_argparser():
     # input/output options
     p.add_argument('-o', '--outdir', default='joint',
                    help='directory for output [joint/]')
-    p.add_argument('source_dirs', nargs='+',
+    p.add_argument('-i', '--manifest', default=None,
+                   help='text file containing directory list per line')
+    p.add_argument('source_dirs', nargs='*',
                    help='source directories containing sample directories')
 
     return p
@@ -51,8 +53,25 @@ def run_joint_variant_caller(args):
             args.snakefile = 'jointvarcall_gatk.smk'
     cerr(f'Snakefile to be run: {args.snakefile}')
 
+    source_dirs = []
+    if args.manifest:
+        with open(args.manifest) as f_in:
+            for line in f_in:
+                line = line.strip()
+                if line:
+                    source_dirs.append(line)
+
+    if any(args.source_dirs):
+        source_dirs += args.source_dirs
+
+    if not any(source_dirs):
+        cexit('Please provide source directory for containing sample '
+              'directories', 101)
+
+    cerr(f'INFO: number of source directory: {len(source_dirs)}')
+
     # sanity check for all directory and duplicated sample codes
-    source_dirs = [srcdir.removesuffix('/') for srcdir in args.source_dirs]
+    source_dirs = [srcdir.removesuffix('/') for srcdir in source_dirs]
     sample_dirs = []
     sample_codes = {}
     duplicated_sample_codes = {}
@@ -60,7 +79,7 @@ def run_joint_variant_caller(args):
         if not pathlib.Path(srcdir).is_dir():
             cexit(f'ERROR: directory {srcdir} does not exist!')
         S, = glob_wildcards(srcdir + '/{sample,[\\w-]+}')
-        # filter for non-sample directories/files
+        # filter for specific files
         S = [s for s in S if s != 'config.yaml']
         for sample in S:
             if sample in sample_codes:
@@ -69,6 +88,9 @@ def run_joint_variant_caller(args):
                 else:
                     duplicated_sample_codes[sample] = [sample_codes[sample], srcdir]
             else:
+                # filter for directories
+                if not (pathlib.Path(srcdir) / sample).is_dir():
+                    continue
                 sample_codes[sample] = srcdir
         sample_dirs += [f'{srcdir}/{s}' for s in S]
 
