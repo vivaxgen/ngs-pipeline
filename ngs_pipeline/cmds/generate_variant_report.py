@@ -33,6 +33,8 @@ def init_argparser():
                    help='input file in vcf.gz format')
     p.add_argument('--clair3_gvcf', action='store_true',
                    help='input file is in Clair3 gvcf format')
+    p.add_argument('--flag_failed_variant', action='store_true',
+                   help='Output all variant, including those with depth < mindepth marked with (*) and qual < minqual marked with (^)')
     return p
 
 
@@ -90,7 +92,11 @@ def generate_variant_report(args):
                     allele_depth = 0
 
             # check if depth is sufficent
-            if allele_depth < args.mindepth:
+            depth_fail = allele_depth < args.mindepth
+            
+            # if no reads at all, mark as unknown
+            # OR if there is no need to flag failed variant AND depth is too low
+            if ((not args.flag_failed_variant) and depth_fail) or allele_depth == 0:
                 alleles.extend(['?' for _ in var_name])
                 continue
 
@@ -103,7 +109,16 @@ def generate_variant_report(args):
 
             interested_variants = gt_changes & set(var_change)
             
+            if gt_changes == {'?'}:
+                alleles.extend(['?' for _ in var_name])
+                continue
+
+            # No interested variant
             if len(interested_variants) == 0:
+                # No interested variant, but depth too low to be confident, will only come to here if --flag_failed_variant
+                if depth_fail:
+                    alleles.extend(['-*' for _ in var_name])
+                    continue
                 alleles.extend(['-' for _ in var_name])
                 continue
             
@@ -113,13 +128,22 @@ def generate_variant_report(args):
                 # hom
                 if len(gt_changes) == 1:
                     temp = ["+" if change in interested_variants else "-" for change in var_change ]
+
                 # het
                 elif len(gt_changes) > 1:
                     temp = ["-/+" if change in interested_variants else "-" for change in var_change ]
 
+                # Flag variant that failed mindepth and minqual parameters
+                if args.flag_failed_variant:
+                    if depth_fail:
+                        temp = [var + "*" for var in temp]
+                    if qual_fail:
+                        temp = [var + "^" if i in non_ref_variants_index else var for i, var in enumerate(temp) ]
+                # flag_failed_variant is not set, low depth variant is handled above, these variants will be lowqual
                 # Change "+" to "-" if the variant quality is low
-                if qual_fail:
-                    temp = ["?" if i in non_ref_variants_index else var for i, var in enumerate(temp) ]
+                elif qual_fail:
+                    temp = ["-" if i in non_ref_variants_index else var for i, var in enumerate(temp) ]
+
                 alleles.extend(temp)
                 continue
 
