@@ -7,6 +7,12 @@ The vivaxGEN NGS-Pipeline is an open-source, unopinionated pipeline for variant
 calling (upstream/secondary processing) of paired-end short reads or singleton
 long reads NGS data.
 
+The output of the pipeline is raw VCFs that will need to be post-processed in
+the downstream analysis (such as resetting for minimum depth, filtering for
+high quality/known variants, refining the heterozygous calls, processing
+indels, etc). The post-processing tasks will be specific to the objective of
+the analysis and currently are not within the scope of the pipeline.
+
 The vivaxGEN NGS-Pipeline can be installed on laptops, servers or cluster/HPC
 system without the need of administrator/root privileges.
 The only requirement is a UNIX-based system supported by 
