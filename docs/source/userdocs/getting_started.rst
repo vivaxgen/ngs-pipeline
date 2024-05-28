@@ -32,7 +32,7 @@ of its activation script.
 .. warning::
 
   If installing under WSL/WSL2, please make sure that the target directory
-  is under Linux filesystems.
+  is under Linux (WSL) filesystems.
   The installation will fail if the target directory is under Windows
   filesystems, such as ``/mnt/c`` or ``/mnt/d``.
 
@@ -108,16 +108,16 @@ the mandatory steps to prepare the base environment directory:
 
     .. tip::
 
-      To easily identify and differentiate between several base environemnt
+      To easily identify and differentiate between several base environment
       directory, it is recommended to use the reference genome name as part
       of the directory name.
 
     .. warning::
 
-      If running under WSL/WSL2, please make sure that the base emvironment
-      directory is under Linux filesystems.
+      If running under WSL/WSL2, please make sure that the base environment
+      directory is under Linux (WSL) filesystems.
       If the base environment directory is under Windows filesystems (such as
-      ``/mnt/c`` or ``/mnt/d``), the pipeline will fail to work.
+      ``/mnt/c`` or ``/mnt/d``), the pipeline might fail to work.
 
 #.  Exit the current environment and activate the new environment using
     the new ``activate`` file:
