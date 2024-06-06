@@ -142,7 +142,7 @@ rule run_joint_variant_caller:
                      if joint_variant_caller_smk else '')
     shell:
         'ngs-pl run-joint-variant-caller {params.extra_flags} {params.rerun}'
-        '{params.snakefile} -o {outdir}/joint {outdir}/analysis/'
+        '{params.snakefile} -o {outdir}/joint {outdir}/completed_samples/'
 
 
 rule concat_vcfs:
