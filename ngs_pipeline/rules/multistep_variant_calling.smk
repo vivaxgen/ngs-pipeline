@@ -47,6 +47,8 @@ rule sample_variant_calling:
     input:
         f'{outdir}/completed_samples/._completed_',
         f'{outdir}/stats.tsv',
+        f'{outdir}/reports/._completed_',
+
 
 
 rule VCF:
