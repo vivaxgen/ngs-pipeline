@@ -98,7 +98,6 @@ def generate_manifest(args):
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     if initial_df is not None:
         df = pd.concat([initial_df, df])
-    df.to_csv(args.outfile, sep='\t', index=False)
 
     # print at least 5 rows
     cerr('[Showing snippets of sample(s):]')
@@ -116,6 +115,7 @@ def generate_manifest(args):
         if resp.lower().strip()[0] != 'y':
             return
 
+    df.to_csv(args.outfile, sep='\t', index=False)
     cerr(f'[Writing {len(df)} sample manifest to {args.outfile}]')
 
 
