@@ -128,6 +128,10 @@ def run_sample_variant_caller(args):
 
     # import IPython; IPython.embed()
 
+    # sort by descending file size
+    file_sizes = [ int(open(f'{sample}/reads/filesize').read()) for sample in samples]
+    samples = list(zip(*(sorted(zip(file_sizes, samples), reverse=True))))[1]
+
     start_time = datetime.datetime.now()
     cmds = ['parallel',
             '--eta',
