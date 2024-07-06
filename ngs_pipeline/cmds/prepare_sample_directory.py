@@ -88,6 +88,7 @@ def prepare_samples(args):
     for (idx, r) in manifest_df.iterrows():
         sample = r['SAMPLE']
         reads = r['FASTQ']
+        filesize = 0
 
         if type(reads) != str or type(sample) != str:
             cexit(f'ERROR: invalid values in the row with SAMPLE: {sample} '
@@ -116,10 +117,11 @@ def prepare_samples(args):
                     cexit(f'ERROR: path {fastq_path} does not exist. Plase check '
                           f'manifest file line {idx+1}')
                 path_pair.append(fastq_file)
+                filesize += fastq_path.stat().st_size
 
             fastq_list.append(path_pair)
 
-        samples.append((sample, fastq_list))
+        samples.append((sample, fastq_list, filesize))
         counter += 1
 
     # preparing directory structure
@@ -128,7 +130,7 @@ def prepare_samples(args):
 
     # sanity check for duplicate sample (directory) name
     duplicated = []
-    for (sample, fastq_list) in samples:
+    for (sample, fastq_list, filesize) in samples:
         sample_path = dest_dir / sample
         if sample_path.exists():
             duplicated.append(sample)
@@ -139,7 +141,7 @@ def prepare_samples(args):
         cexit('Please either remove the directories or remove the sample from manifest file!')
 
     # for each samples, create a directory reads
-    for (sample, fastq_list) in samples:
+    for (sample, fastq_list, filesize) in samples:
 
         cerr(f'Preparing for sample [{sample}]')
         sample_path = dest_dir / sample / 'reads'
@@ -149,6 +151,9 @@ def prepare_samples(args):
             for no, fastq_file in enumerate(fastq_pair, 1 if len(fastq_pair) > 1 else 0):
                 dest = sample_path / f'raw-{idx}_R{no}.fastq.gz'
                 dest.symlink_to(source_dir / fastq_file)
+
+        with open(sample_path / 'filesize', 'wt') as f_out:
+            f_out.write(str(filesize))
 
     cerr(f'Finished preparing {len(samples)} sample(s).')
 
