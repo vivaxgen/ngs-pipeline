@@ -81,9 +81,9 @@ def consolidate_samples(args):
         uncompleted += uncompl
         unknown += unkn
 
-    cerr('\n===================================='
-         ' REPORT '
-         '====================================\n')
+    cerr('\n========================='
+         ' SAMPLE CONSOLIDATION REPORT '
+         '=========================\n')
     if any(uncompleted):
         uncompleted_report = [f'{name}: {path}' for name, path in uncompleted]
         cerr('\n  - '.join(['Uncompleted:'] + uncompleted_report))
