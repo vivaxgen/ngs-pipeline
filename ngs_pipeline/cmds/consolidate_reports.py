@@ -60,7 +60,7 @@ def consolidate_reports(args):
             create_relative_symlink(dstfile, srcfile, force=True)
             consolidated += 1
 
-    cerr(f'[Consolidated reports: {consolidated}, failed: {failed} '
+    cerr(f'[Consolidated reports [{src}]: {consolidated}, failed: {failed} '
          f'from total: {total_dir} sample directories]')
 
 
