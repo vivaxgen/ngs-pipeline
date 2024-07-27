@@ -82,9 +82,21 @@ rule index_bwa:
     output:
         index = "{pfx}/{fn}.fasta.bwt"
     resources:
-        mem_mb = config.get('index_mem_mb', 16384)
+        mem_mb = config.get('index_mem_gb', 8) * 1024
     shell:
         "bwa index {input.fasta}"
+
+
+rule index_bowtie2:
+    threads: 1
+    input:
+        fasta = "{pfx}/{fn}.fasta"
+    output:
+        index = "{pfx}/{fn}.1.bt2"
+    resources:
+        mem_mb = config.get('index_mem_gb', 8) * 1024
+    shell:
+        "bowtie2-build {input.fasta} {wildcards.pfx}/{wildcards.fn}"
 
 
 rule bunzip2:
