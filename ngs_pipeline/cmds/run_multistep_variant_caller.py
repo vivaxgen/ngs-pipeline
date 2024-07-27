@@ -46,6 +46,7 @@ def run_multistep_variant_caller(args, console=True):
 
     import ngs_pipeline
     from ngs_pipeline import get_snakefile_path, snakeutils
+    import sys
     
     config=dict(
         manifest=args.manifest,
@@ -56,6 +57,7 @@ def run_multistep_variant_caller(args, console=True):
         infiles=args.infiles,
         jobs=args.j,
         rerun=(args.manifest is None) and not any(args.infiles),
+        unlock=args.unlock,
     )
 
     args.snakefile = get_snakefile_path(
@@ -65,10 +67,22 @@ def run_multistep_variant_caller(args, console=True):
 
     if config['rerun']:
         cerr('[INFO: unlocking all working directories...]')
-        args.unlock = True
+        # unlock for main snakefile and all necessary rules
+        args.unlock = config['unlock'] = True
+        #args.rerun = config['rerun'] = False
+
+        # unlock for main snakefile
         status, elapse_time = snakeutils.run_snakefile(args, config=config)
+
+        #  unlock for all necessary rules
         args.unlock = False
-        args.rerun = True
+        status, elapse_time = snakeutils.run_snakefile(args, config=config)
+
+        # no more unlock
+        config['unlock'] = False
+        #args.rerun = config['rerun'] = True
+        cerr('[INFO: finished unlocking all working directories...]')
+
 
     status, elapsed_time = snakeutils.run_snakefile(args, config=config)
     if not console:
