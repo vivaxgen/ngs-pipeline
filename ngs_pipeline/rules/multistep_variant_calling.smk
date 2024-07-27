@@ -4,6 +4,10 @@
 __copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
 
+
+import pathlib
+
+
 # input/output arguments
 outdir = config['outdir']
 infiles = config['infiles']
@@ -29,6 +33,13 @@ joint_variant_caller_smk = config.get('joint_variant_caller_smk', '')
 include: 'utilities.smk'
 
 
+# retouch necessary touched files if rerun
+if rerun or unlock:
+    for fn in [f'{outdir}/analysis/._prepared_']:
+        if (fp := pathlib.Path(fn)).exists():
+            fp.touch()
+
+
 rule all:
     input:
         f'{outdir}/joint/concatenated.vcf.gz.tbi',
@@ -45,10 +56,18 @@ rule varcall_result:
 
 rule sample_variant_calling:
     input:
-        f'{outdir}/completed_samples/._completed_',
-        f'{outdir}/stats.tsv',
-        f'{outdir}/reports/._completed_',
-
+        branch(
+            not unlock,
+            then=[
+                f'{outdir}/analysis/._completed_',
+                f'{outdir}/completed_samples/._completed_',
+                f'{outdir}/stats.tsv',
+                f'{outdir}/reports/._completed_',
+            ],
+            otherwise=[
+                f'{outdir}/analysis/._completed_',
+            ]
+        )
 
 
 rule VCF:
@@ -139,12 +158,14 @@ rule run_joint_variant_caller:
         touch(f'{outdir}/joint/._completed_')
     params:
         rerun = '--rerun' if rerun else '',
+        unlock = '--unlock' if unlock else '',
         extra_flags = joint_variant_caller_flags,
         snakefile = (f'--snakefile {joint_variant_caller_smk}'
                      if joint_variant_caller_smk else '')
     shell:
-        'ngs-pl run-joint-variant-caller {params.extra_flags} {params.rerun}'
-        '{params.snakefile} -o {outdir}/joint {outdir}/completed_samples/'
+        'ngs-pl run-joint-variant-caller {params.extra_flags}'
+        '  {params.rerun} {params.unlock}'
+        '  {params.snakefile} -o {outdir}/joint {outdir}/completed_samples/'
 
 
 rule concat_vcfs:
