@@ -59,6 +59,9 @@ micromamba -y install bwa -c conda-forge -c bioconda
 echo "Installing minimap2"
 micromamba -y install minimap2 -c conda-forge -c bioconda -c defaults
 
+echo "Installing bowtie2"
+micromamba -y install bowtie2 -c conda-forge -c bioconda -c defaults
+
 echo "Installing freebayes"
 micromamba -y install freebayes=1.3.6 -c conda-forge -c bioconda -c defaults
 
