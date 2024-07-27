@@ -165,7 +165,7 @@ def run_sample_variant_caller(args):
     # run command and wait
     subprocess.call(cmds)
 
-    cerr('\n============================== RUN REPORT ====================================\n')
+    cerr('\n====================== SAMPLE VARIANT CALLING RUN REPORT ======================\n')
     finish_time = datetime.datetime.now()
     cerr(f'[run-sample-variant-caller was running for {finish_time - start_time}]')
 
