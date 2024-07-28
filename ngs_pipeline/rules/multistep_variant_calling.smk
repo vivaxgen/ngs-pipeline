@@ -16,6 +16,7 @@ singleton = config.get('singleton', False)
 paired_end = config.get('paired_end', False)
 manifest = config.get('manifest', None)
 jobs = config.get('jobs', 32)
+procfile = config.get('procfile', None)
 rerun = config.get('rerun', False)
 unlock = config.get('unlock', False)
 
@@ -128,13 +129,14 @@ rule run_sample_variant_caller:
         touch(f'{outdir}/analysis/._completed_')
     params:
         jobs = jobs,
+        procfile = f'-P {procfile}' if procfile else '',
         rerun = '--rerun' if rerun else '',
         unlock = '--unlock' if unlock else '',
         target = sample_variant_caller_target,
         extra_flags = sample_variant_caller_flags
     shell:
         'ngs-pl run-sample-variant-caller {params.extra_flags} '
-        '-j {params.jobs} {params.rerun} {params.unlock} '
+        '-j {params.jobs} {params.procfile} {params.rerun} {params.unlock} '
         '--target {params.target} {outdir}/analysis'
 
 

@@ -26,6 +26,8 @@ def init_argparser():
                    help='fastq files are single (non-paired) such as ONT reads')
     m.add_argument('--paired', default=False, action='store_true',
                    help='fastq files are paired such as Illumina paired-end reads')
+    p.add_argument('-P', default=None,
+                   help='procfile containing number of task/sample to process in parallel')
 
     p.add_argument('-u', '--underscore', type=int, default=0,
                    help='no of consecutive underscore to be stripped from '
@@ -56,6 +58,7 @@ def run_multistep_variant_caller(args, console=True):
         outdir=args.outdir,
         infiles=args.infiles,
         jobs=args.j,
+        procfile=args.P,
         rerun=(args.manifest is None) and not any(args.infiles),
         unlock=args.unlock,
     )

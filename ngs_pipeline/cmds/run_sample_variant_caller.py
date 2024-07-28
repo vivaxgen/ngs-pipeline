@@ -25,6 +25,8 @@ def init_argparser():
     p.add_argument('-j', type=int, default=-1,
                    help='number of samples to be processed in parallel, will override '
                    'JOBS environment [32]')
+    p.add_argument('-P', default=None,
+                   help='procfile containing number of jobs/task')
     p.add_argument('--joblog', default=None,
                    help='name of job log file, if this is an existing directory, '
                    'the directory name will be prepended to default log file name '
@@ -68,6 +70,9 @@ def run_sample_variant_caller(args):
             args.j = int(JOBS)
         else:
             args.j = 32
+
+    if args.P:
+        args.j = args.P
 
     # get NGS_PIPELINE_BASE
     NGS_PIPELINE_BASE = os.environ["NGS_PIPELINE_BASE"]
