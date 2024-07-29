@@ -142,7 +142,7 @@ def generate_variant_report(args):
                 # flag_failed_variant is not set, low depth variant is handled above, these variants will be lowqual
                 # Change "+" to "?" if the variant quality is low
                 elif qual_fail:
-                    temp = ["-" if i in non_ref_variants_index else var for i, var in enumerate(temp) ]
+                    temp = ["?" if i in non_ref_variants_index else var for i, var in enumerate(temp) ]
 
                 alleles.extend(temp)
                 continue
