@@ -280,7 +280,7 @@ def run_snakefile_8(args, config={}, workdir=None,
 
     if args.nocluster:
         # nocluster means prevent from running using batch/job scheduler
-        args.profile = None
+        args.profile = 'none'
 
     # set targets
     if type(args.target) != list:
