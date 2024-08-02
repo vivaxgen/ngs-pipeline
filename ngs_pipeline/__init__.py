@@ -46,7 +46,20 @@ def check_NGS_PIPELINE_BASE():
     if 'NGS_PIPELINE_BASE' not in os.environ:
          cexit('ERROR: NGS_PIPELINE_BASE environment is not set. '
               'Please set proper shell enviroment by sourcing relevant activate.sh')
-    return os.environ["NGS_PIPELINE_BASE"]     
+    return os.environ["NGS_PIPELINE_BASE"]
+
+
+def check_multiplexer(prompt=False):
+    if 'TMUX' in os.environ:
+        return True
+    if 'screen' in os.environ.get('TERM', '') and 'screen' in os.environ.get('TERMCAP', ''):
+        return True
+    if prompt:
+        resp = input('Warning! You are not in a terminal multiplexer. Still continue [Y/n]: ')
+        if not resp.lower().startswith('y'):
+            cerr(f'[Process terminated.]')
+            sys.exit(101)
+    return False
 
 
 def get_command_modules():
