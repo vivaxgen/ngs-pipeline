@@ -15,7 +15,8 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR, snakeutils
+from ngs_pipeline import (cerr, cexit, arg_parser, check_NGSENV_BASEDIR,
+                          check_multiplexer, snakeutils)
 
 
 def init_argparser():
@@ -44,6 +45,9 @@ def run_joint_variant_caller(args):
     import yaml
     import snakemake
     from snakemake.io import glob_wildcards
+
+    # check we are inside a terminal multiplexer
+    check_multiplexer(prompt=True)
 
     # get snakefile to run
     if args.snakefile is None:

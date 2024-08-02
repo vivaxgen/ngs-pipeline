@@ -11,7 +11,7 @@ __license__ = "MIT"
 import os
 import pathlib
 from ngs_pipeline import (cerr, cexit, arg_parser, get_snakefile_path,
-                          snakeutils)
+                          check_multiplexer, snakeutils)
 
 # this is a wrapper to run sample_preparation, individual sample genotyping,
 # and joint variant calling in a single command
@@ -49,6 +49,9 @@ def run_multistep_variant_caller(args, console=True):
     import ngs_pipeline
     from ngs_pipeline import get_snakefile_path, snakeutils
     import sys
+
+    # check we are inside a terminal multiplexer
+    check_multiplexer(prompt=True)
     
     config=dict(
         manifest=args.manifest,

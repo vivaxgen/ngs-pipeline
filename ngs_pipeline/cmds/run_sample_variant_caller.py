@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, arg_parser
+from ngs_pipeline import cerr, cexit, arg_parser, check_multiplexer
 
 
 # usage: run_varcall.py
@@ -63,6 +63,9 @@ def run_sample_variant_caller(args):
     import time
     import datetime
     import getpass
+
+    # check we are inside a terminal multiplexer
+    check_multiplexer(prompt=True)
 
     # check for number of jobs from environment
     if args.j < 0:

@@ -14,9 +14,7 @@ Please read the README.txt of this software.
 # functions that requires respective heavy modules
 
 import os
-from ngs_pipeline import (cerr, cexit, arg_parser,
-                          check_NGSENV_BASEDIR, check_NGS_PIPELINE_BASE,
-                          get_snakefile_path, setup_config, snakeutils)
+from ngs_pipeline import cerr, cexit, check_multiplexer, snakeutils
 
 
 def init_argparser():
@@ -42,6 +40,9 @@ def init_argparser():
 
 
 def run_targeted_variant_caller(args, optional_config={}):
+
+    # check we are inside a terminal multiplexer
+    check_multiplexer(prompt=True)
 
     # get default snakefile from environment if none is provided
     if not args.snakefile:
