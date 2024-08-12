@@ -13,7 +13,7 @@ program/system:
 * mappers: bwa/bwa-mem2, bowtie2, minimap2
 
 * variant callers: GATK4 (following GATK Best Practises as much as possible),
-  FreeBayes, BCFTools mpileup/call, Clair3
+  and FreeBayes (BCFTools mpileup/call and Clair3 are currently in the works)
 
 vivaxGEN NGS-Pipeline can be used for variant discovery and targeted/panel
 variant calling.
@@ -51,6 +51,12 @@ on shell/terminal:
 .. code-block:: console
 
     "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
+
+.. warning::
+
+    If you are inside an active Conda/Mamba environemnt, please deactivate
+    first before running the above command as the Conda/Mamba enviroment
+    might interfere the installation process.
 
 When prompted for the directory to install the pipeline, enter the directory
 where the pipeline will be installed.

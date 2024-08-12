@@ -16,6 +16,12 @@ following command from terminal/shell:
 
 .. warning::
 
+  If you are inside an active Conda/Mamba environemnt, please deactivate
+  first before running the above command as the Conda/Mamba enviroment
+  might interfere the installation process.
+
+.. warning::
+
   If installing under WSL/WSL2, please make sure that the target directory
   is under Linux filesystems.
   The installation will fail if the target directory is under Windows
