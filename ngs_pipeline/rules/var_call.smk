@@ -13,6 +13,11 @@ include: "global_params.smk"
 sample = pathlib.Path.cwd().name
 IDXS, = glob_wildcards('reads/raw-{idx}_R1.fastq.gz')
 
+# set complete region to perform sample variant calling on all chromosome as
+# single process and not per-chromosome process
+# this is useful if targetregion_file is defined
+complete_region = config.get('complete_region', None)
+
 
 # utilities
 
@@ -24,6 +29,8 @@ def get_final_bam(w):
 # final output of this workflow
 
 def get_final_file(w):
+    if complete_region:
+        return f'gvcf/{sample}-{complete_region}.g.vcf.gz'
     return [f"gvcf/{sample}-{reg}.g.vcf.gz" for reg in REGIONS]
 
 

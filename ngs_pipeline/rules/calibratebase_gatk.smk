@@ -15,7 +15,8 @@ rule gatk_baserecalibrator:
     params:
         sample = sample,
         known = f"--known-sites {knownvariants_dir}/{{reg}}.bed.gz",
-        region_opts = '-L {reg}',
+        #region_opts = '-L {reg}',
+        region_opts = f'-L {targetregion_file}' if targetregion_file else ('' if complete_region else '-L {reg}'),
         flags = config.get('baserecalibrator_flags', ''),
         extra_flags = config.get('baserecalibrator_extra_flags', ''),
     shell:
@@ -27,7 +28,8 @@ rule gatk_gatherbsqr:
     # this rule merges all calibration tables into single table
     threads: 2
     input:
-        expand('maps/recal-{reg}.table', reg=REGIONS)
+        expand('maps/recal-{reg}.table',
+               reg=[complete_region] if complete_region else REGIONS)
     output:
         "maps/recal.table"
     log:
