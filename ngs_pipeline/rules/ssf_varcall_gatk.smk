@@ -1,4 +1,5 @@
 
+include: config.get('base_calibrator_wf', 'ssf_calibratebase_gatk.smk')
 
 def get_haplotypecaller_region(wildcards):
     if wildcards.reg == complete_region:

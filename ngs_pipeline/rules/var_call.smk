@@ -60,8 +60,7 @@ rule mapping:
 
 include: config.get('reads_trimmer_wf', 'trimmer_fastp.smk')
 include: config.get('reads_mapper_wf', 'mapper_bwa-mem2.smk')
-include: config.get('base_calibrator_wf', 'calibratebase_gatk.smk')
-include: config.get('variant_caller_wf', 'varcall_gatk.smk')
+include: config.get('variant_caller_wf', 'ssf_varcall_gatk.smk')
 include: config.get('stats_wf', 'ssf_stats.smk')
 
 # the mapping process in this snakemake file is:
