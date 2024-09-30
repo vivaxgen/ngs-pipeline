@@ -40,9 +40,33 @@ class ReadFileDict(object):
         return list(sorted(self.keys()))
 
     def get_read_file(self, wildcards):
-        """ this function is suitable to be used in input: directive in snake rules"""
+        """ this function is suitable to be used in input: directive in snake rules
+            wildcards must contain "sample" field
+        """
         idx = int(wildcards.idx)
         return self[wildcards.sample][idx]
+
+    def get_read_file_as_dict(self, wildcards):
+        """ this function is suitable to be used in input: directive in snake rules
+            wildcards must contain "sample" field
+            return a dict of {'read1': , 'read2': }
+            usage:
+                input:
+                    unpack(obj.get_read_file_as_dict)
+        """
+        idx = int(wildcards.idx)
+        read_files = self[wildcards.sample][idx]
+        if len(read_files) == 1:
+            return dict(read0=read_files[0])
+        elif len(read_files) > 1:
+            d = {}
+            for i in range(len(read_files)):
+                d['read' + str(i + 1)] = read_files[i]
+        else:
+            raise ValueError('the sample does not have read files')
+
+        print(d)
+        return d
 
     def get_indexes(self, sample):
         """ eeturn list of indexes for each sample
@@ -73,9 +97,9 @@ class ReadFileDict(object):
 
                 sample = get_sample_name(infile, self.underscore)
                 if sample not in self:
-                    self[sample] = [infile]
+                    self[sample] = [(infile, )]
                 else:
-                    self[sample].append(infile)
+                    self[sample].append((infile, ))
         
         elif self.mode == ReadMode.PAIRED_END:
 
