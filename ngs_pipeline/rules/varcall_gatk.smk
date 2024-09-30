@@ -22,8 +22,8 @@ rule gatk_haplotypecaller:
         flags = config.get('haplotypecaller_flags', ''),
         extra_flags = config.get('haplotypecaller_extra_flags', ''),
     shell:
-        "gatk {java_opts} HaplotypeCaller --native-pair-hmm-threads 1 "
-        "-R {refseq} -I {input} {params.reg} -ploidy {ploidy} -ERC GVCF "
-        "{params.flags} {params.extra_flags} -O {output} 2> {log}"
+        "gatk {java_opts} HaplotypeCaller  --native-pair-hmm-threads {threads}"
+        "  -R {refseq}  -I {input} {params.reg}  -ploidy {ploidy}  -ERC GVCF"
+        "  {params.flags} {params.extra_flags}  -O {output}  2> {log}"
 
 # EOF
