@@ -66,7 +66,7 @@ rule combine_gvcf:
     input:
         f"{destdir}/maps/{{reg}}.tsv"
     output:
-        directory(f"{destdir}/dbs/{regpart.notation}")
+        temp(directory(f"{destdir}/dbs/{regpart.notation}"))
     log:
         f"{destdir}/logs/genomicsdbimport-{regpart.notation}.log"
     params:
