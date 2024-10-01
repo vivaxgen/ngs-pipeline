@@ -35,6 +35,8 @@ regpart = RegPartition(PARTIALS)
 # final output of this workflow
 
 def get_final_file(w):
+    if complete_region:
+        return f'{destdir}/vcfs/{complete_region}.vcf.gz'
     return [f"{destdir}/vcfs/{reg}.vcf.gz" for reg in REGIONS]
 
 

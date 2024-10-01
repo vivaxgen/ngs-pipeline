@@ -6,6 +6,7 @@ include: "general_params.smk"
 # parameters to do processing
 
 refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
+strtable_file = ngsenv_basedir + '/' + config.get('strtable_file', 'STRTABLE-FILE-NOT-DEFINED')
 knownsites_file = ngsenv_basedir + '/' + config.get('knownsites_file', '')
 knownvariants_dir = ngsenv_basedir + '/' + config.get('knownvariants_dir', '')
 targetregion_file = (ngsenv_basedir + '/' + fn) if (fn := config.get('targetregion_file')) else None
@@ -40,6 +41,13 @@ java_opts = config.get('java_opts', '')
 # check available read files
 
 platform = 'ILLUMINA' if config.get('instrument', '').lower() in ['miseq', 'nextseq', 'novaseq'] else config['platform']
+
+# parameters for defining regions
+
+# set complete region to perform sample variant calling on all chromosome as
+# single process and not per-chromosome process
+# this is useful if targetregion_file is defined
+complete_region = config.get('complete_region', None)
 
 PARTIALS = None
 REGIONS = config.get('regions', [])
@@ -123,6 +131,9 @@ class RegPartition(object):
 
         if interval_file:
             return f'{self.tgt_arg_name} {interval_file}'
+
+        if complete_region:
+            return " ".join(f'{self.reg_arg_name} {reg}' for reg in REGIONS)
 
         return f'{self.reg_arg_name} {w.reg}'
 
