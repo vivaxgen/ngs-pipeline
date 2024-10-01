@@ -1,4 +1,5 @@
 
+gatk_calibrate_str = config.get('gatk_calibrate_str', False)
 
 
 def get_haplotypecaller_region(wildcards):
@@ -26,7 +27,7 @@ rule gatk_drag_haplotypecaller:
     input:
         # GATK DRAGEN use non-calibrated bam input
         bam = "maps/mapped-final.bam",
-        model = "maps/dragstr_model.txt",
+        model = "maps/dragstr_model.txt" if gatk_calibrate_str else [],
     output:
         gvcf = "gvcf/{sample}-{reg}.g.vcf.gz",
     log:
@@ -34,11 +35,12 @@ rule gatk_drag_haplotypecaller:
     params:
         sample = sample,
         reg = get_haplotypecaller_region,
+        str_model = lambda w, input: f"--dragstr-params-path {input.model}" if gatk_calibrate_str else "",
         flags = config.get('haplotypecaller_flags', ''),
         extra_flags = config.get('haplotypecaller_extra_flags', ''),
     shell:
         "gatk {java_opts} HaplotypeCaller  --native-pair-hmm-threads {threads}"
-        "  --dragen-mode true  --dragstr-params-path {input.model}"
+        "  --dragen-mode true  {params.str_model}"
         "  -R {refseq}  -I {input.bam} {params.reg}  -ploidy {ploidy}  -ERC GVCF"
         "  {params.flags}  {params.extra_flags}  -O {output.gvcf} 2> {log}"
 
