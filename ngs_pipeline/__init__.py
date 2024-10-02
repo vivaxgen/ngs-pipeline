@@ -30,51 +30,69 @@ def cexit(msg, err_code=1):
 
 
 def greet():
-    cerr(f'{sys.argv[0].split("/")[-1]} - ngs-pipeline command line interface\n'
-         f'[https://github.com/vivaxgen/ngs-pipeline]')
-    cerr(f'Host: {platform.uname().node}')
+    cerr(
+        f'{sys.argv[0].split("/")[-1]} - ngs-pipeline command line interface\n'
+        f"[https://github.com/vivaxgen/ngs-pipeline]"
+    )
+    cerr(f"Host: {platform.uname().node}")
 
 
 def check_NGSENV_BASEDIR():
-    if 'NGSENV_BASEDIR' not in os.environ:
-        cexit('ERROR: NGSENV_BASEDIR environment is not set. '
-              'Please set proper shell enviroment by sourcing relevant activate.sh')
+    if "NGSENV_BASEDIR" not in os.environ:
+        cexit(
+            "ERROR: NGSENV_BASEDIR environment is not set. "
+            "Please set proper shell enviroment by sourcing relevant activate.sh"
+        )
     return os.environ["NGSENV_BASEDIR"]
 
 
 def check_NGS_PIPELINE_BASE():
-    if 'NGS_PIPELINE_BASE' not in os.environ:
-         cexit('ERROR: NGS_PIPELINE_BASE environment is not set. '
-              'Please set proper shell enviroment by sourcing relevant activate.sh')
+    if "NGS_PIPELINE_BASE" not in os.environ:
+        cexit(
+            "ERROR: NGS_PIPELINE_BASE environment is not set. "
+            "Please set proper shell enviroment by sourcing relevant activate.sh"
+        )
     return os.environ["NGS_PIPELINE_BASE"]
 
 
 def check_multiplexer(prompt=False):
-    if 'TMUX' in os.environ:
+    if os.environ.get("NGS_IGNORE_TERM_MULTIPLEXER_CHECK", None):
         return True
-    if 'screen' in os.environ.get('TERM', '') and 'screen' in os.environ.get('TERMCAP', ''):
+    if "TMUX" in os.environ:
+        return True
+    if "screen" in os.environ.get("TERM", "") and "screen" in os.environ.get(
+        "TERMCAP", ""
+    ):
         return True
     if prompt:
-        resp = input('Warning! You are not in a terminal multiplexer. Still continue [Y/n]: ')
-        if not resp.lower().startswith('y'):
-            cerr(f'[Process terminated.]')
+        resp = input(
+            "Warning! You are not in a terminal multiplexer. Still continue [Y/n]: "
+        )
+        if not resp.lower().startswith("y"):
+            cerr(f"[Process terminated.]")
             sys.exit(101)
     return False
 
 
 def get_command_modules():
-    """ return a list of modules containing commands"""
-    modules = ['ngs_pipeline.cmds']
-    if 'NGS_PIPELINE_CMD_MODS' in os.environ:
-        additional_modules = [m for m in os.environ['NGS_PIPELINE_CMD_MODS'].split(':') if m]
+    """return a list of modules containing commands"""
+    modules = ["ngs_pipeline.cmds"]
+    if "NGS_PIPELINE_CMD_MODS" in os.environ:
+        additional_modules = [
+            m for m in os.environ["NGS_PIPELINE_CMD_MODS"].split(":") if m
+        ]
         return modules + additional_modules
     return modules
 
 
-def arg_parser(desc=''):
+def arg_parser(desc=""):
     p = argparse.ArgumentParser(description=desc)
-    p.add_argument('--debug', action='store_true', default=False,
-                   help='open ipdb when uncatched exception is raised')
+    p.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="open ipdb when uncatched exception is raised",
+    )
     return p
 
 
@@ -94,7 +112,8 @@ def run_main(argument_parser=None, main_function=None):
     if args.debug:
         # run main function under ipdb context
         from ipdb import launch_ipdb_on_exception
-        cerr('<< WARN: running in debug mode >>')
+
+        cerr("<< WARN: running in debug mode >>")
         with launch_ipdb_on_exception():
             main_function(args)
     else:
@@ -102,58 +121,59 @@ def run_main(argument_parser=None, main_function=None):
 
 
 def add_pgline(alignment_file, pg_dict):
-    """ append new PG line using a PG dict, return the full header """
+    """append new PG line using a PG dict, return the full header"""
 
     header = alignment_file.header.to_dict()
-    pg_header = header['PG']
-    pg_dict['PP'] = pg_header[-1]['ID']
+    pg_header = header["PG"]
+    pg_dict["PP"] = pg_header[-1]["ID"]
     pg_header.append(pg_dict)
     return header
 
 
 def get_mode(filename, mode):
-    """ return either (r, rb, w, wb) depending on file name """
-    if filename.endswith('.bam'):
-        return mode + 'b'
+    """return either (r, rb, w, wb) depending on file name"""
+    if filename.endswith(".bam"):
+        return mode + "b"
     return mode
 
 
 def is_abs_or_rel_path(filepath: str | pathlib.Path):
-    filepath = (filepath.as_posix() if isinstance(filepath, pathlib.Path)
-                else filepath)
+    filepath = filepath.as_posix() if isinstance(filepath, pathlib.Path) else filepath
     if (
-        filepath.startswith('/')
-        or filepath.startswith('./')
-        or filepath.startswith('../')
+        filepath.startswith("/")
+        or filepath.startswith("./")
+        or filepath.startswith("../")
     ):
         return True
     return False
 
 
 def get_file_path(filepath: str):
-    """ return the actual filepath"""
+    """return the actual filepath"""
     if is_abs_or_rel_path(filepath):
         return filepath
     return pathlib.Path(check_NGSENV_BASEDIR()) / filepath
 
 
-def get_snakefile_path(filepath: str | pathlib.Path,
-                       snakefile_root: pathlib.Path | None = None,
-                       from_module: types.ModuleType | None = None):
-    """ return the actual snakefile """
+def get_snakefile_path(
+    filepath: str | pathlib.Path,
+    snakefile_root: pathlib.Path | None = None,
+    from_module: types.ModuleType | None = None,
+):
+    """return the actual snakefile"""
     filepath_str = filepath
     if isinstance(filepath, pathlib.Path):
         filepath_str = filepath.as_posix()
     if is_abs_or_rel_path(filepath):
         return filepath
     if from_module is not None:
-        snakefile_root = pathlib.Path(from_module.__path__[0]) / 'rules'
+        snakefile_root = pathlib.Path(from_module.__path__[0]) / "rules"
     return snakefile_root / filepath
 
 
-def setup_config(d = {}):
-    d['NGSENV_BASEDIR'] = check_NGSENV_BASEDIR()
-    d['NGS_PIPELINE_BASE'] = check_NGS_PIPELINE_BASE()
+def setup_config(d={}):
+    d["NGSENV_BASEDIR"] = check_NGSENV_BASEDIR()
+    d["NGS_PIPELINE_BASE"] = check_NGS_PIPELINE_BASE()
     return d
 
 
