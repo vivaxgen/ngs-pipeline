@@ -16,15 +16,15 @@ from ngs_pipeline import (
     arg_parser,
     get_snakefile_path,
     check_multiplexer,
-    snakeutils,
 )
+from ngs_pipeline.cmds import run_snakefile
 
 # this is a wrapper to run sample_preparation, individual sample genotyping,
 # and joint variant calling in a single command
 
 
 def init_argparser():
-    p = snakeutils.init_argparser("run whole steps of discovery variant caller")
+    p = run_snakefile.init_argparser("run whole steps of discovery variant caller")
 
     # file input arguments, similar to generate-manifest command
     m = p.add_mutually_exclusive_group()
@@ -66,7 +66,7 @@ def init_argparser():
 def run_multistep_variant_caller(args, console=True):
 
     import ngs_pipeline
-    from ngs_pipeline import get_snakefile_path, snakeutils
+    from ngs_pipeline import get_snakefile_path
     import sys
 
     if pathlib.Path(args.outdir).exists():
@@ -122,18 +122,24 @@ def run_multistep_variant_caller(args, console=True):
         # args.rerun = config['rerun'] = False
 
         # unlock for main snakefile
-        status, elapse_time = snakeutils.run_snakefile(args, config=config)
+        status, elapse_time = run_snakefile.run_snakefile(
+            args, config=config, show_status=False
+        )
 
         #  unlock for all necessary rules
         args.unlock = False
-        status, elapse_time = snakeutils.run_snakefile(args, config=config)
+        status, elapse_time = run_snakefile.run_snakefile(
+            args, config=config, show_status=False
+        )
 
         # no more unlock
         config["unlock"] = False
         # args.rerun = config['rerun'] = True
         cerr("[INFO: finished unlocking all working directories...]")
 
-    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+    status, elapsed_time = run_snakefile.run_snakefile(
+        args, config=config, show_status=False
+    )
     if not console:
         return status, elapsed_time
 
