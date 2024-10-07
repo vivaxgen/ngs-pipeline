@@ -15,14 +15,15 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, snakeutils
+from ngs_pipeline import cerr, cexit
+from ngs_pipeline.cmds import run_snakefile
 
 
 # usage: run_varcall.py
 
 
 def init_argparser():
-    p = snakeutils.init_argparser(desc="run individual sample variant caller")
+    p = run_snakefile.init_argparser(desc="run individual sample variant caller")
     p.arg_dict["snakefile"].choices = ["var_call.smk"]
     p.arg_dict["snakefile"].default = "var_call.smk"
     p.add_argument("target")
@@ -45,7 +46,7 @@ def run_indv_varcall(args):
     (cwd / ".completed").unlink(missing_ok=True)
     (cwd / ".uncompleted").unlink(missing_ok=True)
 
-    status, elapsed_time = snakeutils.run_snakefile(args)
+    status, elapsed_time = run_snakefile.run_snakefile(args)
     open(cwd / (".uncompleted" if not status else ".completed"), "w").write(
         f"{elapsed_time}"
     )
