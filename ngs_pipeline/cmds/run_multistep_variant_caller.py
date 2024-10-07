@@ -69,6 +69,29 @@ def run_multistep_variant_caller(args, console=True):
     from ngs_pipeline import get_snakefile_path, snakeutils
     import sys
 
+    if pathlib.Path(args.outdir).exists():
+        while True:
+            resp = input(
+                f"Output directory {args.outdir} already exists.\n"
+                f"Continue/overwrite/abort [c/o/a]: "
+            )
+            match resp.lower():
+
+                case "o":
+                    import shutil
+
+                    shutil.rmtree(args.outdir)
+                    break
+
+                case "a":
+                    cexit("Abort process.", err_code=101)
+
+                case "c":
+                    break
+
+                case _:
+                    pass
+
     # check we are inside a terminal multiplexer
     check_multiplexer(prompt=True)
 
