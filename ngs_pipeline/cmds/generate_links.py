@@ -100,7 +100,7 @@ def generate_links(args):
                 )
         else:
             fileutils.make_sample_symlink(
-                sample, items[0], args.outdir, use_absolute=args.use
+                sample, items[0], args.outdir, use_absolute=args.use_absolute_link
             )
 
         cerr(f"Generated symlink for sample {sample}")
