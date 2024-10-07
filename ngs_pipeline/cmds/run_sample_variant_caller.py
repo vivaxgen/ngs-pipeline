@@ -154,6 +154,13 @@ def run_sample_variant_caller(args):
         cerr(f"[Collecting {len(curr_samples)} directories from {indir}]")
         samples += curr_samples
 
+    if len(samples) == 0:
+        cexit(
+            "ERROR: there are no sample directories under the following input directories:\n  "
+            + "\n  ".join(args.indirs),
+            err_code=101,
+        )
+
     cerr(
         f"[Collecting total of {len(samples)} sample directories from "
         f"{len(args.indirs)} input directories]"
