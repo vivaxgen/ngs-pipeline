@@ -28,6 +28,8 @@ def run_snakefile(args, config: dict = {}, show_status: bool = True):
             )
         cerr(f"[Finish running snakefile {args.snakefile} (time: {elapsed_time})]")
 
+    return status, elapsed_time
+
 
 def main(args):
     run_snakefile(args)
