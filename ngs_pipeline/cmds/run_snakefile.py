@@ -16,13 +16,17 @@ def init_argparser(desc=None):
     return p
 
 
-def run_snakefile(args, config: dict = {}):
+def run_snakefile(args, config: dict = {}, show_status: bool = True):
 
     status, elapsed_time = snakeutils.run_snakefile(args, config=setup_config(config))
 
-    if not status:
-        cerr(f"[WARNING: snakefile {args.snakefile} did not successfully " "complete]")
-    cerr(f"[Finish running snakefile {args.snakefile} (time: {elapsed_time})]")
+    if show_status:
+        if not status:
+            cerr(
+                f"[WARNING: snakefile {args.snakefile} did not successfully "
+                "complete]"
+            )
+        cerr(f"[Finish running snakefile {args.snakefile} (time: {elapsed_time})]")
 
 
 def main(args):
