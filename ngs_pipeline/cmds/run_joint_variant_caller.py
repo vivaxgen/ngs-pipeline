@@ -21,12 +21,12 @@ from ngs_pipeline import (
     arg_parser,
     check_NGSENV_BASEDIR,
     check_multiplexer,
-    snakeutils,
 )
+from ngs_pipeline.cmds import run_snakefile
 
 
 def init_argparser():
-    p = snakeutils.init_argparser(desc="run joint variant calling")
+    p = run_snakefile.init_argparser(desc="run joint variant calling")
     p.arg_dict["snakefile"].choices = [
         "jointvarcall_gatk.smk",
         "jointvarcall_freebayes.smk",
@@ -124,7 +124,9 @@ def run_joint_variant_caller(args):
         )
 
     config = dict(srcdirs=source_dirs, destdir=args.outdir.removesuffix("/"))
-    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+    status, elapsed_time = run_snakefile.run_snakefile(
+        args, config=config, show_status=False
+    )
 
     if not status:
         cerr("[WARNING: joint varian calling step did not successfully complete]")
