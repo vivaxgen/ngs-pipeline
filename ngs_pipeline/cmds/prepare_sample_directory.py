@@ -147,8 +147,6 @@ def prepare_samples(args):
 
     # preparing directory structure
 
-    outdir.mkdir(exist_ok=True)
-
     # sanity check for duplicate sample (directory) name
     duplicated = []
     for sample, fastq_list, filesize in samples:
@@ -164,6 +162,8 @@ def prepare_samples(args):
         )
 
     # for each samples, create a directory reads
+
+    outdir.mkdir(exist_ok=True)
 
     for sample, fastq_list, filesize in samples:
 
