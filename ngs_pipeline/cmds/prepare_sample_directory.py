@@ -59,6 +59,7 @@ def prepare_samples(args):
     # import heavy modules here if required
     import pathlib
     import pandas as pd
+    from ngs_pipeline import fileutils
 
     # read manifest file
     in_stream = sys.stdin if args.infile == "-" else args.infile
@@ -168,15 +169,21 @@ def prepare_samples(args):
     for sample, fastq_list, filesize in samples:
 
         cerr(f"Preparing for sample [{sample}]")
-        sample_path = dest_dir / sample / "reads"
+        sample_path = outdir / sample / "reads"
         sample_path.mkdir(parents=True)
 
         for idx, fastq_pair in enumerate(fastq_list):
-            for no, fastq_file in enumerate(
+            for pair_idx, fastq_file in enumerate(
                 fastq_pair, 1 if len(fastq_pair) > 1 else 0
             ):
-                dest = sample_path / f"raw-{idx}_R{no}.fastq.gz"
-                dest.symlink_to(source_dir / fastq_file)
+                sample_code = f"raw-{idx}"
+                # dest = sample_path / f"raw-{idx}_R{no}.fastq.gz"
+                fileutils._make_symlink_for_sample(
+                    sample_code,
+                    fastq_file,
+                    sample_path,
+                    f"_R{pair_idx}.fastq.gz",
+                )
 
         with open(sample_path / "filesize", "wt") as f_out:
             f_out.write(str(filesize))
