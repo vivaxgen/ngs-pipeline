@@ -258,7 +258,7 @@ def make_sample_symlink(
     if type(file_item) == tuple:
         if len(file_item) != 2:
             raise ValueError(f"File {file_item} for sample {sample} is paired-end")
-        for pair_idx, path in enumerate(file_item):
+        for pair_idx, path in enumerate(file_item, 1):
             _make_symlink_for_sample(
                 sample_code,
                 path,
