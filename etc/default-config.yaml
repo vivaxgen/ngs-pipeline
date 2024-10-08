@@ -34,8 +34,8 @@ knownsites_file: refs/pv-known-variants.bed.gz
 knownvariants_dir: refs/known-variants
 
 # parameter for bwa-mem2
-bwamem2_flags: null
-bwamem2_extra_flags: null
+bwamem2_flags: ''
+bwamem2_extra_flags: ''
 
 # filter to apply for deduplicated BAM
 # read_filters options:
@@ -57,90 +57,48 @@ interval_file: null
 interval_dir: null
 
 # java options (for GATK)
-java_opts:
+java_opts: ''
 
 # -- options for individual software in used --
-applybqsr_extra_flags:
-applybqsr_flags:
+applybqsr_extra_flags: ''
+applybqsr_flags: ''
 
-baserecalibrator_extra_flags:
-baserecalibrator_flags:
+baserecalibrator_extra_flags: ''
+baserecalibrator_flags: ''
 
-freebayes_flags:
-freebayes_extra_flags:
+freebayes_flags: ''
+freebayes_extra_flags: ''
 
-gatherbqsrr_extra_flags:
-gatherbqsrr_flags:
+gatherbqsrr_extra_flags: ''
+gatherbqsrr_flags: ''
 
-haplotypecaller_extra_flags:
-haplotypecaller_flags:
+haplotypecaller_extra_flags: ''
+haplotypecaller_flags: ''
 
 ggvcf_flags: -stand-call-conf 10 -new-qual
-ggvcf_extra_flags: 
+ggvcf_extra_flags: ''
 
 
 
 # -- options for multistep variant calling --
 
 # if we need to run outside NGSENV_BASEDIR, set to: --force
-prepare_sample_directory_flags:
+prepare_sample_directory_flags: ''
 
 # if we need to run outside NGSENV_BASEDIR, set to: --force --no-config-cascade
-sample_variant_caller_flags:
-joint_variant_caller_flags:
+sample_variant_caller_flags: ''
+joint_variant_caller_flags: ''
 
 
 # -- options for regions to filter --
 
 # regions to be analyzed
-regions:
-  - PvP01_14_v1
-  - PvP01_13_v1
-  - PvP01_12_v1
-  - PvP01_11_v1
-  - PvP01_10_v1
-  - PvP01_09_v1
-  - PvP01_08_v1
-  - PvP01_07_v1
-  - PvP01_06_v1
-  - PvP01_05_v1
-  - PvP01_04_v1
-  - PvP01_03_v1
-  - PvP01_02_v1
-  - PvP01_01_v1
-  - PvP01_API_v1
-  - PvP01_MIT_v1
+regions: []
 
 # regions to be considered as contaminant whose mapped reads
 # will be removed right after mapping
 
-contaminant_regions:
-  - NC_000001.11
-  - NC_000002.12
-  - NC_000003.12
-  - NC_000004.12
-  - NC_000005.10
-  - NC_000006.12
-  - NC_000007.14
-  - NC_000008.11
-  - NC_000009.12
-  - NC_000010.11
-  - NC_000011.10
-  - NC_000012.12
-  - NC_000013.11
-  - NC_000014.9
-  - NC_000015.10
-  - NC_000016.10
-  - NC_000017.11
-  - NC_000018.10
-  - NC_000019.10
-  - NC_000020.11
-  - NC_000021.9
-  - NC_000022.11
-  - NC_000023.11
-  - NC_000024.10
-  - NC_012920.1
-
+contaminant_regions: []
 
 
 # EOF
