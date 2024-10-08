@@ -129,6 +129,17 @@ def generate_manifest(args):
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     if initial_df is not None:
         df = pd.concat([initial_df, df])
+        # drop duplicate row
+        df = df.drop_duplicates(keep="last")
+        # check for duplicate sample name
+        duplicate_samples = df.SAMPLE[df.SAMPLE.duplicated()]
+        if any(duplicate_samples):
+            cexit(
+                "ERROR: duplicate sample code with differing read files"
+                " found during merging with initial manifest:\n"
+                + " ".join(list(duplicate_samples)),
+                err_code=101,
+            )
 
     # print at least 5 rows
     cerr("[Showing snippets of sample(s):]")
