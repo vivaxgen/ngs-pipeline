@@ -15,10 +15,11 @@ Please read the README.txt of this software.
 
 import os
 from ngs_pipeline import cerr, cexit, check_multiplexer
+from ngs_pipeline.cmds import run_snakefile
 
 
 def init_argparser():
-    p = snakeutils.init_argparser(desc="run targeted variant calling")
+    p = run_snakefile.init_argparser(desc="run targeted variant calling")
     p.arg_dict["snakefile"].choices = [
         "panel_varcall_pe.smk",
         "panel_varcall_lr.smk",
@@ -60,7 +61,7 @@ def run_targeted_variant_caller(args, optional_config={}):
         dict(infiles=args.infiles, underscore=args.underscore, outdir=args.outdir)
         | optional_config
     )
-    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+    status, elapsed_time = run_snakefile.run_snakefile(args, config=config)
 
     if not status:
         cerr("[WARNING: targeted variant calling did not successfully complete]")
