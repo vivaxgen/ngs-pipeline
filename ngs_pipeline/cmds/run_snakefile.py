@@ -55,11 +55,6 @@ def run_snakefile(args, config: dict = {}, show_status: bool = True):
     return status, elapsed_time
 
 
-def setup_config2(config):
-    config["MEA_PIPELINE_BASE"] = os.environ["MEA_PIPELINE_BASE"]
-    return config
-
-
 def main(args):
     run_snakefile(args)
 
