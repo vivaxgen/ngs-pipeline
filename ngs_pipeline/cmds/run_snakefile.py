@@ -1,11 +1,18 @@
+#!/usr/bin/env ngs-pl
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
+
+
 import os
+import sys
+import pathlib
+import ngs_pipeline
 from ngs_pipeline import (
     cerr,
-    cexit,
-    arg_parser,
     check_NGSENV_BASEDIR,
     check_NGS_PIPELINE_BASE,
-    get_snakefile_path,
     setup_config,
     snakeutils,
 )
@@ -18,7 +25,24 @@ def init_argparser(desc=None):
 
 def run_snakefile(args, config: dict = {}, show_status: bool = True):
 
-    status, elapsed_time = snakeutils.run_snakefile(args, config=setup_config(config))
+    env_base_dir = pathlib.Path(check_NGSENV_BASEDIR())
+    pipeline_base_dir = pathlib.Path(check_NGS_PIPELINE_BASE())
+
+    executor = snakeutils.SnakeExecutor(
+        args,
+        setup_config_func=setup_config,
+        env_basedir=env_base_dir,
+        from_module=ngs_pipeline,
+        default_config_file=pipeline_base_dir / "etc" / "default-config.yaml",
+    )
+
+    status, elapsed_time = executor.run(
+        snakefile=args.snakefile,
+        config=config,
+        force=snakeutils.check_env("NGS_PIPELINE_FORCE") or args.force,
+        no_config_cascade=snakeutils.check_env("NGS_PIPELINE_NO_CONFIG_CASCADE")
+        or args.no_config_cascade,
+    )
 
     if show_status:
         if not status:
@@ -29,6 +53,11 @@ def run_snakefile(args, config: dict = {}, show_status: bool = True):
         cerr(f"[Finish running snakefile {args.snakefile} (time: {elapsed_time})]")
 
     return status, elapsed_time
+
+
+def setup_config2(config):
+    config["MEA_PIPELINE_BASE"] = os.environ["MEA_PIPELINE_BASE"]
+    return config
 
 
 def main(args):
