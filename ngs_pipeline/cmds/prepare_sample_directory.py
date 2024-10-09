@@ -20,9 +20,23 @@ from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
 
 def init_argparser():
     p = arg_parser(desc="prepare directory structure for sample processing")
+
     p.add_argument(
         "--resampling", type=int, default=-1, help="randomly take a number of samples"
     )
+    p.add_argument(
+        "--overwrite-existing-samples",
+        default=False,
+        action="store_true",
+        help="check and overwrite existing samples",
+    )
+    p.add_argument(
+        "--skip-existing-samples",
+        default=False,
+        action="store_true",
+        help="skip and keep existing samples",
+    )
+
     p.add_argument(
         "-o",
         "--outdir",
@@ -61,9 +75,24 @@ def prepare_samples(args):
     import pandas as pd
     from ngs_pipeline import fileutils
 
+    # check arguments
+    if args.skip_existing_samples and args.overwrite_existing_samples:
+        cexit(
+            "ERR: can only supply one of --skip-existing-samples or --overwrite-existing-samples, "
+            "but not both!",
+            err_code=101,
+        )
+
     # read manifest file
     in_stream = sys.stdin if args.infile == "-" else args.infile
     manifest_df = pd.read_table(in_stream, sep=None, engine="python")
+
+    # sanity check for duplicated names
+    if any((duplicate_samples := manifest_df.SAMPLE[manifest_df.SAMPLE.duplicated()])):
+        cerr("ERR: manifest contains duplicated sample name/code:")
+        for sample_name in sorted(list(duplicate_samples)):
+            cerr(f"  {sample_name}")
+        cexit("Please deduplicate the manifest file first.", err_code=201)
 
     # get absolute path for indir and outdir, without resolving symlinks
     indir = pathlib.Path(args.indir).absolute()
@@ -148,19 +177,21 @@ def prepare_samples(args):
 
     # preparing directory structure
 
-    # sanity check for duplicate sample (directory) name
-    duplicated = []
-    for sample, fastq_list, filesize in samples:
-        sample_path = dest_dir / sample
-        if sample_path.exists():
-            duplicated.append(sample)
-    if any(duplicated):
-        cerr("ERROR: the directories for the following samples already exist:")
-        for c in duplicated:
-            cerr(f"  {c}")
-        cexit(
-            "Please either remove the directories or remove the sample from manifest file!"
-        )
+    # sanity check for existing sample (directory) name unless
+    # --skip-existing-samples or --overwrite-existing-samples is supplied
+    if not (args.skip_existing_samples or args.overwrite_existing_samples):
+        existing = []
+        for sample, fastq_list, filesize in samples:
+            sample_path = outdir / sample
+            if sample_path.exists():
+                existing.append(sample)
+        if any(existing):
+            cerr("ERROR: the directories for the following samples already exist:")
+            for c in existing:
+                cerr(f"  {c}")
+            cexit(
+                "Please either remove the directories or remove the sample from manifest file!"
+            )
 
     # for each samples, create a directory reads
 
@@ -170,6 +201,9 @@ def prepare_samples(args):
 
         cerr(f"Preparing for sample [{sample}]")
         sample_path = outdir / sample / "reads"
+
+        if sample_path.exists() and args.skip_existing_samples:
+            continue
         sample_path.mkdir(parents=True)
 
         for idx, fastq_pair in enumerate(fastq_list):
@@ -183,6 +217,7 @@ def prepare_samples(args):
                     fastq_file,
                     sample_path,
                     f"_R{pair_idx}.fastq.gz",
+                    overwrite_if_exists=args.overwrite_existing_samples,
                 )
 
         with open(sample_path / "filesize", "wt") as f_out:
