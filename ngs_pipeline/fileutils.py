@@ -220,6 +220,7 @@ def _make_symlink_for_sample(
     ext: str,
     *,
     use_absolute: bool = False,
+    overwrite_if_exists: bool = False,
 ):
 
     # check that path exists
@@ -229,7 +230,14 @@ def _make_symlink_for_sample(
 
     target_path = outdir / (sample + ext)
     if target_path.exists():
-        raise ValueError(f"File {target_path} already exists!")
+        if not overwrite_if_exists:
+            raise ValueError(f"File {target_path} already exists!")
+
+        # check if the existing link is identical with the link
+        if path.absolute().resolve() == target_path.absolute().resolve():
+            # link and path is identical, just skip
+            return
+        target_path.unlink()
 
     # find commmon denominator directory of path and target path
     if use_absolute:
