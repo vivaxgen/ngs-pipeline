@@ -65,8 +65,13 @@ def check_multiplexer(prompt=False):
     ):
         return True
     if prompt:
-        resp = input(
-            "Warning! You are not in a terminal multiplexer. Still continue [Y/n]: "
+        from ngs_pipeline.timed_input import timed_input
+
+        resp = timed_input(
+            "Warning! You are not in a terminal multiplexer interactive session.\n"
+            "Still continue [Y/n]: ",
+            10,
+            "y",
         )
         if not resp.lower().startswith("y"):
             cerr(f"[Process terminated.]")
