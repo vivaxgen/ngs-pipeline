@@ -47,7 +47,7 @@ rule all:
 
 # get the list of all gvcfs
 rule prepare_gvcf_list:
-    threads: 2
+    localrule: True
     input:
         lambda w: get_gvcf_files(w.reg)
     output:
@@ -55,7 +55,9 @@ rule prepare_gvcf_list:
     run:
         # write {input} to tab-delimited map file: sample\tgvcf_path
         if len(SAMPLES) != len(input):
-            raise ValueError('SAMPLES and input files do not have identical length')
+            raise ValueError(
+                f'SAMPLES ({len(SAMPLES)}) and input files ({len(input)}) do not have identical length'
+            )
         with open(output[0], 'w') as f_out:
             for s, a_file in zip(SAMPLES, input):
                 f_out.write(f'{s}\t{a_file}\n')
