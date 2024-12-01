@@ -12,12 +12,19 @@ class ReadFileDict(object):
 
     ReadMode = ReadMode
 
-    def __init__(self, infiles: list, underscore: int, mode: str | None = None):
+    def __init__(
+        self,
+        infiles: list,
+        underscore: int,
+        mode: str | None = None,
+        skip_list: list = [],
+    ):
         super().__init__()
         self._d = {}
         self.err_files = []
         self.mode = mode
         self.underscore = underscore
+        self.skip_list = skip_list
         self.populate_read_files(infiles)
 
     def keys(self):
@@ -94,6 +101,8 @@ class ReadFileDict(object):
                     continue
 
                 sample = get_sample_name(infile, self.underscore)
+                if sample in self.skip_list:
+                    continue
                 if sample not in self:
                     self[sample] = [(infile,)]
                 else:
@@ -120,6 +129,8 @@ class ReadFileDict(object):
                         f"ERROR: unmatch pair [{prefix_1}] <> [{prefix_2}]"
                     )
 
+                if prefix_1 in self.skip_list:
+                    continue
                 if prefix_1 not in self:
                     self[prefix_1] = [(infile_1, infile_2)]
                 else:
