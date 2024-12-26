@@ -7,8 +7,14 @@ __license__ = "MIT"
 
 import pathlib
 
+# -- preserved  keywords from snakeutils --
 
-# input/output arguments
+# config files to be passed down to any snakefile executor
+configfiles = config['__configfiles__']
+configfiles_args = ' '.join([f'-c {x}' for x in configfiles])
+
+
+# -- input/output arguments --
 outdir = config['outdir']
 infiles = config['infiles']
 underscore = config.get('underscore', 0)
@@ -20,12 +26,12 @@ procfile = config.get('procfile', None)
 rerun = config.get('rerun', False)
 unlock = config.get('unlock', False)
 
-# extra flags for each steps
+# -- extra flags for each steps --
 prepare_sample_directory_flags = config.get('prepare_sample_directory_flags', '')
 sample_variant_caller_flags = config.get('sample_variant_caller_flags', '')
 joint_variant_caller_flags = config.get('joint_variant_caller_flags', '')
 
-# specific targets and rules
+# -- specific targets and rules --
 sample_variant_caller_target = config.get('sample_variant_caller_target', 'all')
 joint_variant_caller_target = config.get('joint_variant_caller_target', 'all')
 joint_variant_caller_smk = config.get('joint_variant_caller_smk', '')
@@ -93,6 +99,29 @@ rule consolidated_reports:
         'touch {output}'
 
 
+rule generate_config:
+    localrule: True
+    output:
+        config=f'{outdir}/metafile/config.yaml' if not rerun else [],
+    params:
+        config=config,
+    run:
+        import yaml
+
+        if any(output.config):
+            # remove any reserved keys (starting with __)
+            config_copy = params.config.copy()
+            for k in list(config_copy):
+                if k.startswith('__'):
+                    del config_copy[k]
+            buff = yaml.safe_dump(config_copy)
+            with open(output.config, 'w') as f:
+                f.write("# this config yaml can still be overridden by command line\n" +
+                        "# or by the config files nearest to working directory\n" +
+                        "# if config_cascade is True\n\n")
+                f.write(buff)
+
+
 rule generate_manifest:
     localrule: True
     output:
@@ -124,7 +153,8 @@ rule run_prepare_sample_directory:
 rule run_sample_variant_caller:
     localrule: True
     input:
-        f'{outdir}/analysis/._prepared_'
+        flag = f'{outdir}/analysis/._prepared_',
+        cfg = f'{outdir}/metafile/config.yaml',
     output:
         touch(f'{outdir}/analysis/._completed_')
     params:
@@ -135,9 +165,10 @@ rule run_sample_variant_caller:
         target = sample_variant_caller_target,
         extra_flags = sample_variant_caller_flags
     shell:
-        'ngs-pl run-sample-variant-caller {params.extra_flags} '
-        '-j {params.jobs} {params.procfile} {params.rerun} {params.unlock} '
-        '--target {params.target} {outdir}/analysis'
+        'ngs-pl run-sample-variant-caller {params.extra_flags}'
+        '  -c {input.cfg}'
+        '  -j {params.jobs} {params.procfile} {params.rerun} {params.unlock}'
+        '  --target {params.target} {outdir}/analysis'
 
 
 rule run_check_sample_variant_result:
@@ -155,7 +186,8 @@ rule run_check_sample_variant_result:
 rule run_joint_variant_caller:
     localrule: True
     input:
-        f'{outdir}/completed_samples/._completed_'
+        flag = f'{outdir}/completed_samples/._completed_',
+        cfg = f'{outdir}/metafile/config.yaml',
     output:
         touch(f'{outdir}/joint/._completed_')
     params:
@@ -167,6 +199,7 @@ rule run_joint_variant_caller:
     shell:
         'ngs-pl run-joint-variant-caller {params.extra_flags}'
         '  {params.rerun} {params.unlock}'
+        '  -c {input.cfg}'
         '  {params.snakefile} -o {outdir}/joint {outdir}/completed_samples/'
 
 
