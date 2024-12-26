@@ -69,6 +69,9 @@ def init_argparser():
         help="prevent from doing cascading configuration",
     )
     p.add_argument(
+        "-c", "--config", default=[], action="append", help="config file(s) to append"
+    )
+    p.add_argument(
         "--snakefile",
         default=None,
         choices=["var_call.smk", "var_call_ont.smk"],
@@ -113,6 +116,9 @@ def run_sample_variant_caller(args):
 
     # get NGSENV_BASEDIR
     NGSENV_BASEDIR = os.environ["NGSENV_BASEDIR"]
+
+    # get additional config files
+    configfiles_arg = " ".join([f"-c {c}" for c in args.config])
 
     # get snakefile to run
     if args.snakefile is None:
@@ -204,6 +210,7 @@ def run_sample_variant_caller(args):
         f'{"--showconfigfiles" if args.showconfigfiles else ""} '
         f'{"--force" if args.force else ""} '
         f'{"--no-config-cascade" if args.no_config_cascade else ""} '
+        f"{configfiles_arg} "
         f"--snakefile {args.snakefile} "
         f"{args.target}",
         ":::",
