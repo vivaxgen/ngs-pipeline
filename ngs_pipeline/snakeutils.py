@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2024.10.07.01"
+__version__ = "2024.12.24.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -242,6 +242,9 @@ class SnakeExecutor(object):
         from snakemake import cli
 
         cwd = self.workdir or pathlib.Path.cwd()
+        if "__workdir__" in config:
+            raise ValueError('ERR: config key "__workdir__" is reserved')
+        config["__workdir__"] = cwd
         _cerr(f"Current working directory: {cwd}")
 
         if not (force or self.args.force) and not cwd.is_relative_to(self.env_basedir):
@@ -257,9 +260,12 @@ class SnakeExecutor(object):
                 "ERR: Please provide snakefile to execute using --snakefile argument."
             )
 
-        # process config files
+        # process config files and add to config __configfiles__ key
 
         configfiles = [pathlib.Path(cf) for cf in reversed(self.args.config)]
+        if "__configfiles__" in config:
+            raise ValueError('ERR: config key "__configfiles__" is reserved')
+        config["__configfiles__"] = configfiles
 
         if no_config_cascade or self.args.no_config_cascade:
             if (configfile := self.env_basedir / "config.yaml").is_file():
@@ -284,7 +290,11 @@ class SnakeExecutor(object):
             self.args.base_config = "configs/" + self.args.panel + ".yaml"
 
         if self.args.base_config:
-            configfiles.append(self.env_basedir / self.args.base_config)
+            if is_abs_or_rel_path(self.args.base_config):
+                # real full path
+                configfiles.append(self.args.base_config)
+            else:
+                configfiles.append(self.env_basedir / self.args.base_config)
 
         # get config file at root of environment base directory
         # this config file can be overridden by base/panel/custom config files
