@@ -42,7 +42,7 @@ git clone --depth 1 https://github.com/vivaxgen/ngs-pipeline.git ${ENVS_DIR}/ngs
 ln -sr ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d/10-ngs-pipeline ${BASHRC_DIR}/
 ln -sr ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d/95-prompt-history ${BASHRC_DIR}/
 
-source ${ENVS_DIR}/ngs_pipeline/etc/inst-scripts/inst-deps.sh
+source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
 
 echo "ngs-pipeline" >> ${ETC_DIR}/installed-repo.txt
 
