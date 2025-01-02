@@ -163,7 +163,7 @@ rule run_sample_variant_caller:
         rerun = '--rerun' if rerun else '',
         unlock = '--unlock' if unlock else '',
         target = sample_variant_caller_target,
-        extra_flags = sample_variant_caller_flags
+        extra_flags = sample_variant_caller_flags,
     shell:
         'ngs-pl run-sample-variant-caller {params.extra_flags}'
         '  -c {input.cfg}'
