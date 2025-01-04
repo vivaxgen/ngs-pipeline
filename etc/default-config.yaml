@@ -28,10 +28,10 @@ keep_recalibrated_bam: False
 
 
 # reference sequence, reference map, known variants for base recalibration, etc
-refseq_file: refs/PvP01_v1.fasta
-refmap_file: refs/PvP01_v1.mmi
-knownsites_file: refs/pv-known-variants.bed.gz
-knownvariants_dir: refs/known-variants
+refseq_file: REFSEQ-FILE-NOT-DEFINED
+refmap_file: REFMAP-FILE-NOT-DEFINED
+knownsites_file: ''
+knownvariants_dir: ''
 
 # parameter for bwa-mem2
 bwamem2_flags: ''
