@@ -1,6 +1,10 @@
 
 outfile = config['outfile']
 
+include: "general_params.smk"
+include: "global_params.smk"
+include: "msf_params.smk"
+
 rule all:
     input:
         f'{outfile}'
