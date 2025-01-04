@@ -6,10 +6,6 @@ __license__ = "MIT"
 
 # prepares files for usage
 
-# put possibly empty variables so snakemake will not complain
-refseq=''
-refmap=''
-
 # include utilites.smk and general_params.smk from vivaxGEN ngs-pipeline
 include: "utilities.smk"
 include: "general_params.smk"
@@ -17,7 +13,7 @@ include: "general_params.smk"
 
 rule wgs:
     input:
-        f"{refseq}",
+        refseq,
         f"{refseq}.fai",
         f"{refseq}.{idx_extension}",
         f"{refseq.removesuffix('.fasta')}.dict"
@@ -25,9 +21,9 @@ rule wgs:
 
 rule panelseq:
     input:
-        f"{refseq}",
+        refseq,
         f"{refseq}.fai",
-        f"{refmap}",
+        refmap,
 
 
 # EOF
