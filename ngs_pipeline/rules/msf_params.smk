@@ -9,10 +9,9 @@ from ngs_pipeline import cerr, fileutils
 include: "general_params.smk"
 
 # reference-related configuration
-refmap = ngsenv_basedir + '/' + config['refmap_file']
-target_regions = ngsenv_basedir + '/' + config['target_regions']
-target_variants = ngsenv_basedir + '/' + config['target_variants']
-variant_info = ngsenv_basedir + '/' + config.get('variant_info', 'NOFILE')
+target_regions = get_abspath(config['target_regions'], ngsenv_basedir)
+target_variants = get_abspath(config['target_variants'], ngsenv_basedir)
+variant_info = get_abspath(config.get('variant_info', 'NOFILE'), ngsenv_basedir)
 
 # input/output related configuration
 read_files = fileutils.ReadFileDict(config['infiles'], config['underscore'])

@@ -5,11 +5,10 @@ include: "general_params.smk"
 
 # parameters to do processing
 
-refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
-strtable_file = ngsenv_basedir + '/' + config.get('strtable_file', 'STRTABLE-FILE-NOT-DEFINED')
-knownsites_file = ngsenv_basedir + '/' + config.get('knownsites_file', '')
-knownvariants_dir = ngsenv_basedir + '/' + config.get('knownvariants_dir', '')
-targetregion_file = (ngsenv_basedir + '/' + fn) if (fn := config.get('targetregion_file')) else None
+strtable_file = get_abspath(config.get('strtable_file', 'STRTABLE-FILE-NOT-DEFINED'), ngsenv_basedir)
+knownsites_file = get_abspath(config.get('knownsites_file', ''), ngsenv_basedir)
+knownvariants_dir = get_abspath(config.get('knownvariants_dir', ''), ngsenv_basedir)
+targetregion_file = get_abspath(fn if (fn := config.get('targetregion_file')) else None, ngsenv_basedir)
 
 deduplicate = config.get('deduplicate', True)
 

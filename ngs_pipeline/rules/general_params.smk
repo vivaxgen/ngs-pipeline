@@ -1,12 +1,33 @@
 
+# necessary imports
+import pathlib
+
 # generic parameters
 
 # get base directories
 ngs_pipeline_basedir = config['NGS_PIPELINE_BASE']
 ngsenv_basedir = config['NGSENV_BASEDIR']
 
+
+def get_abspath(p, prefix=ngsenv_basedir):
+    if p is None:
+        return p
+
+    filepath = p.as_posix() if isinstance(p, pathlib.Path) else p
+    if (
+        filepath.startswith("/")
+        or filepath.startswith("./")
+        or filepath.startswith("../")
+    ):
+        return p
+
+    prefix = pathlib.Path(prefix) if isinstance(prefix, str) else prefix
+    return (prefix / p).absolute().as_posix()
+
+
 # basic parameters to do processing
-refseq = ngsenv_basedir + '/' + config['refseq_file']
+refseq = get_abspath(config['refseq_file'], ngsenv_basedir)
+refmap = get_abspath(config['refmap_file'], ngsenv_basedir)
 ploidy = int(config.get('ploidy', 2))
 min_depth = config.get('min_depth', 5)
 
