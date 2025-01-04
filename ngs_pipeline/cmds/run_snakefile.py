@@ -23,7 +23,13 @@ def init_argparser(desc=None):
     return p
 
 
-def run_snakefile(args, config: dict = {}, show_status: bool = True):
+def run_snakefile(
+    args,
+    config: dict = {},
+    workdir: str | pathlib.Path | None = None,
+    show_status: bool = True,
+    show_config_files: bool = False,
+):
 
     env_base_dir = pathlib.Path(check_NGSENV_BASEDIR())
     pipeline_base_dir = pathlib.Path(check_NGS_PIPELINE_BASE())
@@ -31,9 +37,11 @@ def run_snakefile(args, config: dict = {}, show_status: bool = True):
     executor = snakeutils.SnakeExecutor(
         args,
         setup_config_func=setup_config,
+        workdir=workdir,
         env_basedir=env_base_dir,
         from_module=ngs_pipeline,
         default_config_file=pipeline_base_dir / "etc" / "default-config.yaml",
+        show_config_files=show_config_files,
     )
 
     status, elapsed_time = executor.run(
