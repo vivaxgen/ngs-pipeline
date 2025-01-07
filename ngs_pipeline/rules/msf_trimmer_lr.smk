@@ -29,7 +29,7 @@ rule msf_trim_reads:
     input:
         raw = "{pfx}/{sample}/reads/raw-{idx}.fastq.gz"
     output:
-        fastq = "{pfx}/{sample}/trimmed_reads/trimmed-{idx}.fastq.gz"
+        fastq = "{pfx}/{sample}/trimmed-reads/trimmed-{idx}.fastq.gz"
     params:
         headcrop = f'--headcrop {headcrop}' if headcrop else '',
         tailcrop = f'--tailcrop {tailcrop}' if tailcrop else '',
