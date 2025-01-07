@@ -63,6 +63,16 @@ rule index_ont_mmi:
         "minimap2 -x map-ont -d {output.index} {input.fasta}"
 
 
+rule index_mmi:
+    threads: 1
+    input:
+        fasta = "{pfx}/{fn}.fasta"
+    output:
+        index = "{pfx}/{fn}.fasta.mmi"
+    shell:
+        "minimap2 -x sr -d {output.index} {input.fasta}"
+
+
 rule index_bwamem2:
     threads: 1
     input:
