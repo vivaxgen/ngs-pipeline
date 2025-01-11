@@ -46,7 +46,7 @@ def init_argparser():
         help="number of samples to be processed, useful to check initial run [-1]",
     )
     p.add_argument("--showcmds", default=False, action="store_true")
-    p.add_argument("--showconfigfiles", default=False, action="store_true")
+    p.add_argument("--show-config-files", default=False, action="store_true")
     p.add_argument("--unlock", default=False, action="store_true")
     p.add_argument("--rerun", default=False, action="store_true")
     p.add_argument(
@@ -172,7 +172,7 @@ def run_sample_variant_caller(args):
         f"{len(args.indirs)} input directories]"
     )
 
-    if args.showconfigfiles:
+    if args.show_config_files:
         # only use 1 sample for showing cascading config files
         args.count = 1
 
@@ -207,7 +207,7 @@ def run_sample_variant_caller(args):
         f'{"--rerun" if args.rerun else ""} '
         f'{"--touch" if args.touch else ""} '
         f'{"--showcmds" if args.showcmds else ""} '
-        f'{"--showconfigfiles" if args.showconfigfiles else ""} '
+        f'{"--show-config-files" if args.show_config_files else ""} '
         f'{"--force" if args.force else ""} '
         f'{"--no-config-cascade" if args.no_config_cascade else ""} '
         f"{configfiles_arg} "
@@ -218,7 +218,7 @@ def run_sample_variant_caller(args):
 
     # append sample directory list
     cmds += samples
-
+    print(" ".join([str(a) for a in cmds]))
     # run command and wait
     subprocess.call(cmds)
 
