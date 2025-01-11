@@ -55,7 +55,9 @@ def check_NGS_PIPELINE_BASE():
     return os.environ["NGS_PIPELINE_BASE"]
 
 
-def check_multiplexer(prompt=False):
+def check_multiplexer(prompt=False, remote_only=True):
+    if remote_only and not os.environ.get("SSH_TTY", None):
+        return True
     if os.environ.get("NGS_IGNORE_TERM_MULTIPLEXER_CHECK", None):
         return True
     if "TMUX" in os.environ:
