@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2024.12.24.01"
+__version__ = "2025.02.02.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -17,6 +17,7 @@ import logging
 import argparse
 import types
 import typing
+import importlib
 
 
 L = logging.getLogger(__name__)
@@ -133,7 +134,7 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None):
         help="path for base configuration file, relative to "
         "base environment directory",
     )
-    p.add_argument(
+    p.arg_dict["panel"] = p.add_argument(
         "--panel",
         default=None,
         help="panel to be used (eg. PANEL -> configs/PANEL.yaml as base config)",
@@ -252,7 +253,7 @@ class SnakeExecutor(object):
                 f"ERROR: current directory {cwd} is not relative to {self.env_basedir}"
             )
 
-        snakefile = snakefile or self.args.snakefile
+        snakefile = get_snakefile_path(snakefile or self.args.snakefile)
 
         # check sanity
         if not snakefile:
@@ -381,12 +382,20 @@ def get_snakefile_path(
     snakefile_root: pathlib.Path | None = None,
     from_module: types.ModuleType | None = None,
 ):
-    """return real path of  snakefile"""
+    """
+    return real path of  snakefile
+    filepath can be string or pathlib.Path with either absolute, relative or plain filename
+    filepath can also be in the format of module::filename
+    """
 
-    if is_abs_or_rel_path(filepath):
+    if type(filepath) == str and "::" in filepath:
+        module_name, filepath = filepath.split("::")
+        from_module = importlib.import_module(module_name)
+    elif is_abs_or_rel_path(filepath):
         if type(filepath) == str:
             return pathlib.Path(filepath)
         return filepath
+
     if from_module is not None:
         snakefile_root = pathlib.Path(from_module.__path__[0]) / "rules"
     if snakefile_root is not None:
