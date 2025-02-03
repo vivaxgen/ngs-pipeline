@@ -18,6 +18,9 @@ from ngs_pipeline import (
 )
 
 
+get_snakefile_path = snakeutils.get_snakefile_path
+
+
 def init_argparser(desc=None):
     p = snakeutils.init_argparser(desc=desc or "run arbitrary snakefile")
     return p
