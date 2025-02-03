@@ -20,7 +20,6 @@ rule reads_trimming:
         log2 = "{pfx}/logs/fastp-{idx}.json",
         log3 = "{pfx}/logs/fastp-{idx}.html"
     params:
-        sample = sample,
         nextseq_arg = '--trim_poly_g' if is_nextseq_or_novaseq() else '',
         length_arg = f'--length_limit {maxlen}' if maxlen > 0 else '-L',
         minlen_arg = f'--length_required {minlen}' if minlen > 0 else '',
