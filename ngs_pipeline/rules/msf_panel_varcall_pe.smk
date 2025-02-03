@@ -39,7 +39,7 @@ include: "msf_panel_genreport.smk"
 include: "msf_merge_vcf.smk"
 
 def get_individual_output_file(w):
-    return [f'{outdir}/{sample}/vcfs/variants.vcf.gz' for sample in read_files.samples()]
+    return [f'{outdir}/samples/{sample}/vcfs/variants.vcf.gz' for sample in read_files.samples()]
 
 
 cerr(f'Output directory: {outdir}')

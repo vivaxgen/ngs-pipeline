@@ -7,9 +7,9 @@ __license__ = "MIT"
 
 rule merge_vcfs:
     input:
-        vcfs = expand(f'{outdir}/{{sample}}/vcfs/variants.vcf.gz',
+        vcfs = expand(f'{outdir}/samples/{{sample}}/vcfs/variants.vcf.gz',
                       sample=read_files.samples()),
-        idx = expand(f'{outdir}/{{sample}}/vcfs/variants.vcf.gz.csi',
+        idx = expand(f'{outdir}/samples/{{sample}}/vcfs/variants.vcf.gz.csi',
                      sample=read_files.samples()),
 
     output:

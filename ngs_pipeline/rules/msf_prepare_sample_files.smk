@@ -11,7 +11,7 @@ rule msf_link_reads_se:
     input:
         lambda w: read_files.get_read_file(w)
     output:
-        f"{outdir}/{{sample}}/reads/raw-{{idx}}.fastq.gz"
+        f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}.fastq.gz"
     run:
 
         dest_file = pathlib.Path(output[0])
@@ -24,8 +24,8 @@ rule msf_link_reads_pe:
     input:
         lambda w: read_files.get_read_file(w)
     output:
-        f"{outdir}/{{sample}}/reads/raw-{{idx}}_R1.fastq.gz",
-        f"{outdir}/{{sample}}/reads/raw-{{idx}}_R2.fastq.gz"
+        f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}_R1.fastq.gz",
+        f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}_R2.fastq.gz"
     run:
 
         if (count := len(input)) != 2:
