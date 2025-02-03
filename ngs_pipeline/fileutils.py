@@ -75,10 +75,20 @@ class ReadFileDict(object):
         return d
 
     def get_indexes(self, sample):
-        """eeturn list of indexes for each sample"""
+        """return list of indexes for each sample"""
         return list(range(len(self[sample])))
 
     def populate_read_files(self, infiles):
+
+        if len(infiles) == 0:
+            raise ValueError("No input files given")
+
+        # check the existence of the 1st file to determine that the rest of the files
+        # are also exist from shell globbing
+        if not pathlib.Path(infiles[0]).exists():
+            raise ValueError(
+                f"No input files given as the first file is [{infiles[0]}]"
+            )
 
         infiles = sorted(infiles)
         self.mode = check_read_mode(infiles) if not self.mode else self.mode
@@ -143,7 +153,9 @@ def check_read_mode(infiles: list):
     """check if infiles are paired-rend or singleton reads"""
 
     if (len(infiles) % 2) != 0:
-        cerr("Number of infiles is not even, assuming singleton reads.")
+        cerr(
+            f"Number of infiles is not even [{len(infiles)}], assuming singleton reads."
+        )
         return ReadMode.SINGLETON
 
     counters = {
