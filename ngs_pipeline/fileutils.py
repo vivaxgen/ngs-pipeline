@@ -74,6 +74,13 @@ class ReadFileDict(object):
         print(d)
         return d
 
+    def get_indexes_with_wildcards(self, wildcards):
+        """this function is suitable to be used in input: directive in snake rules
+        wildcards must contain "sample" field
+        return a list of read indexes for each sample
+        """
+        return self.get_indexes(wildcards.sample)
+
     def get_indexes(self, sample):
         """return list of indexes for each sample"""
         return list(range(len(self[sample])))
