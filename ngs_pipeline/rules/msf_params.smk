@@ -7,6 +7,7 @@ __license__ = "MIT"
 from ngs_pipeline import cerr, fileutils
 
 include: "general_params.smk"
+include: "params_region.smk"
 
 # reference-related configuration
 target_regions = get_abspath(config['target_regions'], ngsenv_basedir)
