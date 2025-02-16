@@ -106,25 +106,33 @@ def generate_manifest(args):
     else:
         mode = None
 
-    read_files = fileutils.ReadFileDict(args.infiles, args.underscore, mode)
-
-    if any(read_files.err_files):
-        cexit(
-            "ERROR: invalid input files: \n"
-            + "\n".join(f"  {errmsg}" for errmsg in read_files.err_files)
-        )
-
-    # for each sample, process manifest line
     sample_series = []
     fastq_series = []
     counter = 0
-    for sample in read_files.samples():
-        sample_series.append(sample)
-        items = [
-            ",".join(item) if type(item) == tuple else item
-            for item in read_files[sample]
-        ]
-        fastq_series.append(";".join(items))
+
+    if any(args.infiles):
+        read_files = fileutils.ReadFileDict(args.infiles, args.underscore, mode)
+
+        if any(read_files.err_files):
+            cexit(
+                "ERROR: invalid input files: \n"
+                + "\n".join(f"  {errmsg}" for errmsg in read_files.err_files)
+            )
+
+        # for each sample, process manifest line
+
+        for sample in read_files.samples():
+            sample_series.append(sample)
+            items = [
+                ",".join(item) if type(item) == tuple else item
+                for item in read_files[sample]
+            ]
+            fastq_series.append(";".join(items))
+
+    elif initial_df is None:
+        cexit(
+            "[No source files as input and no initial manifest file, please check both]"
+        )
 
     df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     if initial_df is not None:
