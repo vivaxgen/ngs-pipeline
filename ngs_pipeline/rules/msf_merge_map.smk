@@ -26,8 +26,22 @@ rule map_filter_orientation:
         "| samtools sort -@4 -o {output} 2> {log.log2} "
 
 
-def get_sorted_bam_files(w):
-    return expand('{{pfx}}/{{sample}}/maps/mapped-filtered-{idx}.bam', idx=read_files.get_indexes(w.sample))
+rule msf_final_map:
+    # this rule prepares final bam file by filtering the mapped reads based on target regions
+    threads: thread_allocations.get('map_filter_target', 4)
+    input:
+        bam = "{pfx}/{sample}/maps/mapped-filtered-{idx}.bam",
+    output:
+        bam = temp("{pfx}/{sample}/maps/mapped-final-{idx}.bam")
+    params:
+        region_opts = f'-L {targetregion_file}' if targetregion_file else ""
+    shell:
+        "samtools view -o {output.bam} {params.region_opts} {input.bam}"
+
+
+def get_final_bam_files(w):
+    return expand('{{pfx}}/{{sample}}/maps/mapped-final-{idx}.bam', idx=read_files.get_indexes(w.sample))
+
 
 rule msf_merge_map:
     # this rule merges all bams into a single sorted bam files
@@ -35,9 +49,9 @@ rule msf_merge_map:
     threads: 4
     input:
         #expand('{{pfx}}/{{sample}}/maps/sorted-{idx}.bam', idx=read_files.get_indexes)
-        get_sorted_bam_files
+        get_final_bam_files
     output:
-        bam = "{pfx}/{sample}/maps/sorted.bam"
+        bam = "{pfx}/{sample}/maps/final.bam"
     run:
         if len(input) > 1:
             shell('samtools merge -@4 {output.bam} {input}')
@@ -46,17 +60,7 @@ rule msf_merge_map:
             shell('ln {input} {output}')
 
 
-rule msf_filter_target:
-    # this rule filter the mapped reads based on target regions
-    threads: thread_allocations.get('map_filter_target', 4)
-    input:
-        bam = "{pfx}/{sample}/maps/sorted.bam",
-    output:
-        bam = temp("{pfx}/{sample}/maps/target.bam")
-    params:
-        region_opts = f'-L {targetregion_file}' if targetregion_file else ""
-    shell:
-        "samtools view -o {output.bam} {params.region_opts} {input.bam}"
+
 
 
 # EOF
