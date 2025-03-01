@@ -8,7 +8,7 @@
 #   on the adapters
 # - the variant caller is GATK or FreeBayes since these variant-callers will look up at base quality
 
-config['instrument'] = ''
+#config['instrument'] = ''
 config['correction'] = False
 config['libprep'] = 'null'
 minlen = 0
