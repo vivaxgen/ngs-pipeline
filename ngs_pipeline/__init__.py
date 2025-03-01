@@ -81,6 +81,10 @@ def check_multiplexer(prompt=False, remote_only=True):
     return False
 
 
+def check_force(force):
+    return force or os.environ.get("NGS_PIPELINE_FORCE", 0)
+
+
 def get_command_modules():
     """return a list of modules containing commands"""
     modules = ["ngs_pipeline.cmds"]

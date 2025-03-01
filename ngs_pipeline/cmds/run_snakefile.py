@@ -13,6 +13,7 @@ from ngs_pipeline import (
     cerr,
     check_NGSENV_BASEDIR,
     check_NGS_PIPELINE_BASE,
+    check_force,
     setup_config,
     snakeutils,
 )
@@ -50,7 +51,7 @@ def run_snakefile(
     status, elapsed_time = executor.run(
         snakefile=args.snakefile,
         config=config,
-        force=snakeutils.check_env("NGS_PIPELINE_FORCE") or args.force,
+        force=check_force(args.force),
         no_config_cascade=snakeutils.check_env("NGS_PIPELINE_NO_CONFIG_CASCADE")
         or args.no_config_cascade,
     )

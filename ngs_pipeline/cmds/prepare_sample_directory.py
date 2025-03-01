@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR
+from ngs_pipeline import cerr, cexit, arg_parser, check_NGSENV_BASEDIR, check_force
 
 
 def init_argparser():
@@ -98,7 +98,7 @@ def prepare_samples(args):
     indir = pathlib.Path(args.indir).absolute()
     outdir = pathlib.Path(args.outdir).absolute()
 
-    if not args.force:
+    if not check_force(args.force):
         NGSENV_BASEDIR = check_NGSENV_BASEDIR()
 
         # check whether outdir is under NGSENV_BASEDIR

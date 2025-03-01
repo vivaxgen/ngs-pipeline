@@ -15,7 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
-from ngs_pipeline import cerr, cexit, arg_parser, check_multiplexer
+from ngs_pipeline import cerr, cexit, arg_parser, check_multiplexer, check_force
 
 
 # usage: run_varcall.py
@@ -153,7 +153,9 @@ def run_sample_variant_caller(args):
             cexit(f"[ERROR: directory {indir} does not exist]")
 
         # check whether indir is under NGSENV_BASEDIR
-        if not (args.force or indir.resolve().is_relative_to(NGSENV_BASEDIR)):
+        if not (
+            check_force(args.force) or indir.resolve().is_relative_to(NGSENV_BASEDIR)
+        ):
             cexit(f"[ERROR: {indir} is not relative to {NGSENV_BASEDIR}]")
 
         curr_samples = [s.as_posix() for s in indir.iterdir() if s.is_dir()]
