@@ -25,7 +25,7 @@ rule map_filter_orientation:
         additional_sam_filter = f"-e {sam_flt}" if sam_flt != '' else "",
     shell:
         "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
-        "| samtools sort -@4 -o {output} 2> {log.log2} "
+        "| samtools sort -@4 2> {log.log2} "
         "| samtools view \"{params.additional_sam_filter}\" -o {output} "
 
 
