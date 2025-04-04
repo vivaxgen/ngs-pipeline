@@ -8,6 +8,7 @@ from time import sleep
 
 include: "global_params.smk"
 
+include: "utilities.smk"
 # prepare sample-related parameters
 
 sample = pathlib.Path.cwd().name
@@ -41,6 +42,9 @@ rule all:
         'logs/stats.tsv',
         'logs/depths.png'
 
+rule all_no_qc:
+    input:
+        get_final_file,
 
 rule clean:
     shell:

@@ -44,7 +44,7 @@ rule collect_stats:
         '{params.trimmed} {params.mapped} {params.deduped} {params.finaled} {params.depthed} {wildcards.sample}'
 
 
-rule gather_stats:
+rule gather_stats_sample:
     threads: 1
     input:
         expand(f'{outdir}/samples/{{sample}}/logs/stats.tsv', sample=read_files.samples()),

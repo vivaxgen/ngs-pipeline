@@ -79,7 +79,7 @@ def init_argparser():
     )
     p.add_argument(
         "--target",
-        choices=["all", "mapping", "clean"],
+        choices=["all", "mapping", "clean", "all_no_qc"],
         default="all",
         help="target of snakemake module, use 'all' for GATK joint "
         "variant or 'mapping' for FreeBayes joint variant call",

@@ -13,7 +13,8 @@ def get_haplotypecaller_region(wildcards):
 rule gatk_calibrate_STR:
     threads: 1
     input:
-        bam = "maps/mapped-final.bam"
+        bam = "maps/mapped-final.bam",
+        bam_index = "maps/mapped-final.bam.bai",
     output:
         model = "maps/dragstr_model.txt"
     shell:
@@ -27,6 +28,7 @@ rule gatk_drag_haplotypecaller:
     input:
         # GATK DRAGEN use non-calibrated bam input
         bam = "maps/mapped-final.bam",
+        bam_index = "maps/mapped-final.bam.bai",
         model = "maps/dragstr_model.txt" if gatk_calibrate_str else [],
     output:
         gvcf = "gvcf/{sample}-{reg}.g.vcf.gz",

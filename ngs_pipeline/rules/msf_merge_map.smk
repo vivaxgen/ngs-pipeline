@@ -22,11 +22,11 @@ rule map_filter_orientation:
         read_orientation = "{pfx}/{sample}/logs/read-orientation-{idx}.json"
     params:
         args = config.get('read_filters', '') or '--remove_unmapped',
-        additional_sam_filter = f"-e {sam_flt}" if sam_flt != '' else "",
+        additional_sam_filter = f"-e \"{sam_flt}\"" if sam_flt != '' else "",
     shell:
         "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
         "| samtools sort -@4 2> {log.log2} "
-        "| samtools view \"{params.additional_sam_filter}\" -o {output} "
+        "| samtools view {params.additional_sam_filter} -o {output} "
 
 
 rule msf_final_map:
