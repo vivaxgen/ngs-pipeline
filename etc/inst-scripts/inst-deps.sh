@@ -8,4 +8,4 @@ if ! [[ "$OMIT" =~ GATK ]]; then
 fi
 
 echo "Installing other dependencies with micromamba"
-micromamba -y install -n ${uMAMBA_ENVNAME} -f ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/env.yaml
+retry 5 micromamba -y install -n ${uMAMBA_ENVNAME} -f ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/env.yaml
