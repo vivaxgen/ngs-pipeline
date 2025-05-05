@@ -119,4 +119,13 @@ rule bunzip2:
         "bunzip2 -c {input.path} > {output.path}"
 
 
+rule strtable:
+    threads: 1
+    input:
+        fasta = "{fn}.fasta"
+    output:
+        table = "{fn}.str_table.zip"
+    shell:
+        "gatk ComposeSTRTableFile -R {input.fasta} -O {output.table}"
+
 # EOF
