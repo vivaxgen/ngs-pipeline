@@ -22,12 +22,15 @@ rule map_sambamba_depth_base:
     # this rule use sambamba depth base
     threads: 1
     input:
-        "maps/{filename}.bam"
+        bam = "maps/{filename}.bam",
+        idx = "maps/{filename}.bam.bai",
     output:
-        "logs/{filename}.depth-base.tsv.gz"
+        tsv = "logs/{filename}.depth-base.tsv.gz",
+    log:
+        log1 = "logs/sambamba-depth-{filename}.log",
     params:
         sample = sample,
     shell:
-        "sambamba depth base {input} | gzip > {output}"
+        "sambamba depth base {input.bam} 2> {log.log1} | gzip > {output.tsv}"
 
 # EOF
