@@ -28,6 +28,7 @@ def get_abspath(p, prefix=ngsenv_basedir):
 # basic parameters to do processing
 refseq = get_abspath(config['refseq_file'], ngsenv_basedir)
 refmap = get_abspath(config['refmap_file'], ngsenv_basedir)
+strtable_file = get_abspath(fn if (fn := config.get('strtable_file')) else None, ngsenv_basedir)
 targetregion_file = get_abspath(fn if (fn := config.get('targetregion_file')) else None, ngsenv_basedir)
 ploidy = int(config.get('ploidy', 2))
 min_depth = config.get('min_depth', 5)

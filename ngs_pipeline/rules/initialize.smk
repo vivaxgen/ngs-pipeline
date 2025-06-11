@@ -16,7 +16,8 @@ rule wgs:
         refseq,
         f"{refseq}.fai",
         f"{refseq}.{idx_extension}",
-        f"{refseq.removesuffix('.fasta')}.dict"
+        f"{refseq.removesuffix('.fasta')}.dict",
+        strtable_file if strtable_file else [],
 
 
 rule panelseq:
