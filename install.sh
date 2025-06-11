@@ -33,12 +33,13 @@ fi
 BASEDIR="${BASEDIR:-./vvg-ngspl}"
 
 uMAMBA_ENVNAME="${uMAMBA_ENVNAME:-ngs-pl}"
-PYVER="${PYVER:-3.12}"
-SNAKEMAKEVER="${SNAKEMAKEVER:-9}"
+
+# for dev: source <(curl -L https://raw.githubusercontent.com/vivaxgen/vvg-box/refs/heads/dev/install.sh)
 source <(curl -L https://raw.githubusercontent.com/vivaxgen/vvg-box/main/install.sh)
 
 echo "Cloning vivaxGEN ngs-pipeline"
-git clone --depth 1 https://github.com/vivaxgen/ngs-pipeline.git ${ENVS_DIR}/ngs-pipeline
+# add --branch dev for dev
+git clone --depth 1 https://github.com/vivaxgen/ngs-pipeline.git ${ENVS_DIR}/ngs-pipeline  
 ln -sr ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d/10-ngs-pipeline ${BASHRC_DIR}/
 ln -sr ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d/95-prompt-history ${BASHRC_DIR}/
 
