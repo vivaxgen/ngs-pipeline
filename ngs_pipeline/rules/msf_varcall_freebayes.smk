@@ -17,8 +17,8 @@ __license__ = "MIT"
 rule freebayes:
     threads: 2
     input:
-        bam = "{pfx}/{sample}/maps/sorted.bam",
-        idx = "{pfx}/{sample}/maps/sorted.bam.bai"
+        bam = "{pfx}/{sample}/maps/final.bam",
+        idx = "{pfx}/{sample}/maps/final.bam.bai"
     output:
         vcf = "{pfx}/{sample}/vcfs/variants.vcf.gz",
     params:
