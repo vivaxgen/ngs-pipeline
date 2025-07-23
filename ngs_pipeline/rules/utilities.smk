@@ -122,7 +122,9 @@ rule bunzip2:
 rule strtable:
     threads: 1
     input:
-        fasta = "{fn}.fasta"
+        fasta = "{fn}.fasta",
+        idx = "{fn}.fasta.fai",
+        dct = "{fn}.dict"
     output:
         table = "{fn}.str_table.zip"
     shell:
