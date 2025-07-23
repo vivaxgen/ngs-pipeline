@@ -12,7 +12,7 @@ rule msf_mapping_lr:
     input:
         read = "{pfx}/{sample}/trimmed-reads/trimmed-{idx}.fastq.gz"
     output:
-        bam = temp("{pfx}/{sample}/maps/sorted-{idx}.bam")
+        bam = temp("{pfx}/{sample}/maps/{sample}-{idx}.bam")
     log:
         log1 = "{pfx}/{sample}/logs/minimap2-{idx}.log",
     params:

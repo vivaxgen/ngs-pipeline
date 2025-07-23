@@ -23,7 +23,7 @@ rule gen_report:
 rule merge_report:
     localrule: True
     input:
-        expand(f'{outdir}/{{sample}}/genetic_report.tsv', sample=read_files.samples())
+        expand(f'{outdir}/samples/{{sample}}/genetic_report.tsv', sample=read_files.samples())
     output:
         f'{outdir}/merged_genetic_report.tsv'
     run:
