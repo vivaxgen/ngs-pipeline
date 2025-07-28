@@ -261,7 +261,10 @@ class SubCommands(object):
             try:
                 repo = git.Repo(env_path, search_parent_directories=True)
                 commit = repo.head.commit.hexsha
-                _cout(f'{env}:\t{commit}')
+                if repo.is_dirty():
+                    _cout(f'{env}:\t{commit} (edited)')
+                else:
+                    _cout(f'{env}:\t{commit}')
             except git.exc.InvalidGitRepositoryError:
                 _cerr(f'Warning: {env} is not a valid git repository')
                 continue
