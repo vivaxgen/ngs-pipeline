@@ -122,7 +122,7 @@ class SubCommands(object):
         _cexit(
             f'  usage:\n'
             f'      {self.prog_name} CMD [OPTIONS]\n'
-            f'      {self.prog_name} [-i] [-l] [-h]\n'
+            f'      {self.prog_name} [-i] [-l] [-h] [-v]\n'
             f'  try: {self.prog_name} -l'
         )
 
@@ -248,6 +248,25 @@ class SubCommands(object):
                 args
             )
 
+    def list_repo_hashes(self):
+        """list the git hashes of the environments"""
+        _cout('Installed environments and their git hashes:')
+        import git
+        envs_root = os.path.join(os.environ.get('VVG_BASEDIR', ''), 'envs')
+        envs = os.listdir(envs_root)
+        for env in envs:
+            env_path = os.path.join(envs_root, env)
+            if not os.path.isdir(env_path):
+                continue
+            try:
+                repo = git.Repo(env_path, search_parent_directories=True)
+                commit = repo.head.commit.hexsha
+                _cout(f'{env}:\t{commit}')
+            except git.exc.InvalidGitRepositoryError:
+                _cerr(f'Warning: {env} is not a valid git repository')
+                continue
+
+
     def main(self):
 
         tokens = []
@@ -280,6 +299,10 @@ class SubCommands(object):
         elif cmd == '-h':
             # show some help
             self.help()
+        
+        elif cmd == '-v':
+            # show version
+            self.list_repo_hashes()
 
         elif cmd.endswith('.py') and self.allow_any_script:
 
