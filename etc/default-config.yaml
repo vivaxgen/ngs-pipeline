@@ -33,6 +33,14 @@ refmap_file: REFMAP-FILE-NOT-DEFINED
 knownsites_file: ''
 knownvariants_dir: ''
 
+
+# gff and annotation files
+gff_file: GFF-FILE-NOT-DEFINED
+snpEff_config_file: SNPEFF-CONFIG-FILE-NOT-DEFINED
+snpEff_data_dir: SNPEFF-DATA-DIR-NOT-DEFINED
+snpEff_db: SNPEFF-DB-NOT-DEFINED
+
+
 # parameter for bwa-mem2
 bwamem2_flags: ''
 bwamem2_extra_flags: ''
