@@ -27,4 +27,19 @@ rule panelseq:
         refmap,
 
 
+rule snpEff_db:
+    input:
+        f"{snpEff_data_dir}/{snpEff_db}/snpEffectPredictor.bin",
+
+
+rule build_snpEff_db:
+    input:
+        gff_file = f"{snpEff_data_dir}/{snpEff_db}/genes.gff",
+        ref_file = f"{snpEff_data_dir}/{snpEff_db}/sequences.fa"
+    output:
+        snpEff_file = f"{snpEff_data_dir}/{snpEff_db}/snpEffectPredictor.bin",
+    shell:
+        "snpEff build -c {snpEff_config_file} -dataDir {snpEff_data_dir} -noCheckCds -noCheckProtein -gff3 {snpEff_db}"       
+
+
 # EOF

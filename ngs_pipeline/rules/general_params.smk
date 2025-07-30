@@ -58,5 +58,12 @@ shell_prefix_micromamba = 'eval "$(micromamba shell hook --shell bash)" && '
 shell_prefix_bowtie2 = shell_prefix_micromamba + 'micromamba activate vvg-ngspl-bowtie2 && '
 shell_prefix_clair3 = shell_prefix_micromamba + 'micromamba activate vvg-ngspl-clair3 && '
 
+# for annotation processes
+
+gff_file = get_abspath(config["gff_file"], ngsenv_basedir)
+snpEff_config_file = get_abspath(config["snpEff_config_file"], ngsenv_basedir)
+snpEff_data_dir = get_abspath(config["snpEff_data_dir"], ngsenv_basedir)
+snpEff_db = config["snpEff_db"]
+
 
 # EOF
