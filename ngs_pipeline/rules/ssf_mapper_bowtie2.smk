@@ -32,7 +32,7 @@ rule reads_mapping:
 
     params:
         sample = sample,
-        rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{platform}'",
+        rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{ngs_platform}'",
         regions = ' '.join(CONTAMINANT_REGIONS) if CONTAMINANT_REGIONS else ' '.join(REGIONS),
         mode = '--remove' if CONTAMINANT_REGIONS else '',
         flags = config.get('bowtie2_flags', ''),

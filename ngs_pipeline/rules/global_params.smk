@@ -39,7 +39,7 @@ java_opts = config.get('java_opts', '')
 
 # check available read files
 
-platform = 'ILLUMINA' if config.get('instrument', '').lower() in ['miseq', 'nextseq', 'novaseq'] else config['platform']
+ngs_platform = 'ILLUMINA' if config.get('instrument', '').lower() in ['miseq', 'nextseq', 'novaseq'] else config['platform']
 
 # parameters for defining regions
 

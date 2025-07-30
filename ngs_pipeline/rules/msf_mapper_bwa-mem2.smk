@@ -10,7 +10,8 @@
 # LB: library prep ID, can be batch or set name for simplicity
 # PL: sequencing platform, eg: ILLUMINA
 
-platform="generic"
+# Anto: not sure why I hardcoded ngs_platform here
+ngs_platform="generic"
 
 rule reads_mapping:
     # this rule provides a name-sorted bam file with only mapped paired reads with:
@@ -37,7 +38,7 @@ rule reads_mapping:
         log4 = "{pfx}/{sample}/logs/fixmate-{idx}.log"
 
     params:
-        rg = lambda w: f"-R '@RG\tID:{w.sample}-{w.idx}\tSM:{w.sample}\tLB:LIB-{w.sample}-{w.idx}\tPL:{platform}'",
+        rg = lambda w: f"-R '@RG\tID:{w.sample}-{w.idx}\tSM:{w.sample}\tLB:LIB-{w.sample}-{w.idx}\tPL:{ngs_platform}'",
         regions = ' '.join(CONTAMINANT_REGIONS) if CONTAMINANT_REGIONS else ' '.join(REGIONS),
         mode = '--remove' if CONTAMINANT_REGIONS else '',
         flags = config.get('bwamem2_flags', ''),
