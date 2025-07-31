@@ -274,6 +274,8 @@ class SubCommands(object):
                 commit = repo_c.head.commit.hexsha
                 if repo.is_dirty():
                     _cout(f'{env}:\t{commit} (edited)')
+                else:
+                    _cout(f'{env}:\t{commit}')
                 rwriter.remove_section('safe')
                 if to_restore:
                     rwriter.add_section('safe')
@@ -284,8 +286,6 @@ class SubCommands(object):
                             rwriter.set_value('safe', 'directory', '')
                 rwriter.write()
                 rwriter.release()
-                else:
-                    _cout(f'{env}:\t{commit}')
             except git.exc.InvalidGitRepositoryError:
                 _cerr(f'Warning: {env} is not a valid git repository')
 
