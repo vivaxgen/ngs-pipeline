@@ -259,15 +259,36 @@ class SubCommands(object):
             if not os.path.isdir(env_path):
                 continue
             try:
-                repo = git.Repo(env_path, search_parent_directories=True)
-                commit = repo.head.commit.hexsha
+                repo = git.Repo(env_path)
+                rwriter = repo.config_writer("global")
+                existing_safe_dirs = None
+                to_restore = ""
+                if rwriter.has_section('safe'):
+                    to_restore = "safe"
+                    if rwriter.has_option('safe', 'directory'):
+                        to_restore += ".directory"
+                        existing_safe_dirs = rwriter.get_values('safe', 'directory', '')
+                rwriter.add_value('safe', 'directory', env_path)
+                rwriter.write()
+                repo_c = git.Repo(env_path)
+                commit = repo_c.head.commit.hexsha
                 if repo.is_dirty():
                     _cout(f'{env}:\t{commit} (edited)')
                 else:
                     _cout(f'{env}:\t{commit}')
+                rwriter.remove_section('safe')
+                if to_restore:
+                    rwriter.add_section('safe')
+                    if 'directory' in to_restore:
+                        for item in existing_safe_dirs:
+                            rwriter.add_value('safe', 'directory', item)
+                        if not existing_safe_dirs:
+                            rwriter.set_value('safe', 'directory', '')
+                rwriter.write()
+                rwriter.release()
             except git.exc.InvalidGitRepositoryError:
                 _cerr(f'Warning: {env} is not a valid git repository')
-                continue
+
 
 
     def main(self):
