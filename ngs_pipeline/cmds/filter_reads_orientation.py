@@ -1,4 +1,4 @@
-__copyright__ = '''
+__copyright__ = """
 greet.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
@@ -7,7 +7,7 @@ greet.py - ngs-pipeline command line
 All right reserved.
 This software is licensed under MIT license.
 Please read the README.txt of this software.
-'''
+"""
 
 # to improve the responsiveness during bash autocomplete, do not import heavy
 # modules (such as numpy, pandas, etc) here, but instead import them within the
@@ -20,21 +20,31 @@ from ngs_pipeline import cerr, arg_parser
 
 
 def init_argparser():
-    p = arg_parser('count FR, RF, FF, RR and trans orientaion of a bam file')
-    p.add_argument('--remove_FF', action='store_true', default=False)
-    p.add_argument('--remove_RR', action='store_true', default=False)
-    p.add_argument('--remove_RF', action='store_true', default=False)
-    p.add_argument('--remove_FR', action='store_true', default=False)
-    p.add_argument('--remove_trans', action='store_true', default=False)
-    p.add_argument('--remove_unmapped', action='store_true', default=False)
-    p.add_argument('--remove_secondary', action='store_true', default=False)
-    p.add_argument('--remove_supplementary', action='store_true', default=False)
-    p.add_argument('-o', '--outfile', default='-',
-                   help='output bam file. default is stdout [-]')
-    p.add_argument('--outstat', default='stat-orientation.json',
-                   help='JSON-formatted statistic output file [stat-orientation]')
-    p.add_argument('infile',
-                   help='input bam file')
+    p = arg_parser("count FR, RF, FF, RR and trans orientaion of a bam file")
+    p.add_argument("--remove_FF", action="store_true", default=False)
+    p.add_argument("--remove_RR", action="store_true", default=False)
+    p.add_argument("--remove_RF", action="store_true", default=False)
+    p.add_argument("--remove_FR", action="store_true", default=False)
+    p.add_argument("--remove_trans", action="store_true", default=False)
+    p.add_argument("--remove_unmapped", action="store_true", default=False)
+    p.add_argument("--remove_secondary", action="store_true", default=False)
+    p.add_argument("--remove_supplementary", action="store_true", default=False)
+    p.add_argument(
+        "--max-insert-length",
+        type=int,
+        default=-1,
+        help="maximum insert length for paired-end reads, default is -1 (no limit)",
+    )
+
+    p.add_argument(
+        "-o", "--outfile", default="-", help="output bam file. default is stdout [-]"
+    )
+    p.add_argument(
+        "--outstat",
+        default="stat-orientation.json",
+        help="JSON-formatted statistic output file [stat-orientation]",
+    )
+    p.add_argument("infile", help="input bam file")
     return p
 
 
@@ -56,35 +66,42 @@ def filter_reads_orientation(args):
     remove_FR = 1 << 7
 
     flags = 0
-    if args.remove_unmapped:
+    if args.remove_unmapped or args.max_insert_length > 0:
         flags |= remove_unmapped
-    if args.remove_trans:
+    if args.remove_trans or args.max_insert_length > 0:
         flags |= remove_trans
-    if args.remove_RR:
+    if args.remove_RR or args.max_insert_length > 0:
         flags |= remove_RR
-    if args.remove_FF:
+    if args.remove_FF or args.max_insert_length > 0:
         flags |= remove_FF
-    if args.remove_RF:
+    if args.remove_RF or args.max_insert_length > 0:
         flags |= remove_RF
-    if args.remove_secondary:
+    if args.remove_secondary or args.max_insert_length > 0:
         flags |= remove_secondary
-    if args.remove_supplementary:
+    if args.remove_supplementary or args.max_insert_length > 0:
         flags |= remove_supplementary
     if args.remove_FR:
         flags |= remove_FR
+    max_insert_length = args.max_insert_length
 
-    in_aln = pysam.AlignmentFile(args.infile, get_mode(args.infile, 'r'))
-    header = add_pgline(in_aln,
-                        dict(ID='filter_reads_orientation.py',
-                             PN='filter_reads_orientation.py',
-                             CL=' '.join(sys.argv),
-                             DS='filtering reads based on orientation')
-                        )
+    in_aln = pysam.AlignmentFile(args.infile, get_mode(args.infile, "r"))
+    header = add_pgline(
+        in_aln,
+        dict(
+            ID="filter_reads_orientation.py",
+            PN="filter_reads_orientation.py",
+            CL=" ".join(sys.argv),
+            DS="filtering reads based on orientation",
+        ),
+    )
 
-    out_aln = pysam.AlignmentFile(args.outfile, get_mode(args.outfile, 'w'), header=header)
+    out_aln = pysam.AlignmentFile(
+        args.outfile, get_mode(args.outfile, "w"), header=header
+    )
 
     count_FR = count_RF = count_RR = count_FF = count_trans = count_unmapped = 0
     count_secondary = count_supplementary = count_ERR = 0
+    insert_length_exceeded = 0
 
     aln_pair_container = {}
 
@@ -147,8 +164,25 @@ def filter_reads_orientation(args):
                 count_RF += 1
                 if flags & remove_RF:
                     continue
+
+        elif max_insert_length > 0:
+            # check for max insert length
+            if aln1.is_forward and aln2.is_reverse:
+                insert_length = aln2.reference_start - aln1.reference_end
+            elif aln1.is_reverse and aln2.is_forward:
+                insert_length = aln1.reference_start - aln2.reference_end
+            else:
+                cerr("ERROR: unexpected orientation of paired-end reads, exiting!")
+                sys.exit(1)
+
+            if insert_length > max_insert_length:
+                insert_length_exceeded += 1
+                continue
+
         else:
-            import IPython; IPython.embed()
+            import IPython
+
+            IPython.embed()
             count_ERR += 1
             continue
 
@@ -167,11 +201,13 @@ def filter_reads_orientation(args):
         supplementary_alignment=count_supplementary,
         non_paired_N=len(non_paired_segments),
         non_paired_segments=non_paired_segments,
+        insert_length_exceeded=insert_length_exceeded,
     )
-    json.dump(d, open(args.outstat, 'w'))
+    json.dump(d, open(args.outstat, "w"))
 
 
 def main(args):
     filter_reads_orientation(args)
+
 
 # EOF
