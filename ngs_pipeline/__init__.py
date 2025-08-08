@@ -187,5 +187,12 @@ def setup_config(d={}):
     d["NGS_PIPELINE_BASE"] = check_NGS_PIPELINE_BASE()
     return d
 
-
+def prepare_command_log():
+    import time
+    return {
+        "lastInvoked": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+        "command": " ".join(sys.argv),
+        "NGS_PIPELINE_BASE": check_NGS_PIPELINE_BASE(),
+        "NGSENV_BASEDIR": check_NGSENV_BASEDIR(),
+    }
 # EOF
