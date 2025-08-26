@@ -25,6 +25,16 @@ def get_abspath(p, prefix=ngsenv_basedir):
     return (prefix / p).absolute().as_posix()
 
 
+def get_resource(resource_name, default_value="", root_config=config):
+    try:
+        _d = root_config
+        for k in resource_name.split(":"):
+            _d = _d[k]
+        return _d
+    except KeyError:
+        return default_value
+
+
 # basic parameters to do processing
 refseq = get_abspath(config['refseq_file'], ngsenv_basedir)
 refmap = get_abspath(config['refmap_file'], ngsenv_basedir)
