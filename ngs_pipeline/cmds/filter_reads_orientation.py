@@ -49,7 +49,6 @@ def init_argparser():
 
 
 def filter_reads_orientation(args):
-
     import pysam
     import json
     from ngs_pipeline import add_pgline, get_mode
@@ -84,6 +83,10 @@ def filter_reads_orientation(args):
         flags |= remove_FR
     max_insert_length = args.max_insert_length
 
+    has_operations = args.remove_unmapped or args.remove_trans or args.remove_FF or \
+        args.remove_RF or args.remove_secondary or args.remove_supplementary or \
+        max_insert_length > 0
+
     in_aln = pysam.AlignmentFile(args.infile, get_mode(args.infile, "r"))
     header = add_pgline(
         in_aln,
@@ -104,9 +107,13 @@ def filter_reads_orientation(args):
     insert_length_exceeded = 0
 
     aln_pair_container = {}
+    insert_length_logs =[]
 
     for aln in in_aln:
-
+        if has_operations:
+            unhandle = True
+        else:
+            unhandle = False
         # check for secondary & supplementary first
         if aln.is_secondary:
             count_secondary += 1
@@ -135,18 +142,18 @@ def filter_reads_orientation(args):
             if flags & remove_trans:
                 continue
 
-        elif aln1.is_forward and aln2.is_forward:
+        if aln1.is_forward and aln2.is_forward:
             # this is FF
             count_FF += 1
             if flags & remove_FF:
                 continue
 
-        elif aln1.is_reverse and aln2.is_reverse:
+        if aln1.is_reverse and aln2.is_reverse:
             count_RR += 1
             if flags & remove_RR:
                 continue
-
-        elif aln1.is_forward and aln2.is_reverse:
+        
+        if aln1.is_forward and aln2.is_reverse:
             if aln1.reference_start < aln2.reference_end:
                 count_FR += 1
                 if flags & remove_FR:
@@ -155,7 +162,8 @@ def filter_reads_orientation(args):
                 count_RF += 1
                 if flags & remove_RF:
                     continue
-        elif aln1.is_reverse and aln2.is_forward:
+            unhandle = False
+        if aln1.is_reverse and aln2.is_forward:
             if aln1.reference_end > aln2.reference_start:
                 count_FR += 1
                 if flags & remove_FR:
@@ -164,25 +172,31 @@ def filter_reads_orientation(args):
                 count_RF += 1
                 if flags & remove_RF:
                     continue
-
-        elif max_insert_length > 0:
+            unhandle = False
+        if max_insert_length > 0:
             # check for max insert length
             if aln1.is_forward and aln2.is_reverse:
-                insert_length = aln2.reference_start - aln1.reference_end
+                insert_length = aln2.reference_end - aln1.reference_start
             elif aln1.is_reverse and aln2.is_forward:
-                insert_length = aln1.reference_start - aln2.reference_end
+                insert_length = aln1.reference_end - aln2.reference_start
             else:
                 cerr("ERROR: unexpected orientation of paired-end reads, exiting!")
                 sys.exit(1)
-
+            assert insert_length >= 0
+            insert_length_logs.append(f"{aln1.query_name}: {insert_length} - {aln1.is_forward} - {aln2.is_forward}")
             if insert_length > max_insert_length:
                 insert_length_exceeded += 1
                 continue
 
-        else:
-            import IPython
+        if unhandle:
+            # import IPython
 
-            IPython.embed()
+            # IPython.embed()
+            cerr(f"""Error encounter: 
+            aln\tis_forward\tis_unmapped\tsecondary\tsupplementary\treference\tstart\tend
+            {aln1.query_name}\t{aln1.is_forward}\t{aln1.is_unmapped}\t{aln1.is_secondary}\t{aln1.is_supplementary}\t{aln1.reference_name}\t{aln1.reference_start}\t{aln1.reference_end}
+            {aln2.query_name}\t{aln2.is_forward}\t{aln2.is_unmapped}\t{aln2.is_secondary}\t{aln1.is_supplementary}\t{aln2.reference_name}\t{aln2.reference_start}\t{aln2.reference_end}
+            """)
             count_ERR += 1
             continue
 
@@ -202,6 +216,7 @@ def filter_reads_orientation(args):
         non_paired_N=len(non_paired_segments),
         non_paired_segments=non_paired_segments,
         insert_length_exceeded=insert_length_exceeded,
+        insert_length_logs = insert_length_logs
     )
     json.dump(d, open(args.outstat, "w"))
 

@@ -248,8 +248,15 @@ class SubCommands(object):
                 args
             )
 
-    def list_repo_hashes(self):
+    def list_repo_hashes(self, to_dict = False):
         """list the git hashes of the environments"""
+        if to_dict:
+            _cout = lambda msg: None
+            _cerr = lambda msg: None
+        else:
+            _cout = globals()['_cout']
+            _cerr = globals()['_cerr']
+        envs_dict = {}
         _cout('Installed environments and their git hashes:')
         import git
         envs_root = os.path.join(os.environ.get('VVG_BASEDIR', ''), 'envs')
@@ -273,8 +280,10 @@ class SubCommands(object):
                 repo_c = git.Repo(env_path)
                 commit = repo_c.head.commit.hexsha
                 if repo.is_dirty():
+                    envs_dict[env] = f"{commit} (edited)"
                     _cout(f'{env}:\t{commit} (edited)')
                 else:
+                    envs_dict[env] = commit
                     _cout(f'{env}:\t{commit}')
                 rwriter.remove_section('safe')
                 if to_restore:
@@ -288,6 +297,8 @@ class SubCommands(object):
                 rwriter.release()
             except git.exc.InvalidGitRepositoryError:
                 _cerr(f'Warning: {env} is not a valid git repository')
+        if to_dict:
+            return envs_dict
 
 
 
