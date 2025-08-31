@@ -63,7 +63,7 @@ Updating the Pipeline
 
 The pipeline can be updated by executing the command::
 
-    $VVGBIN/update-pipeline.sh
+    $VVGBIN/update-box
 
 Do note that this only updates the pipeline but does not necessarily update
 the dependencies installed by ``micromamba`` and ``python pip``.
