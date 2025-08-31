@@ -52,11 +52,23 @@ def init_argparser():
     )
 
     p.add_argument(
+        "--remove-underscore-prefix",
+        type=int,
+        default=0,
+        help="the number of underscore to remove from the beginning of the filename",
+    )
+
+    p.add_argument(
+        "--remove-prefix", default=None, help="prefix to remove from original filename"
+    )
+
+    p.add_argument(
         "--use-absolute-link",
         default=False,
         action="store_true",
         help="Use absolute link instead of relative link",
     )
+
     p.add_argument(
         "infiles", nargs="+", help="input files in compressed FASTQ format (.fastq.gz)"
     )
@@ -79,7 +91,13 @@ def generate_links(args):
         mode = None
 
     # generate read files dictionary
-    read_files = fileutils.ReadFileDict(args.infiles, args.underscore, mode)
+    read_files = fileutils.ReadFileDict(
+        args.infiles,
+        args.underscore,
+        args.remove_underscore_prefix,
+        args.remove_prefix,
+        mode,
+    )
 
     if any(read_files.err_files):
         cexit(
@@ -96,11 +114,20 @@ def generate_links(args):
             # accommodate by addding ~idx (tilde), eg: sample-01~0_R1.fastq.gz
             for idx, item in enumerate(items):
                 fileutils.make_sample_symlink(
-                    sample, item, args.outdir, idx, use_absolute=args.use_absolute_link
+                    sample,
+                    item,
+                    args.outdir,
+                    read_files.mode,
+                    idx,
+                    use_absolute=args.use_absolute_link,
                 )
         else:
             fileutils.make_sample_symlink(
-                sample, items[0], args.outdir, use_absolute=args.use_absolute_link
+                sample,
+                items[0],
+                args.outdir,
+                read_files.mode,
+                use_absolute=args.use_absolute_link,
             )
 
         cerr(f"Generated symlink for sample {sample}")
