@@ -16,6 +16,8 @@ class ReadFileDict(object):
         self,
         infiles: list,
         underscore: int,
+        underscore_prefix: int = 0,
+        remove_prefix: str | None = None,
         mode: str | None = None,
         skip_list: list = [],
     ):
@@ -24,6 +26,8 @@ class ReadFileDict(object):
         self.err_files = []
         self.mode = mode
         self.underscore = underscore
+        self.underscore_prefix = underscore_prefix
+        self.remove_prefix = remove_prefix
         self.skip_list = skip_list
         self.populate_read_files(infiles)
 
@@ -117,7 +121,9 @@ class ReadFileDict(object):
                     )
                     continue
 
-                sample = get_sample_name(infile, self.underscore)
+                sample = get_sample_name(
+                    infile, self.underscore, self.underscore_prefix, self.remove_prefix
+                )
                 if sample in self.skip_list:
                     continue
                 if sample not in self:
@@ -139,8 +145,18 @@ class ReadFileDict(object):
 
             infiles_1, infiles_2 = infiles[::2], infiles[1::2]
             for infile_1, infile_2 in zip(infiles_1, infiles_2):
-                prefix_1 = get_sample_name(infile_1, self.underscore)
-                prefix_2 = get_sample_name(infile_2, self.underscore)
+                prefix_1 = get_sample_name(
+                    infile_1,
+                    self.underscore,
+                    self.underscore_prefix,
+                    self.remove_prefix,
+                )
+                prefix_2 = get_sample_name(
+                    infile_2,
+                    self.underscore,
+                    self.underscore_prefix,
+                    self.remove_prefix,
+                )
                 if prefix_1 != prefix_2:
                     err_files.append(
                         f"ERROR: unmatch pair [{prefix_1}] <> [{prefix_2}]"
@@ -197,12 +213,21 @@ def check_read_mode(infiles: list):
     return ReadMode.PAIRED_END
 
 
-def get_sample_name(filename, underline=0):
-    """get sample name after splitting a number of underline character"""
+def get_sample_name(
+    filename, underline=0, remove_underline_prefix=0, remove_prefix=None
+):
+    """
+    get sample name after splitting a number of underline character
+    and removing prefix
+    """
     filename = pathlib.Path(filename)
     # if contain tilde, just split on the tilde
     if "~" in filename.name:
         return filename.name.split("~")[0]
+    if remove_prefix:
+        filename = pathlib.Path(filename.name.removeprefix(remove_prefix))
+    if remove_underline_prefix:
+        filename = pathlib.Path(filename.name.split("_", remove_underline_prefix)[-1])
     if underline != 0:
         return filename.name.rsplit("_", underline)[0]
     return filename.name.removesuffix(".fastq.gz")
@@ -278,8 +303,9 @@ def _make_symlink_for_sample(
 
 def make_sample_symlink(
     sample: str,
-    file_item: str | tuple,
+    file_item: tuple,
     outdir: str | pathlib.Path,
+    mode: ReadMode = ReadMode.PAIRED_END,
     index: int = -1,
     *,
     use_absolute: bool = False,
@@ -291,9 +317,12 @@ def make_sample_symlink(
     if not outdir.exists():
         raise ValueError(f"Output directory {outdir} does not exist!")
 
+    if type(file_item) != tuple:
+        raise ValueError(f"File {file_item} for sample {sample} is not a tuple")
+
     sample_code = f"{sample}~{index}" if index >= 0 else sample
 
-    if type(file_item) == tuple:
+    if mode == ReadMode.PAIRED_END:
         if len(file_item) != 2:
             raise ValueError(f"File {file_item} for sample {sample} is paired-end")
         for pair_idx, path in enumerate(file_item, 1):
@@ -307,7 +336,7 @@ def make_sample_symlink(
 
     else:
         _make_symlink_for_sample(
-            sample_code, file_item, outdir, f".fastq.gz", use_absolute=use_absolute
+            sample_code, file_item[0], outdir, f".fastq.gz", use_absolute=use_absolute
         )
 
 
