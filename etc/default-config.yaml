@@ -33,6 +33,9 @@ refmap_file: REFMAP-FILE-NOT-DEFINED
 knownsites_file: ''
 knownvariants_dir: ''
 
+# regions
+target_regions: null
+target_variants: null
 
 # gff and annotation files
 gff_file: GFF-FILE-NOT-DEFINED
