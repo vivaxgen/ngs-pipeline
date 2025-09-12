@@ -30,6 +30,7 @@ def init_argparser(desc=None):
 def run_snakefile(
     args,
     config: dict = {},
+    additional_cli_args = "",
     workdir: str | pathlib.Path | None = None,
     show_status: bool = True,
     show_config_files: bool = False,
@@ -51,6 +52,7 @@ def run_snakefile(
     status, elapsed_time = executor.run(
         snakefile=args.snakefile,
         config=config,
+        additional_cli_args = additional_cli_args,
         force=check_force(args.force),
         no_config_cascade=snakeutils.check_env("NGS_PIPELINE_NO_CONFIG_CASCADE")
         or args.no_config_cascade,

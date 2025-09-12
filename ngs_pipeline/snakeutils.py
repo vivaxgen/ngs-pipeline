@@ -232,6 +232,7 @@ class SnakeExecutor(object):
         snakefile: str | pathlib.Path | None = None,
         # configuration to append/update
         config: dict = {},
+        additional_cli_args = "",
         *,
         from_module: types.ModuleType | None = None,
         # allow to run the snakefile even if not inside environment directory
@@ -241,6 +242,7 @@ class SnakeExecutor(object):
     ):
 
         from snakemake import cli
+        import shlex
 
         cwd = self.workdir or pathlib.Path.cwd()
         if "__workdir__" in config:
@@ -338,6 +340,7 @@ class SnakeExecutor(object):
             else:
                 argv = []
 
+            argv.extend(shlex.split(additional_cli_args))
             # XXX: need to modify to use snakemake API
             L.debug("parsing snakemake arguments")
             parser, args = cli.parse_args(argv)
