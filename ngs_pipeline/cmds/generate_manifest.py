@@ -49,6 +49,17 @@ def init_argparser():
     )
 
     p.add_argument(
+        "--remove-underscore-prefix",
+        type=int,
+        default=0,
+        help="the number of underscore to remove from the beginning of the filename",
+    )
+
+    p.add_argument(
+        "--remove-prefix", default=None, help="prefix to remove from original filename"
+    )
+
+    p.add_argument(
         "--pause",
         type=int,
         default=0,
@@ -73,13 +84,6 @@ def init_argparser():
 
     p.add_argument("infiles", nargs="*")
     return p
-
-
-def get_sample_name(filename, underline=0):
-    filename = pathlib.Path(filename)
-    if underline != 0:
-        return filename.name.rsplit("_", underline)[0]
-    return filename.name.removesuffix(".fastq.gz")
 
 
 def generate_manifest(args):
@@ -111,7 +115,13 @@ def generate_manifest(args):
     counter = 0
 
     if any(args.infiles):
-        read_files = fileutils.ReadFileDict(args.infiles, args.underscore, mode)
+        read_files = fileutils.ReadFileDict(
+            args.infiles,
+            args.underscore,
+            args.remove_underscore_prefix,
+            args.remove_prefix,
+            mode,
+        )
 
         if any(read_files.err_files):
             cexit(
@@ -152,7 +162,10 @@ def generate_manifest(args):
     # print at least 5 rows
     cerr("[Showing snippets of sample(s):]")
     cerr(str(df))
-    cerr("If the sample code is not correct, try to use option --underscore")
+    cerr(
+        "If the sample code is not correct, try to use option --underscore, "
+        "--remove-underscore-prefix, or --remove-prefix"
+    )
 
     if args.pause > 0:
         import time
