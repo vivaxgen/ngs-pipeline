@@ -125,16 +125,7 @@ rule map_dedup:
         "samtools markdup -r --json -f {log.markdup_stat} {input} {output} 2> {log.log1}"
 
 
-rule map_stats:
-    threads: 1
-    input:
-        "maps/{filename}.bam"
-    output:
-        "logs/{filename}.stats.txt"
-    params:
-        sample = sample,
-    shell:
-        "samtools stats {input} > {output}"
+
 
 
 rule map_merge_final:
@@ -155,19 +146,6 @@ rule map_merge_final:
         # to make index file newer by 1-sec to bam file
         sleep(2)
         shell('samtools index {output}')
-
-
-rule map_depth:
-    # this rule creates stats and depths of any .bam file using samtools stats
-    threads: 1
-    input:
-        'maps/{filename}.bam'
-    output:
-        'logs/{filename}.depths.txt.gz'
-    params:
-        sample = sample,
-    shell:
-        'samtools depth {input} | gzip > {output}'
 
 
 rule collect_stats:
@@ -191,22 +169,6 @@ rule collect_stats:
     shell:
         'ngs-pl calculate-stats -o {output} --mindepth {min_depth} '
         '{params.trimmed} {params.mapped} {params.deduped} {params.finaled} {params.depthed} {sample}'
-
-
-rule depth_plot:
-    threads: 1
-    input:
-        "logs/mapped-final.depths.txt.gz"
-    params:
-        sample = sample,
-        chroms = ('--chrom ' + ','.join(REGIONS)) if any(REGIONS) else '',
-    output:
-        'logs/depths.png'
-    log:
-        'logs/plot-depth.txt'
-    shell:
-        'ngs-pl plot-depth --outplot {output} {params.chroms} --sort '
-        '--infile {input} {sample} 2> {log}'
 
 
 # EOF
