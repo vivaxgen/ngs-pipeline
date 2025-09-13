@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.02.02.01"
+__version__ = "2025.09.13.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -232,7 +232,7 @@ class SnakeExecutor(object):
         snakefile: str | pathlib.Path | None = None,
         # configuration to append/update
         config: dict = {},
-        additional_cli_args = "",
+        additional_cli_args: str = "",
         *,
         from_module: types.ModuleType | None = None,
         # allow to run the snakefile even if not inside environment directory
@@ -341,6 +341,7 @@ class SnakeExecutor(object):
                 argv = []
 
             argv.extend(shlex.split(additional_cli_args))
+
             # XXX: need to modify to use snakemake API
             L.debug("parsing snakemake arguments")
             parser, args = cli.parse_args(argv)
