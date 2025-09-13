@@ -1,23 +1,18 @@
 
-# prepare reference 
-import os
-import pathlib
+# this is main snakemake module to perform sample variant calling producing
+# BAM from ONT long reads
+
 from time import sleep
 
-ngs_pipeline_basedir = os.environ['NGS_PIPELINE_BASE']
-ngsenv_basedir = os.environ['NGSENV_BASEDIR']
+# prepare necessary global parameters
 
-refmap = ngsenv_basedir + '/' + config.get('refmap_file', 'NOFILE')
-refseq = ngsenv_basedir + '/' + config['refseq_file']
+include: "global_params.smk"
 
-ploidy = config.get('ploidy', 2)
-freebayes_extra_flags = config.get('freebayes_extra_flags', '')
+include: "utilities.smk"
+# prepare sample-related parameters
 
-PARTIALS = None
-REGIONS = config.get('regions', [])
-if isinstance(REGIONS, dict):
-    PARTIALS = REGIONS
-    REGIONS = PARTIALS.keys()
+sample = pathlib.Path.cwd().name
+IDXS, = glob_wildcards('reads/raw-{idx}_R0.fastq.gz')
 
 interval_file = config.get('interval_file', None)
 interval_dir = config.get('interval_dir', None)
@@ -30,58 +25,50 @@ def get_interval(w):
         return f'--targets {interval_file}'
     return f'--region {w.reg}'
 
-# prepare sample-related parameters
+# utilities
 
-sample = pathlib.Path.cwd().name
-IDXS, = glob_wildcards('reads/raw-{idx}_R0.fastq.gz')
+def get_final_bam(w):
+    """ return the final bam file for further processing """
+    #return ("maps/mapped-dedup-{idx}.bam" if deduplicate else "maps/mapped-filtered-{idx}.bam")
+    return ("maps/mapped-filtered-{idx}.bam")
 
-include: "utilities.smk"
-
-
-# final output of this workflow
 
 def get_final_file(w):
-    return [f"gvcf/{sample}-{reg}.g.vcf.gz.csi" for reg in REGIONS]
+    """ return final file """
+    return "maps/mapped-final.bam"
+
+
+include: config.get('reads_trimmer_wf', 'ssf_trimmer_fastplong.smka')
+include: config.get('reads_mapper_wf', 'ssf_mapper_minimap2_lr.smk')
+#include: config.get('variant_caller_wf', 'ssf_varcall_gatk.smk')
+include: config.get('stats_wf', 'ssf_stats.smk')
+
+# final output of this workflow
 
 
 rule all:
     localrule: True
     input:
-        get_final_file
+        get_final_file,
+        'logs/mapped-final.stats.txt',
+        'logs/mapped-final.depth-base.tsv.gz',
+        'logs/stats.tsv',
+        'logs/depths.png'
+
 
 rule mapping:
     localrule: True
     input:
-        'maps/mapped-final.bam'
-
+        'maps/mapped-final.bam',
+        'logs/mapped-final.stats.txt',
+        'logs/mapped-final.depth-base.tsv.gz',
+        'logs/stats.tsv',
+        #'logs/depths.png',
 
 rule clean:
     localrule: True
     shell:
         "rm -rf maps/ logs/ trimmed-reads/ gvcf/ .snakemake/*"
-
-
-rule trim_reads:
-    threads: 4
-    input:
-        'reads/raw-{idx}_R0.fastq.gz'
-    output:
-        'trimmed-reads/trimmed-{idx}_R0.fastq.gz'
-    shell:
-        "gunzip -c {input} | chopper -q 10 -l 1000 --headcrop 30 --tailcrop 30 | gzip > {output}"
-
-
-rule map_reads:
-    threads: 8
-    input:
-        'trimmed-reads/trimmed-{idx}_R0.fastq.gz'
-    output:
-        temp('maps/mapped-sorted-{idx}.bam')
-    params:
-        rg = lambda w: f"-R @RG\\\\tID:{sample}\\\\tSM:{sample}\\\\tLB:LIB-{sample}",
-    shell:
-        "minimap2 -a {refmap} {params.rg} {input} "
-        "|  samtools sort -@4 -o {output} "
 
 
 rule map_merge_final:
@@ -103,6 +90,31 @@ rule map_merge_final:
         shell('samtools index {output}')
 
 
+assert deduplicate is False, "deduplication not supported for ONT reads"
+
+rule collect_stats:
+    threads: 1
+    input:
+        trims = expand('logs/trimming_stat-{idx}.json', idx=IDXS),
+        maps = expand('logs/mapped-sorted-{idx}.stats.txt', idx=IDXS),
+        filtered = expand('logs/mapped-sorted-{idx}.stats.txt', idx=IDXS),
+        dedups = expand('logs/mapped-dedup-{idx}.stats.txt', idx=IDXS) if deduplicate else [],
+        finals = expand('logs/mapped-sorted-{idx}.stats.txt', idx=IDXS),
+        depths = expand('logs/mapped-sorted-{idx}.depths.txt.gz', idx=IDXS),
+    params:
+        sample = sample,
+        trimmed = lambda wildcards, input: '--trimmed ' + ' --trimmed '.join(input.trims),
+        mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps),
+        deduped = (lambda wildcards, input: '--dedup ' + ' --dedup '.join(input.dedups)) if deduplicate else '',
+        finaled = lambda wildcards, input: '--final ' + ' --final '.join(input.finals),
+        depthed = lambda wildcards, input: '--depth ' + ' --depth '.join(input.depths),
+    output:
+        'logs/stats.tsv'
+    shell:
+        'ngs-pl calculate-stats -o {output} --mindepth {min_depth} '
+        '{params.trimmed} {params.mapped} {params.deduped} {params.finaled} {params.depthed} {sample}'
+
+
 rule fb_varcall:
     threads: 1
     input:
@@ -113,9 +125,11 @@ rule fb_varcall:
         fb = 'logs/freebayes-{reg}.log'
     params:
         reg = get_interval,
-        fb_args = "--haplotype-length -1 --min-coverage 10 " + freebayes_extra_flags
+        fb_args = "--haplotype-length -1 --min-coverage 10 " + config["freebayes_extra_flags"]
     shell:
         "freebayes --fasta-reference {refseq} --ploidy {ploidy} --min-alternate-count 2 {params.reg} "
         "{params.fb_args} {input} 2> {log.fb} "
         "| bcftools view -o {output} "
+
+
 # EOF
