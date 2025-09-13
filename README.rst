@@ -57,6 +57,11 @@ uses about 5-6 GB of storage.
 
 To uninstall the pipeline, simply remove the whole installation directory.
 
+Configuration sets
+------------------
+
+Some pre-defined configuration sets for Plasmodium species are available from
+`this repo <https://github.com/vivaxgen/vgnpc-plasmodium-spp>`_.
 
 Updating the Pipeline
 ---------------------
