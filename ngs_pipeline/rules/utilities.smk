@@ -130,4 +130,20 @@ rule strtable:
     shell:
         "gatk ComposeSTRTableFile -R {input.fasta} -O {output.table}"
 
+
+rule write_configs:
+    localrule: True
+    output:
+        outfile = config.get('outconfig', "current-configs.yaml")
+    params:
+        config = config
+    run:
+
+        import yaml
+
+        del params.config['outfile']
+        with open(output.outfile, 'w') as f_out:
+            yaml.dump(params.config, f_out)
+
+
 # EOF
