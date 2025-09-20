@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
+
+# [https://github.com/vivaxgen/mea-pipeline]
+__copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
+
+if __name__ == '__main__':
+    from ngs_pipeline import __main__
+    __main__.main()
+
+# EOF
+
