@@ -187,6 +187,10 @@ def filter_reads_orientation(args):
             if insert_length > max_insert_length:
                 insert_length_exceeded += 1
                 continue
+            else:
+                unhandle = False
+        else:
+            unhandle = False
 
         if unhandle:
             # import IPython
