@@ -70,6 +70,16 @@ Configurations
        This results in a Excel file containing report of genotypes of each
        sample.
 
+   msf_panel_varcall_pe.smk
+
+     This is the workflow panel variant calling using paired-end short reads from
+     Illumina platforms.
+
+     Available targets are the same as msf_panel_varcall_lr.smk above
+
 .. option:: target
 
-   a list of target 
+   The targets will be specific to each of snakefile.
+   See the snakefile above to get the available targets.
+
+
