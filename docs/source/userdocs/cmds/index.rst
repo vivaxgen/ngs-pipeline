@@ -7,7 +7,7 @@ General commands
 ----------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    ngs-pl
 
@@ -16,7 +16,7 @@ Directory preparation commands
 ------------------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    generate-links
 
@@ -25,7 +25,7 @@ Execution commands
 ------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    run-targeted-variant-caller
 
