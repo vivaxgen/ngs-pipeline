@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.09.13.01"
+__version__ = "2025.10.02.01"
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
@@ -185,6 +185,9 @@ class SubCommands(object):
             # if autocomplete does not exit:
             args = parser.parse_args(args[1:])
 
+            # provide a way to access the argument parser
+            args.__parser__ = parser
+
             if main is not None:
                 if args.debug:
                     from ipdb import launch_ipdb_on_exception
@@ -246,6 +249,8 @@ class SubCommands(object):
         # expand home directory
         if path.startswith("~"):
             path = pathlib.Path(path).expanduser()
+        else:
+            path = pathlib.Path(path)
 
         if not path.exists():
             _cexit(f"Script: {path} does not exist!")
