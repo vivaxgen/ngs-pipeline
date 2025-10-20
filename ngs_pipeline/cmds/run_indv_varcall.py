@@ -24,7 +24,11 @@ from ngs_pipeline.cmds import run_snakefile
 
 def init_argparser():
     p = run_snakefile.init_argparser(desc="run individual sample variant caller")
-    p.arg_dict["snakefile"].choices = ["var_call.smk", "var_call_ont.smk"]
+    p.arg_dict["snakefile"].choices = [
+        "var_call.smk",
+        "var_call_ont.smk",
+        "ssf_construct_haplotypes.smk",
+    ]
     p.arg_dict["snakefile"].default = "var_call.smk"
     p.add_argument("target")
     p.add_argument("sample")

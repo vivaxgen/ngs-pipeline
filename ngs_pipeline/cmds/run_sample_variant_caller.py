@@ -74,12 +74,12 @@ def init_argparser():
     p.add_argument(
         "--snakefile",
         default=None,
-        choices=["var_call.smk", "var_call_ont.smk"],
+        choices=["var_call.smk", "var_call_ont.smk", "ssf_construct_haplotypes.smk"],
         help="snakemake file to be run (or from VARCALL_SMK env) [var_call.smk]",
     )
     p.add_argument(
         "--target",
-        choices=["all", "mapping", "clean", "all_no_qc"],
+        choices=["all", "mapping", "clean", "all_no_qc", "haplotypes_report"],
         default="all",
         help="target of snakemake module, use 'all' for GATK joint "
         "variant or 'mapping' for FreeBayes joint variant call",
