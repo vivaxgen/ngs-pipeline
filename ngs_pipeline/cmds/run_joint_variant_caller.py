@@ -30,6 +30,7 @@ def init_argparser():
     p.arg_dict["snakefile"].choices = [
         "jointvarcall_gatk.smk",
         "jointvarcall_freebayes.smk",
+        "jointhapcall.smk",
     ]
 
     # input/output options
@@ -129,7 +130,10 @@ def run_joint_variant_caller(args):
     )
 
     if not status:
-        cerr("[WARNING: joint varian calling step did not successfully complete]")
+        cexit(
+            "[WARNING: joint variant calling step did not successfully complete]", 101
+        )
+
     cerr(f"[Finish joint variant calling (time: {elapsed_time})]")
 
 
