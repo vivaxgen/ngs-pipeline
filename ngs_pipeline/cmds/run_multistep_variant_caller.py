@@ -13,8 +13,6 @@ import pathlib
 from ngs_pipeline import (
     cerr,
     cexit,
-    arg_parser,
-    get_snakefile_path,
     check_multiplexer,
 )
 from ngs_pipeline.cmds import run_snakefile
@@ -55,7 +53,7 @@ def init_argparser():
         "filenames to form sample code, counted in reverse",
     )
 
-    p.add_argument("-i", "--manifest", default=None, help="manifest file  as input")
+    p.add_argument("-i", "--manifest", default=None, help="manifest file as input")
 
     p.add_argument("-o", "--outdir", required=True, help="output directory")
     p.add_argument("infiles", nargs="*", help="read files")
@@ -66,7 +64,6 @@ def init_argparser():
 def run_multistep_variant_caller(args, console=True):
 
     import ngs_pipeline
-    from ngs_pipeline import get_snakefile_path
     import sys
 
     if pathlib.Path(args.outdir).exists():
@@ -111,7 +108,7 @@ def run_multistep_variant_caller(args, console=True):
         unlock=args.unlock,
     )
 
-    args.snakefile = get_snakefile_path(
+    args.snakefile = run_snakefile.get_snakefile_path(
         "multistep_variant_calling.smk", from_module=ngs_pipeline
     )
 
