@@ -21,11 +21,13 @@ from ngs_pipeline.cmds import run_snakefile
 def init_argparser():
     p = run_snakefile.init_argparser(desc="run targeted variant calling")
     p.arg_dict["snakefile"].choices = [
+        "msf_targeted_varcall.smk",
         "panel_varcall_pe.smk",
         "panel_varcall_lr.smk",
         "msf_panel_varcall_pe.smk",
         "msf_panel_varcall_lr.smk",
     ]
+    p.arg_dict["snakefile"].default = "msf_targeted_varcall.smk"
 
     # input/output options
     p.add_argument(
@@ -39,8 +41,9 @@ def init_argparser():
     p.add_argument(
         "-o", "--outdir", default="analysis", help="directory for output [analysis/]"
     )
+    p.add_argument("-i", "--manifest", default=None, help="manifest file  as input")
     p.add_argument(
-        "infiles", nargs="+", help="FASTQ input files, eg. sample-1.fastq.gz"
+        "infiles", nargs="*", help="FASTQ input files, eg. sample-1.fastq.gz"
     )
 
     return p
@@ -56,6 +59,15 @@ def run_targeted_variant_caller(args, optional_config={}):
         args.snakefile = os.environ.get("DEFAULT_SNAKEFILE", None)
         if args.snakefile:
             cerr(f"Obtaining snakefile from SNAKEFILE environment: {args.snakefile}")
+
+    if not (any(args.infiles) or args.manifest):
+        cexit(f"ERROR: need to have infiles or manifest file (--manifest)")
+
+    if args.manifest:
+        raise NotImplementedError("This functionality hasn't been implemented")
+
+    # TODO: use generate_manifest function to pass the infiles rather than directly
+    # put in the config files; use manifest_file key
 
     config = (
         dict(infiles=args.infiles, underscore=args.underscore, outdir=args.outdir)
