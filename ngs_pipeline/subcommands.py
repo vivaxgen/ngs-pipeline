@@ -1,9 +1,9 @@
 # subcommands.py
 # [https://github.com/trmznt/subcommands]
 
-__copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__copyright__ = "(c) 2024-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.10.02.01"
+__version__ = "2025.10.20.01"
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
@@ -34,8 +34,20 @@ def _cexit(msg: str, exit_code: int = 1):
     sys.exit(exit_code)
 
 
+__ARGUMENT_PARSER__ = argparse.ArgumentParser
+
+
+def set_argument_parser_class(class_):
+    global __ARGUMENT_PARSER__
+    __ARGUMENT_PARSER__ = class_
+
+
 def arg_parser(desc: str = ""):
-    p = argparse.ArgumentParser(description=desc)
+
+    # rename program name to reflect the subcommand
+    prog_name = argparse._os.path.basename(argparse._sys.argv[0])
+    subprog_name = argparse._sys.argv[1]
+    p = __ARGUMENT_PARSER__(prog=f"{prog_name} {subprog_name}", description=desc)
     return add_debug_to_parser(p)
 
 
@@ -52,6 +64,14 @@ def add_debug_to_parser(p: argparse.ArgumentParser):
         pass
 
     return p
+
+
+__current_subcommands__ = None
+
+
+def get_subcommands():
+    global __current_subcommands__
+    return __current_subcommands__
 
 
 class SubCommands(object):
@@ -78,6 +98,8 @@ class SubCommands(object):
         # additional copyright
         copyright: str | None = None,
     ):
+        global __current_subcommands__
+        __current_subcommands__ = self
 
         L.debug("initializing SubCommands class")
         self.allow_any_script = allow_any_script
