@@ -20,9 +20,9 @@ include: "msf_prepare_sample_files.smk"
 # use long-read trimmer:
 include: "msf_trimmer_lr.smk"
 
-# use minimap2 mapper & map merger
+# use minimap2 mapper, filter & map merger
 include: "msf_mapper_minimap2_lr.smk"
-include: "msf_merge_map.smk"
+include: "msf_merge_nofilter_map.smk"
 
 # use FreeBayes panel variant-calling as default
 include: config.get('msf_varcall_wf', 'msf_varcall_freebayes.smk')
