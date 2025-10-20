@@ -33,10 +33,11 @@ joint_variant_caller_flags = config.get('joint_variant_caller_flags', '')
 
 # -- specific targets and rules --
 sample_variant_caller_target = config.get('sample_variant_caller_target', 'all')
+sample_variant_caller_wf = config.get("sample_variant_caller_wf", "var_call.smk")
 joint_variant_caller_target = config.get('joint_variant_caller_target', 'all')
-joint_variant_caller_smk = config.get('joint_variant_caller_smk', '')
+joint_variant_caller_wf = config.get('joint_variant_caller_wf', 'jointvarcall_gatk.smk')
 
-
+include: "general_params.smk"
 include: 'utilities.smk'
 
 
@@ -50,6 +51,13 @@ if rerun or unlock:
 rule all:
     input:
         f'{outdir}/joint/concatenated.vcf.gz.tbi',
+        f'{outdir}/stats.tsv',
+        f'{outdir}/reports/._completed_',
+
+
+rule annotated_concatd_vcf:
+    input:
+        f'{outdir}/joint/concatenated-bcsq.vcf.gz.tbi',
         f'{outdir}/stats.tsv',
         f'{outdir}/reports/._completed_',
 
@@ -168,7 +176,9 @@ rule run_sample_variant_caller:
         'ngs-pl run-sample-variant-caller {params.extra_flags}'
         '  -c {input.cfg}'
         '  -j {params.jobs} {params.procfile} {params.rerun} {params.unlock}'
-        '  --target {params.target} {outdir}/analysis'
+        '  --target {params.target}'
+        '  --snakefile {sample_variant_caller_wf}'
+        '  {outdir}/analysis'
 
 
 rule run_check_sample_variant_result:
@@ -194,13 +204,14 @@ rule run_joint_variant_caller:
         rerun = '--rerun' if rerun else '',
         unlock = '--unlock' if unlock else '',
         extra_flags = joint_variant_caller_flags,
-        snakefile = (f'--snakefile {joint_variant_caller_smk}'
-                     if joint_variant_caller_smk else '')
     shell:
         'ngs-pl run-joint-variant-caller {params.extra_flags}'
         '  {params.rerun} {params.unlock}'
         '  -c {input.cfg}'
-        '  {params.snakefile} -o {outdir}/joint {outdir}/completed_samples/'
+        '  --snakefile {joint_variant_caller_wf}'
+        '  --target {joint_variant_caller_target}'
+        '  -o {outdir}/joint'
+        '  {outdir}/completed_samples/'
 
 
 rule concat_vcfs:
@@ -211,6 +222,15 @@ rule concat_vcfs:
         f'{outdir}/joint/concatenated.vcf.gz'
     shell:
         'bcftools concat -o {output} {outdir}/joint/vcfs/*.vcf.gz'
+
+rule csq_vcf:
+    input:
+        vcf = "{fn}.vcf.gz",
+        tbi = "{fn}.vcf.gz.tbi",
+    output:
+        vcf = "{fn}-bcsq.vcf.gz",
+    shell:
+        "bcftools csq -l -o {output.vcf} -f {refseq} --gff {gff_file} {input.vcf}"
 
 
 rule gather_stats:
