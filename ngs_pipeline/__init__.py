@@ -14,6 +14,8 @@ import argcomplete
 import pathlib
 import types
 
+from .subcommands import arg_parser
+
 
 def cout(msg):
     print(msg, file=sys.stdout)
@@ -85,52 +87,6 @@ def check_force(force):
     return force or os.environ.get("NGS_PIPELINE_FORCE", 0)
 
 
-def get_command_modules():
-    """return a list of modules containing commands"""
-    modules = ["ngs_pipeline.cmds"]
-    if "NGS_PIPELINE_CMD_MODS" in os.environ:
-        additional_modules = [
-            m for m in os.environ["NGS_PIPELINE_CMD_MODS"].split(":") if m
-        ]
-        return modules + additional_modules
-    return modules
-
-
-def arg_parser(desc=""):
-    p = argparse.ArgumentParser(description=desc)
-    p.add_argument(
-        "--debug",
-        action="store_true",
-        default=False,
-        help="open ipdb when uncatched exception is raised",
-    )
-    return p
-
-
-def run_main(argument_parser=None, main_function=None):
-
-    p = argument_parser() if argument_parser else arg_parser()
-
-    # perform bash autocompletion if needed
-    argcomplete.autocomplete(p)
-
-    # parse arguments
-    args = p.parse_args()
-
-    # provide greet
-    greet()
-
-    if args.debug:
-        # run main function under ipdb context
-        from ipdb import launch_ipdb_on_exception
-
-        cerr("<< WARN: running in debug mode >>")
-        with launch_ipdb_on_exception():
-            main_function(args)
-    else:
-        main_function(args)
-
-
 def add_pgline(alignment_file, pg_dict):
     """append new PG line using a PG dict, return the full header"""
 
@@ -148,51 +104,21 @@ def get_mode(filename, mode):
     return mode
 
 
-def is_abs_or_rel_path(filepath: str | pathlib.Path):
-    filepath = filepath.as_posix() if isinstance(filepath, pathlib.Path) else filepath
-    if (
-        filepath.startswith("/")
-        or filepath.startswith("./")
-        or filepath.startswith("../")
-    ):
-        return True
-    return False
-
-
-def get_file_path(filepath: str):
-    """return the actual filepath"""
-    if is_abs_or_rel_path(filepath):
-        return filepath
-    return pathlib.Path(check_NGSENV_BASEDIR()) / filepath
-
-
-def get_snakefile_path(
-    filepath: str | pathlib.Path,
-    snakefile_root: pathlib.Path | None = None,
-    from_module: types.ModuleType | None = None,
-):
-    """return the actual snakefile"""
-    filepath_str = filepath
-    if isinstance(filepath, pathlib.Path):
-        filepath_str = filepath.as_posix()
-    if is_abs_or_rel_path(filepath):
-        return filepath
-    if from_module is not None:
-        snakefile_root = pathlib.Path(from_module.__path__[0]) / "rules"
-    return snakefile_root / filepath
-
-
 def setup_config(d={}):
     d["NGSENV_BASEDIR"] = check_NGSENV_BASEDIR()
     d["NGS_PIPELINE_BASE"] = check_NGS_PIPELINE_BASE()
     return d
 
+
 def prepare_command_log():
     import time
+
     return {
         "lastInvoked": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
         "command": " ".join(sys.argv),
         "NGS_PIPELINE_BASE": check_NGS_PIPELINE_BASE(),
         "NGSENV_BASEDIR": check_NGSENV_BASEDIR(),
     }
+
+
 # EOF
