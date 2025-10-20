@@ -1,9 +1,9 @@
 # snakeutils.py
 # [https://github.com/trmznt/py-snakeutils]
 
-__copyright__ = "(c) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__copyright__ = "(c) 2024-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.09.13.01"
+__version__ = "2025.10.20.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -52,10 +52,18 @@ class ArgumentParser(argparse.ArgumentParser):
         self.arg_dict = {}
 
 
+__ARGUMENT_PARSER__ = ArgumentParser
+
+
+def set_argument_parser_class(class_):
+    global __ARGUMENT_PARSER__
+    __ARGUMENT_PARSER__ = class_
+
+
 def init_argparser(desc: str = "", p: ArgumentParser | None = None):
     """provide common arguments for snakemake-based cli"""
 
-    p = p or ArgumentParser(description=desc)
+    p = p or __ARGUMENT_PARSER__(description=desc)
     # p.arg_dict = {}
 
     # snakemake arguments
@@ -387,9 +395,10 @@ def get_snakefile_path(
     from_module: types.ModuleType | None = None,
 ):
     """
-    return real path of  snakefile
-    filepath can be string or pathlib.Path with either absolute, relative or plain filename
-    filepath can also be in the format of module::filename
+    - return real path of snakefile
+    - filepath can be string or pathlib.Path with either absolute, relative or plain filename
+    - filepath can also be in the format of module::filename where it is expected to have
+      module/rules/filename path structure.
     """
 
     if type(filepath) == str and "::" in filepath:
