@@ -38,8 +38,12 @@ rule msf_final_map:
         bam = temp("{pfx}/{sample}/maps/mapped-final-{idx}.bam")
     params:
         region_opts = f'-L {targetregion_file}' if targetregion_file else ""
-    shell:
-        "samtools view -o {output.bam} {params.region_opts} {input.bam}"
+    run:
+        # if no target region specified, just symbolic link the input as output
+        if not params.region_opts:
+            shell(f"ln -srf {input.bam} {output.bam}")
+        else:
+            shell(f"samtools view -o {output.bam} {params.region_opts} {input.bam}")
 
 
 def get_final_bam_files(w):
