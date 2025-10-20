@@ -9,21 +9,18 @@ __license__ = "MIT"
 # functions that require the respective heavy modules
 
 from ngs_pipeline import cout, cerr, arg_parser
+from ngs_pipeline import subcommands
 
 
 def init_argparser():
 
-    p = arg_parser('show all availabel commands')
+    p = arg_parser("show all available commands")
     return p
 
 
 def main(args):
 
-    from ngs_pipeline.cmds import list_commands
-
-    cout("Available commands:")
-    for cmd in list_commands():
-        cerr(f'  {cmd}')
+    subcommands.get_subcommands().show_commands()
 
 
 # EOF
