@@ -72,6 +72,17 @@ rule concat_region_vcfs:
     shell:
         'bcftools concat -o {output} {input} 2> {log}'
 
+rule csq_vcf:
+    input:
+        vcf = "{fn}.vcf.gz",
+        tbi = "{fn}.vcf.gz.tbi",
+    output:
+        vcf = "{fn}-bcsq.vcf.gz",
+        tbi = "{fn}-bcsq.vcf.gz.tbi"
+    shell:
+        "bcftools csq -l -o {output.vcf} -f {refseq} --gff {gff_file} {input.vcf}"
+        " && bcftools index -t {output.vcf}"
+
 
 rule concatenated_vcf:
     input:
