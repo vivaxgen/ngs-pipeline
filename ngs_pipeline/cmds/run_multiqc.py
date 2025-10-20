@@ -10,7 +10,7 @@ __license__ = "MIT"
 
 import os
 import pathlib
-from ngs_pipeline import cerr, cexit, get_snakefile_path
+from ngs_pipeline import cerr, cexit
 from ngs_pipeline.cmds import run_snakefile
 
 # this is a wrapper to run initialize.smk
@@ -36,7 +36,9 @@ def run_multiqc(args):
 
     os.environ["NGSENV_BASEDIR"] = os.environ["NGS_PIPELINE_BASE"]
 
-    args.snakefile = get_snakefile_path("multiqc.smk", from_module=ngs_pipeline)
+    args.snakefile = run_snakefile.get_snakefile_path(
+        "multiqc.smk", from_module=ngs_pipeline
+    )
     args.no_config_cascade = True
     args.force = True
 

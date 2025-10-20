@@ -16,7 +16,6 @@ from ngs_pipeline import (
     arg_parser,
     check_NGSENV_BASEDIR,
     check_NGS_PIPELINE_BASE,
-    get_snakefile_path,
     setup_config,
 )
 from ngs_pipeline.cmds import run_snakefile
