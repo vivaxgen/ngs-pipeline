@@ -16,21 +16,27 @@ from ngs_pipeline import (
     check_force,
     setup_config,
     snakeutils,
+    subcommands,
 )
 
 
 get_snakefile_path = snakeutils.get_snakefile_path
 
+subcommands.set_argument_parser_class(snakeutils.ArgumentParser)
+
 
 def init_argparser(desc=None):
-    p = snakeutils.init_argparser(desc=desc or "run arbitrary snakefile")
+
+    p = snakeutils.init_argparser(
+        p=subcommands.arg_parser(desc=desc or "run arbitrary snakefile")
+    )
     return p
 
 
 def run_snakefile(
     args,
     config: dict = {},
-    additional_cli_args = "",
+    additional_cli_args="",
     workdir: str | pathlib.Path | None = None,
     show_status: bool = True,
     show_config_files: bool = False,
@@ -52,7 +58,7 @@ def run_snakefile(
     status, elapsed_time = executor.run(
         snakefile=args.snakefile,
         config=config,
-        additional_cli_args = additional_cli_args,
+        additional_cli_args=additional_cli_args,
         force=check_force(args.force),
         no_config_cascade=snakeutils.check_env("NGS_PIPELINE_NO_CONFIG_CASCADE")
         or args.no_config_cascade,
