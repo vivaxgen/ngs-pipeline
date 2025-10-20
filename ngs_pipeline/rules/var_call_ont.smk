@@ -38,10 +38,17 @@ def get_final_file(w):
     return "maps/mapped-final.bam"
 
 
+def get_final_file(w):
+    if complete_region:
+        return f'gvcf/{sample}-{complete_region}.g.vcf.gz'
+    return [f"gvcf/{sample}-{reg}.g.vcf.gz" for reg in REGIONS]
+
+
 include: config.get('reads_trimmer_wf', 'ssf_trimmer_fastplong.smka')
 include: config.get('reads_mapper_wf', 'ssf_mapper_minimap2_lr.smk')
-#include: config.get('variant_caller_wf', 'ssf_varcall_gatk.smk')
+include: config.get('variant_caller_wf', 'ssf_varcall_clair3.smk')
 include: config.get('stats_wf', 'ssf_stats.smk')
+
 
 # final output of this workflow
 
@@ -64,6 +71,27 @@ rule mapping:
         'logs/mapped-final.depth-base.tsv.gz',
         'logs/stats.tsv',
         #'logs/depths.png',
+
+
+rule vcf:
+    localrule: True
+    input:
+        "vcf/variants.vcf.gz",
+        'logs/mapped-final.stats.txt',
+        'logs/mapped-final.depth-base.tsv.gz',
+        'logs/stats.tsv',
+        'logs/depths.png'
+
+
+rule vcf_noindels:
+    localrule: True
+    input:
+        "vcf/variants-noindels.vcf.gz",
+        'logs/mapped-final.stats.txt',
+        'logs/mapped-final.depth-base.tsv.gz',
+        'logs/stats.tsv',
+        'logs/depths.png'
+
 
 rule clean:
     localrule: True
@@ -113,23 +141,6 @@ rule collect_stats:
     shell:
         'ngs-pl calculate-stats -o {output} --mindepth {min_depth} '
         '{params.trimmed} {params.mapped} {params.deduped} {params.finaled} {params.depthed} {sample}'
-
-
-rule fb_varcall:
-    threads: 1
-    input:
-        'maps/mapped-final.bam'
-    output:
-        f'gvcf/{sample}-{{reg}}.g.vcf.gz'
-    log:
-        fb = 'logs/freebayes-{reg}.log'
-    params:
-        reg = get_interval,
-        fb_args = "--haplotype-length -1 --min-coverage 10 " + config["freebayes_extra_flags"]
-    shell:
-        "freebayes --fasta-reference {refseq} --ploidy {ploidy} --min-alternate-count 2 {params.reg} "
-        "{params.fb_args} {input} 2> {log.fb} "
-        "| bcftools view -o {output} "
 
 
 # EOF
