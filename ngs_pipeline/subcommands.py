@@ -196,9 +196,7 @@ class SubCommands(object):
         if init_argparser is not None:
             parser = init_argparser()
             if not isinstance(parser, argparse.ArgumentParser):
-                _cexit(
-                    "ERR: init_argparser() did not return ArgumentParser " "instance"
-                )
+                _cexit("ERR: init_argparser() did not return ArgumentParser instance")
             add_debug_to_parser(parser)
 
             # perform bash autocompletion if needed
