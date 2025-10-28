@@ -211,43 +211,48 @@ class ReadFileDict(object):
 
     def populate_from_manifest(self):
 
+        if not self.manifest_file:
+            return
+
         comma_sep_counter = []
 
-        # check if we need to process manifest file
-        if self.manifest_file:
+        samples = read_manifest(
+            self.manifest_file, self.mode, stat_file=self.sort_by_size
+        )
 
-            samples = read_manifest(
-                self.manifest_file, self.mode, stat_file=self.sort_by_size
-            )
-
-            # combined with current samples
-            for sample, file_list, total_size in samples:
-                if sample not in self._d:
-                    self._d[sample] = file_list
-                    self._sizes[sample] = total_size
-                else:
-                    self._d[sample].extend(file_list)
-                    self._sizes[sample] += total_size
-                for file_set in file_list.split(";"):
-                    comma_sep_counter.append(file_set.count(","))
+        # combined with current samples
+        for sample, file_list, total_size in samples:
+            if sample not in self._d:
+                self._d[sample] = file_list
+                self._sizes[sample] = total_size
+            else:
+                self._d[sample].extend(file_list)
+                self._sizes[sample] += total_size
+            for file_set in file_list.split(";"):
+                comma_sep_counter.append(file_set.count(","))
 
         # check consistency beteween mode and infiles from manifest file
 
         comma_sep_set = set(comma_sep_counter)
         if len(comma_sep_set) > 1:
-            cexit("")
+            cexit(
+                "ERROR: inconsistent number of read files per file set. "
+                "Please check manifest file"
+            )
+
         print(f"{self.mode=}")
+
         match self.mode:
             case ReadMode.SINGLETON:
-                if max_no_read_files_per_sample != 0:
+                if 0 not in comma_sep_set:
                     cexit("mode singleton is not consistent with manifest file")
 
             case ReadMode.PAIRED_END:
-                if max_no_read_files_per_sample == 0:
+                if 1 not in comma_sep_set:
                     cexit("mode paired-end is not consistent with manifest file")
 
             case _:
-                if max_no_read_files_per_sample == 0:
+                if 0 in comma_sep_set:
                     self.mode = ReadMode.SINGLETON
                 else:
                     self.mode = ReadMode.PAIRED_END
