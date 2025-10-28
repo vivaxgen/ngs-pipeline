@@ -1,6 +1,13 @@
+# file utility library
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__authors__ = "Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
+
 from enum import Enum
 import pathlib
-from ngs_pipeline import cerr
+from ngs_pipeline import cerr, cexit
 
 ReadMode = Enum("ReadMode", ["SINGLETON", "PAIRED_END"])
 
@@ -20,15 +27,28 @@ class ReadFileDict(object):
         remove_prefix: str | None = None,
         mode: str | None = None,
         skip_list: list = [],
+        manifest_file: str | None = None,
+        sort_by_size: bool = False,
     ):
         super().__init__()
+
+        # the dictionary that hold fastq files
         self._d = {}
+
+        # the dictionary that hold total fastq sizes
+        self._sizes = {}
+
+        # list containing all error files
         self.err_files = []
+
         self.mode = mode
         self.underscore = underscore
         self.underscore_prefix = underscore_prefix
         self.remove_prefix = remove_prefix
         self.skip_list = skip_list
+        self.manifest_file = manifest_file
+        self.sort_by_size = sort_by_size
+
         self.populate_read_files(infiles)
 
     def keys(self):
@@ -47,6 +67,13 @@ class ReadFileDict(object):
         raise NotImplementedError()
 
     def samples(self):
+        if self.sort_by_size:
+            return list(
+                k
+                for v, k in sorted(
+                    [(v, k) for k, v in self._sizes.items()], reverse=True
+                )
+            )
         return list(sorted(self.keys()))
 
     def get_read_file(self, wildcards):
@@ -75,7 +102,6 @@ class ReadFileDict(object):
         else:
             raise ValueError("the sample does not have read files")
 
-        print(d)
         return d
 
     def get_indexes_with_wildcards(self, wildcards):
@@ -89,10 +115,10 @@ class ReadFileDict(object):
         """return list of indexes for each sample"""
         return list(range(len(self[sample])))
 
-    def populate_read_files(self, infiles):
+    def populate_from_infiles(self, infiles):
 
         if len(infiles) == 0:
-            raise ValueError("No input files given")
+            return
 
         # check the existence of the 1st file to determine that the rest of the files
         # are also exist from shell globbing
@@ -126,10 +152,10 @@ class ReadFileDict(object):
                 )
                 if sample in self.skip_list:
                     continue
-                if sample not in self:
-                    self[sample] = [(infile,)]
+                if sample not in self._d:
+                    self._d[sample] = [(infile,)]
                 else:
-                    self[sample].append((infile,))
+                    self._d[sample].append((infile,))
 
         elif self.mode == ReadMode.PAIRED_END:
 
@@ -164,12 +190,177 @@ class ReadFileDict(object):
 
                 if prefix_1 in self.skip_list:
                     continue
-                if prefix_1 not in self:
-                    self[prefix_1] = [(infile_1, infile_2)]
+                if prefix_1 not in self._d:
+                    self._d[prefix_1] = [(infile_1, infile_2)]
                 else:
-                    self[prefix_1].append((infile_1, infile_2))
+                    self._d[prefix_1].append((infile_1, infile_2))
         else:
             raise ValueError(f"Unknown mode: {self.mode}")
+
+        if self.sort_by_size:
+            for s in self._d:
+                total_size = 0
+                for file_set in self._d[s]:
+                    for p in file_set:
+                        total_size += pathlib.Path(p).stat().st_size
+
+                self._sizes[s] = total_size
+        else:
+            for s in self._d:
+                self._sizes[s] = -1
+
+    def populate_from_manifest(self):
+
+        comma_sep_counter = []
+
+        # check if we need to process manifest file
+        if self.manifest_file:
+
+            samples = read_manifest(
+                self.manifest_file, self.mode, stat_file=self.sort_by_size
+            )
+
+            # combined with current samples
+            for sample, file_list, total_size in samples:
+                if sample not in self._d:
+                    self._d[sample] = file_list
+                    self._sizes[sample] = total_size
+                else:
+                    self._d[sample].extend(file_list)
+                    self._sizes[sample] += total_size
+                for file_set in file_list.split(";"):
+                    comma_sep_counter.append(file_set.count(","))
+
+        # check consistency beteween mode and infiles from manifest file
+
+        comma_sep_set = set(comma_sep_counter)
+        if len(comma_sep_set) > 1:
+            cexit("")
+        print(f"{self.mode=}")
+        match self.mode:
+            case ReadMode.SINGLETON:
+                if max_no_read_files_per_sample != 0:
+                    cexit("mode singleton is not consistent with manifest file")
+
+            case ReadMode.PAIRED_END:
+                if max_no_read_files_per_sample == 0:
+                    cexit("mode paired-end is not consistent with manifest file")
+
+            case _:
+                if max_no_read_files_per_sample == 0:
+                    self.mode = ReadMode.SINGLETON
+                else:
+                    self.mode = ReadMode.PAIRED_END
+                cerr(f"setting read file mode {self.mode=}")
+
+    def populate_read_files(self, infiles):
+
+        self.populate_from_infiles(infiles)
+        self.populate_from_manifest()
+
+        if not any(self._d):
+            raise ValueError("No input files given")
+
+    def to_dataframe(self):
+        """
+        generate dataframe with header: SAMPLE FASTQ TOTALSIZE
+        """
+
+        import pandas as pd
+
+        # prepare df, skipping samples from skip list
+
+        sample_series = []
+        fastq_series = []
+        size_series = []
+
+        for sample in self.samples():
+            sample_series.append(sample)
+            items = [
+                ",".join(item) if type(item) == tuple else item
+                for item in self._d[sample]
+            ]
+            fastq_series.append(";".join(items))
+            size_series.append(self._sizes[sample])
+
+        df = pd.DataFrame(
+            dict(SAMPLE=sample_series, FASTQ=fastq_series, TOTALSIZE=size_series)
+        )
+        return df
+
+
+def read_manifest(manifest_file, mode, indir=".", resampling=0, stat_file=True):
+    """
+    read manifest file, and return a list of
+    [(sample, [(file1, file2), (file1, file2)], filesize), ...]
+
+    """
+
+    import pandas as pd
+
+    manifest_df = pd.read_table(manifest_file, sep=None, engine="python")
+    indir = pathlib.Path(indir)
+
+    # sanity check for duplicated names
+    if any((duplicate_samples := manifest_df.SAMPLE[manifest_df.SAMPLE.duplicated()])):
+        cerr("ERR: manifest contains duplicated sample name/code:")
+        for sample_name in sorted(list(duplicate_samples)):
+            cerr(f"  {sample_name}")
+        cexit("Please deduplicate the manifest file first.", err_code=201)
+
+    if resampling > 0:
+        manifest_df = manifest_df.sample(n=resampling)
+
+    # iterating over manifest file and check ooccurence of each fastq file
+    counter = 0
+    samples = []
+    for idx, r in manifest_df.iterrows():
+        sample = r["SAMPLE"]
+        reads = r["FASTQ"]
+        filesize = 0
+
+        if type(reads) != str or type(sample) != str:
+            cexit(
+                f"ERROR: invalid values in the row with SAMPLE: {sample} "
+                f"and FASTQ: {reads}",
+                err_code=11,
+            )
+
+        sample = sample.strip()
+        reads = reads.strip()
+
+        if not reads or not sample:
+            cexit(
+                f"ERROR: missing values in the row with SAMPLE: {sample} "
+                f"and FASTQ: {reads}",
+                err_code=12,
+            )
+
+        if sample.startswith("#"):
+            continue
+
+        fastq_list = []
+        # split reads for multiple runs
+        for fastq_pair in reads.split(";"):
+
+            path_pair = []
+            for fastq_file in fastq_pair.split(","):
+                fastq_path = indir / fastq_file
+                if not fastq_path.is_file():
+                    cexit(
+                        f"ERROR: path {fastq_path} does not exist. Plase check "
+                        f"manifest file line {idx+1}"
+                    )
+                path_pair.append(fastq_file)
+                if stat_file:
+                    filesize += fastq_path.stat().st_size
+
+            fastq_list.append(path_pair)
+
+        samples.append((sample, fastq_list, filesize))
+        counter += 1
+
+    return samples
 
 
 def check_read_mode(infiles: list):
