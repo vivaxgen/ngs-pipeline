@@ -15,7 +15,18 @@ target_variants = get_abspath(config['target_variants'], ngsenv_basedir)
 variant_info = get_abspath(config.get('variant_info', 'NOFILE'), ngsenv_basedir)
 
 # input/output related configuration
-read_files = fileutils.ReadFileDict(config['infiles'], config['underscore'])
+
+if (manifest_picklefile := config.get('manifest_picklefile', None)):
+    import pickle
+    with open(manifest_picklefile, 'rb') as fin:
+        read_files = pickle.load(fin)
+else:
+    read_files = fileutils.ReadFileDict(
+        config['infiles'],
+        config['underscore'],
+        manifest_file=config["manifest_file"],
+    )
+
 outdir = config['outdir']
 
 # read quality-related configuration
