@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.10.20.01"
+__version__ = "2025.10.28.01"
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
@@ -44,10 +44,16 @@ def set_argument_parser_class(class_):
 
 def arg_parser(desc: str = ""):
 
-    # rename program name to reflect the subcommand
-    prog_name = argparse._os.path.basename(argparse._sys.argv[0])
-    subprog_name = argparse._sys.argv[1]
-    p = __ARGUMENT_PARSER__(prog=f"{prog_name} {subprog_name}", description=desc)
+    if "_ARGCOMPLETE" in os.environ:
+        # keep original program name when invoked by argcomplete since sys.argv
+        # only contain one entry
+        p = __ARGUMENT_PARSER__(description=desc)
+    else:
+        # rename program name to reflect the subcommand
+        prog_name = argparse._os.path.basename(argparse._sys.argv[0])
+        subprog_name = argparse._sys.argv[1]
+        p = __ARGUMENT_PARSER__(prog=f"{prog_name} {subprog_name}", description=desc)
+
     return add_debug_to_parser(p)
 
 
