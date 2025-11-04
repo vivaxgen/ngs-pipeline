@@ -1,0 +1,56 @@
+# msf_merge_nofilter_map.smk - ngs-pipeline rules
+# [https://github.com/vivaxgen/ngs-pipeline]
+
+__copyright__ = "(C) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__license__ = "MIT"
+
+# required params
+# - read_files
+
+
+# this rule merge maps without filtering for read orientation, insert size, and stuff
+# that only applicable to paired-end reads
+
+
+rule msf_final_map:
+    # this rule prepares final bam file by filtering the mapped reads based on target regions
+    threads: thread_allocations.get('map_filter_target', 4)
+    input:
+        bam = "{pfx}/{sample}/maps/{sample}-{idx}.bam",
+    output:
+        bam = temp("{pfx}/{sample}/maps/mapped-final-{idx}.bam")
+    params:
+        region_opts = f'-L {targetregion_file}' if targetregion_file else ""
+    run:
+        # if no target region specified, just symbolic link the input as output
+        if params.region_opts:
+            shell(f"ln -srf {input.bam} {output.bam}")
+        else:
+            shell(f"samtools view -o {output.bam} {params.region_opts} {input.bam}")
+
+
+def get_final_bam_files(w):
+    return expand('{{pfx}}/{{sample}}/maps/mapped-final-{idx}.bam', idx=read_files.get_indexes(w.sample))
+
+
+rule msf_merge_map:
+    # this rule merges all bams into a single sorted bam files
+    # note: stamtools merge sort the positions unless invoked with -n
+    threads: 4
+    input:
+        #expand('{{pfx}}/{{sample}}/maps/sorted-{idx}.bam', idx=read_files.get_indexes)
+        get_final_bam_files
+    output:
+        bam = "{pfx}/{sample}/maps/final.bam"
+    run:
+        if len(input) > 1:
+            shell('samtools merge -@4 {output.bam} {input}')
+        else:
+            # use hard link since input will be removed
+            shell('ln {input} {output}')
+
+
+
+
+
+# EOF
