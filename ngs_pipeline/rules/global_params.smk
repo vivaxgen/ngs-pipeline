@@ -90,7 +90,9 @@ class RegPartition(object):
 
     def get_all_region_vcf(self, w):
         if not self.split:
-            raise RuntimeError('Region is not split!')
+            # region is not being split, hence return an empty list
+            return []
+
         return list(
             [f"{destdir}/split/{w.reg}~{idx}.vcf.gz"
              for idx in range(len(self.partitions[w.reg]))
