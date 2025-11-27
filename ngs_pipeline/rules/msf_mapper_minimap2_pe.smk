@@ -28,7 +28,7 @@ rule msf_mapping:
         extra_flags = config.get('minimap2_extra_flags', ''),
     shell:
         "minimap2 -t {params.threads} -a {refmap} {params.rg}"
-        "  {params.flags} {params.extra_flags}"
+        "  -x sr {params.flags} {params.extra_flags}"
         "  {input.read1} {input.read2} 2> {log.log1}"
         " | samtools collate -u -O -"
         " | samtools fixmate -m - - 2> {log.log4}"
