@@ -39,9 +39,9 @@ rule msf_final_map:
     params:
         region_opts = f'-L {targetregion_file}' if targetregion_file else ""
     run:
-        # if no target region specified, just symbolic link the input as output
+        # if no target region specified, just hard link the input as output
         if not params.region_opts:
-            shell(f"ln -srf {input.bam} {output.bam}")
+            shell(f"ln -f {input.bam} {output.bam}")
         else:
             shell(f"samtools view -o {output.bam} {params.region_opts} {input.bam}")
 
