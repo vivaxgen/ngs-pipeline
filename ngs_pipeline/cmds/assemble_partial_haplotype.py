@@ -69,8 +69,6 @@ def assign_to_groups(hap_df, seeds) -> list[dict]:
             new_count = round(count/compatible_count, 5)
             hap_info = {"haplotype": haplotype, "count": new_count}
             for s in compatible_seed:
-                print(s)
-                print(s == haplotype)
                 if s == haplotype:
                     # this hap is the seed of this group
                     # seed will be first and have the highest priority
@@ -103,7 +101,6 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
     elif prioritise == "completeness":
         subdf.sort_values(by=["n_missing", "count"], ascending=[True, False], inplace=True)
     
-    print(subdf)
     print("Scanning for seeds...")
     seeds = scan_for_seed(subdf["haplotype"].tolist())
     print(f"Found {len(seeds)} seeds")
@@ -112,7 +109,6 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
     
     assembled_haplotypes = []
     for group in compatible_groups:
-        print(group)
         best_assembled = group["haplotypes"][0]
         support = group["counts"][0]
         haplotype_origins = [best_assembled]
@@ -157,7 +153,7 @@ def main(args):
     
     haplotype_results = {}
     for marker in df["marker"].unique():
-        print(marker)
+        print(f"Marker: {marker}")
         subdf = df[df["marker"] == marker]
         haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, prioritise=args.prioritise)
     
