@@ -10,6 +10,7 @@ def init_argparser():
     p.add_argument("-o", "--outfile", required = True, help="Output filename")
     p.add_argument("-m", "--max-consider", type=int, default=15,
         help="Maximum number of seeds, default = 15")
+    p.add_argument("-s", "--seeds", default=None, help="File containing predefined seed haplotypes [marker, seeds (separated by comma)]")
     p.add_argument("-p", "--prioritise", default="count",
         choices=["count", "completeness"],
         help="Prioritise haplotypes by count or completeness (number of missing bases)")
@@ -88,7 +89,7 @@ def assign_to_groups(hap_df, seeds) -> list[dict]:
     
     return compatible_groups
 
-def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
+def assemble_haplotype(df, max_consider = 15, prioritise = "count", seeds = None):
     if prioritise not in ["count", "completeness"]:
         cerr(f"Invalid prioritise option: {prioritise}, must be one of ['count', 'n_missing']")
         cexit(1)
@@ -101,14 +102,17 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
     elif prioritise == "completeness":
         subdf.sort_values(by=["n_missing", "count"], ascending=[True, False], inplace=True)
     
-    print("Scanning for seeds...")
-    seeds = scan_for_seed(subdf["haplotype"].tolist())
-    print(f"Found {len(seeds)} seeds")
+    if seeds is None:
+        print("Scanning for seeds...")
+        seeds = scan_for_seed(subdf["haplotype"].tolist())
+        print(f"Found {len(seeds)} seeds")
 
     compatible_groups = assign_to_groups(subdf, seeds)
     
     assembled_haplotypes = []
     for group in compatible_groups:
+        if len(group["haplotypes"]) == 0:
+            continue
         best_assembled = group["haplotypes"][0]
         support = group["counts"][0]
         haplotype_origins = [best_assembled]
@@ -142,7 +146,7 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
 
 def main(args):
     import pandas as pd
-    df = pd.read_csv(args.infile, sep="\t")
+    df = pd.read_csv(args.infile, dtype={"marker": "str"}, sep="\t")
     
     if df["sample"].nunique() > 1:
         cexit("Input file contains multiple samples, please provide a single sample haplotype file.")
@@ -151,11 +155,16 @@ def main(args):
         log_fh = open(args.log, "w+")
         os.sys.stdout = log_fh
     
+    if args.seeds is not None:
+        seed_df = pd.read_csv(args.seeds, dtype={"marker": "str"}, sep="\t")
+        seed_df.loc[:, "seeds"] = seed_df["seeds"].astype("str").str.split(",")
+
     haplotype_results = {}
     for marker in df["marker"].unique():
         print(f"Marker: {marker}")
         subdf = df[df["marker"] == marker]
-        haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, prioritise=args.prioritise)
+        seeds = seed_df[seed_df["marker"] == marker]["seeds"].values[0] if args.seeds is not None else None
+        haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, prioritise=args.prioritise, seeds=seeds)
     
     assembled_hap_df = pd.concat([
         pd.DataFrame(

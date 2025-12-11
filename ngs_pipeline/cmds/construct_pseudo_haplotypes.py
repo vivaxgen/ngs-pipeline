@@ -12,6 +12,10 @@ def init_argparser():
         "--log", default=None, help="Log file, default = None",
     )
     p.add_argument(
+        "--pileup", action="store_true", help="Extract count of bases only",
+    )
+    p.add_argument("--pileout", default=None, help="Output filename for pileup (TSV)")
+    p.add_argument(
         "--sample",
         default="SAMPLE",
         help="Sample ID, default = SAMPLE",
@@ -108,8 +112,28 @@ def build_haplotype_from_variants(aln, aln_mate, covered_variants):
     print(f"# haplotype_construction | {marker}: {''.join(haplotype)} | alns: {r1.query_name}")
     return marker, "".join(haplotype)
 
+def deconstruct_haplotypes_alleles_to_SNPs_alleles(haplotypes, counts= None):
+    import numpy as np
+    if counts is not None:
+        counts = np.array(counts)
+    else:
+        counts = np.ones(len(haplotypes), dtype=int)
+    
+    observed_haplotypes = np.array([list(a) for a in haplotypes])
+    assert observed_haplotypes.shape[0] == counts.shape[0]
+    n_snps = observed_haplotypes.shape[1]
+    alleles = []
+    for snp_idx in range(n_snps):
+        snp_alleles = {}
+        for hap_idx in range(observed_haplotypes.shape[0]):
+            allele = observed_haplotypes[hap_idx, snp_idx]
+            allele_count = counts[hap_idx]
+            if allele != "?":
+                snp_alleles[allele] = snp_alleles.get(allele, 0) + allele_count
+        alleles.append(snp_alleles)
+    return alleles
 
-def construct_pseudo_haplotypes(variants, alignments):
+def construct_pseudo_haplotypes(variants, alignments, pileup=False):
     from collections import Counter
     haplotypes = []
     tagged = 0 # alignments with tags
@@ -151,7 +175,31 @@ def construct_pseudo_haplotypes(variants, alignments):
                 continue
     
     hap_counts = Counter(haplotypes)
-    return (hap_counts, tagged, total)
+    pileup_df = variants.copy(deep =True)
+    pileup_df.loc[:, ("alleles", "counts")] = "", ""
+    if pileup:
+        sorted_hap_counts = sorted(hap_counts.items())
+        for marker in pileup_df['marker'].unique():
+            haplotype_SNP_positions = pileup_df[pileup_df['marker'] == marker]
+            alleles = []
+            counts = []
+            alleles = [haps[0][1]  for haps in sorted_hap_counts if haps[0][0] == marker]
+            counts = [haps[1]  for haps in sorted_hap_counts if haps[0][0] == marker]
+            if len(alleles) == 0:
+                continue
+            snp_alleles = deconstruct_haplotypes_alleles_to_SNPs_alleles(alleles, counts)
+
+            for idx, row in pileup_df[pileup_df['marker'] == marker].iterrows():
+                snp_idx = idx - haplotype_SNP_positions.index[0]
+                snp_alleles_dict = snp_alleles[snp_idx]
+                sorted_alleles = sorted(snp_alleles_dict.items(), key=lambda x: x[1], reverse=True)
+                alleles_str = ",".join([allele for allele, _ in sorted_alleles]) if len(sorted_alleles) > 0 else ""
+                counts_str = ",".join([str(count) for _, count in sorted_alleles]) if len(sorted_alleles) > 0 else ""
+                pileup_df.at[idx, 'alleles'] = alleles_str
+                pileup_df.at[idx, 'counts'] = counts_str
+    else:
+        pileup_df = None
+    return (hap_counts, tagged, total, pileup_df)
 
 def main(args):
     import pandas as pd
@@ -166,14 +214,18 @@ def main(args):
     if variants.isnull().values.any():
         cexit("Variants input file contains N/A values, please check!")
     
-    haps, read_pair_with_hap, reads_processed = construct_pseudo_haplotypes(variants, bam)
+    haps, read_pair_processed, reads_processed, SNPs = construct_pseudo_haplotypes(variants, bam, pileup=args.pileup)
+    if args.pileup and SNPs is not None:
+        if args.pileout is None:
+            args.pileout = args.outfile + ".pileup.tsv"
+        SNPs.to_csv(args.pileout, sep="\t", index=False)
+
     pd.DataFrame(
         [(args.sample, marker, hap, count) for (marker, hap), count in haps.items()],
         columns=["sample", "marker", "haplotype", "count"]
     ).sort_values(["marker", "count", "haplotype"]).to_csv(args.outfile, sep="\t", index=False)
-
     print(f"### Total reads processed | {reads_processed}")
-    print(f"### Read pairs with haplotypes constructed | {read_pair_with_hap}")
+    print(f"### Read pairs with haplotypes constructed | {read_pair_processed}")
     
     if args.log is not None:
         log_fh.close()
