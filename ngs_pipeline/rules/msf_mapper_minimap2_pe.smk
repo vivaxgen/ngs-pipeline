@@ -35,5 +35,4 @@ rule msf_mapping:
         " | ngs-pl filter-reads-region -o {output.bam} --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
 
 
-
 # EOF
