@@ -6,6 +6,7 @@ rule gatk_baserecalibrator:
     threads: 1
     input:
         bam = 'maps/mapped-final.bam',
+        idx = "maps/mapped-final.bam.bai",
         # the following is for sanity check only
         known = f'{knownvariants_dir}/{{reg}}.bed.gz',
     output:
