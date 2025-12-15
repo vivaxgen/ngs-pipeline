@@ -29,9 +29,10 @@ rule freebayes:
         vcf_target = f"-@ {vcf_variants} -l" if vcf_variants else "",
         monomorphic = '--report-monomorphic' if target_variants else '',
         freebayes_extra_flags = config.get('freebayes_extra_flags', ''),
+        min_read_qual = min_read_qual,
     shell:
-        "freebayes -f {refseq} {params.target} {params.vcf_target} {params.monomorphic} --haplotype-length 0 "
-        "--min-base-quality {min_read_qual} {params.freebayes_extra_flags} {input.bam} "
+        "freebayes -f {refseq} {params.target} {params.monomorphic} --haplotype-length 0 "
+        "--min-base-quality {params.min_read_qual} {params.freebayes_extra_flags} {input.bam} "
         "| bcftools sort -o {output.vcf}"
 
 # EOF
