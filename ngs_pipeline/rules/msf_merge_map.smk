@@ -67,7 +67,4 @@ rule msf_merge_map:
             shell('ln {input} {output}')
 
 
-
-
-
 # EOF
