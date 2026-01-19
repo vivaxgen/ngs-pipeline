@@ -27,13 +27,12 @@ rule msf_mapping:
         flags = config.get('minimap2_flags', ''),
         extra_flags = config.get('minimap2_extra_flags', ''),
     shell:
-        "minimap2 -t {params.threads} -a {refmap} {params.rg}"
+        "minimap2 -t {params.threads} -ax sr --MD {refmap} {params.rg}"
         "  {params.flags} {params.extra_flags}"
         "  {input.read1} {input.read2} 2> {log.log1}"
         " | samtools collate -u -O -"
         " | samtools fixmate -m - - 2> {log.log4}"
         " | ngs-pl filter-reads-region -o {output.bam} --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
-
 
 
 # EOF

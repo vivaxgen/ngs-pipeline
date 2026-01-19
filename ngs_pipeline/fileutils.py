@@ -228,8 +228,8 @@ class ReadFileDict(object):
             else:
                 self._d[sample].extend(file_list)
                 self._sizes[sample] += total_size
-            for file_set in file_list.split(";"):
-                comma_sep_counter.append(file_set.count(","))
+            for file_set in file_list:
+                comma_sep_counter.append(len(file_set) - 1)
 
         # check consistency beteween mode and infiles from manifest file
 

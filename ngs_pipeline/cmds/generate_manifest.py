@@ -2,7 +2,7 @@ __copyright__ = """
 generate_manifest.py - ngs-pipeline command line
 [https://github.com/vivaxgen/ngs-pipeline]
 
-(c) 2022-2023 Hidayat Trimarsanto <trimarsanto@gmail.com>
+(c) 2022-2025 Hidayat Trimarsanto <trimarsanto@gmail.com>
 
 All right reserved.
 This software is licensed under MIT license.
@@ -110,9 +110,8 @@ def generate_manifest(args):
     else:
         mode = None
 
-    sample_series = []
-    fastq_series = []
-    counter = 0
+    # provide an initial empty dataframe
+    df = pd.DataFrame(dict(SAMPLE=[], FASTQ=[], TOTALSIZE=[]))
 
     if any(args.infiles):
         read_files = fileutils.ReadFileDict(
@@ -129,22 +128,14 @@ def generate_manifest(args):
                 + "\n".join(f"  {errmsg}" for errmsg in read_files.err_files)
             )
 
-        # for each sample, process manifest line
-
-        for sample in read_files.samples():
-            sample_series.append(sample)
-            items = [
-                ",".join(item) if type(item) == tuple else item
-                for item in read_files[sample]
-            ]
-            fastq_series.append(";".join(items))
+        df = read_files.to_dataframe()
 
     elif initial_df is None:
         cexit(
             "[No source files as input and no initial manifest file, please check both]"
         )
 
-    df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
+    # df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     if initial_df is not None:
         df = pd.concat([initial_df, df])
         # drop duplicate row

@@ -10,6 +10,7 @@ def init_argparser():
     p.add_argument("-o", "--outfile", required = True, help="Output filename")
     p.add_argument("-m", "--max-consider", type=int, default=15,
         help="Maximum number of seeds, default = 15")
+    p.add_argument("-s", "--seeds", default=None, help="File containing predefined seed haplotypes [marker, seeds (separated by comma)]")
     p.add_argument("-p", "--prioritise", default="count",
         choices=["count", "completeness"],
         help="Prioritise haplotypes by count or completeness (number of missing bases)")
@@ -40,33 +41,55 @@ def scan_for_seed(haplotypes: list[str]) -> list[str]:
     return seeds
 
 def assign_to_groups(hap_df, seeds) -> list[dict]:
-    # seeds is predetermined, all haplotypes should be able to be assigned to one of the seeds, if seed has been filtered out, sequence can be ignored
-    seeds_depth = hap_df  ### To-fix 
-    compatible_groups = {s: {"seed": s, "haplotypes": [s], "counts": []} for s in seeds}
+    # seeds is predetermined, all haplotypes should be able to be assigned to one of the seeds,
+    # if seed has been filtered out, sequence can be ignored
+    groups = {s: {"h": [], "t":[]} for s in seeds}
 
     for _, row in hap_df.iterrows():
         haplotype = row["haplotype"]
         count = row["count"]
+        # remove haplotype with no interestde SNPs
         if set(list(haplotype)) == {"?"}:
             continue
+        # remove single SNP
         if haplotype.count("?") == len(haplotype) - 1:
             continue
+
         compatible_count = 0
         compatible_seed = []
+        hap_is_seed = haplotype in seeds
+
         for s in seeds:
             if is_compatible(haplotype, s):
-                compatible_groups[s]["haplotypes"].append(haplotype)
-                compatible_groups[s]["counts"].append(count)
-                compatible_seed.append(s)
                 compatible_count += 1
+                compatible_seed.append(s)
+        
         if compatible_count == 0:
             cerr(f"Warning: haplotype {haplotype} could not be assigned to any seed, skipping.")
         else:
+            new_count = round(count/compatible_count, 5)
+            hap_info = {"haplotype": haplotype, "count": new_count}
             for s in compatible_seed:
-                compatible_groups[s]["counts"][-1] *= round(1/compatible_count, 5)
-    return list(compatible_groups.values())
+                if s == haplotype:
+                    # this hap is the seed of this group
+                    # seed will be first and have the highest priority
+                    groups[s]["h"] = [hap_info] + groups[s]["h"]
+                elif hap_is_seed:
+                    # this hap is used as seed of another group, least priority
+                    groups[s]["t"].append(hap_info)
+                else:
+                    groups[s]["h"].append(hap_info)
 
-def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
+    compatible_groups = []
+    for s in seeds:
+        final = groups[s]["h"] + groups[s]["t"]
+        haplotypes = [hap["haplotype"] for hap in final]
+        counts = [hap["count"] for hap in final]
+        compatible_groups.append({"seed": s, "haplotypes": haplotypes, "counts": counts})
+    
+    return compatible_groups
+
+def assemble_haplotype(df, max_consider = 15, prioritise = "count", seeds = None):
     if prioritise not in ["count", "completeness"]:
         cerr(f"Invalid prioritise option: {prioritise}, must be one of ['count', 'n_missing']")
         cexit(1)
@@ -79,15 +102,17 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
     elif prioritise == "completeness":
         subdf.sort_values(by=["n_missing", "count"], ascending=[True, False], inplace=True)
     
-    print("Scanning for seeds...")
-    seeds = scan_for_seed(subdf["haplotype"].tolist())
-    print(f"Found {len(seeds)} seeds")
+    if seeds is None:
+        print("Scanning for seeds...")
+        seeds = scan_for_seed(subdf["haplotype"].tolist())
+        print(f"Found {len(seeds)} seeds")
 
     compatible_groups = assign_to_groups(subdf, seeds)
     
     assembled_haplotypes = []
     for group in compatible_groups:
-        print(group)
+        if len(group["haplotypes"]) == 0:
+            continue
         best_assembled = group["haplotypes"][0]
         support = group["counts"][0]
         haplotype_origins = [best_assembled]
@@ -117,21 +142,11 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count"):
                 haplotype_origins.append(haplotype)
         assert len(best_assembled) == len(supporting_depth)
         assembled_haplotypes.append({"haplotype": best_assembled, "depths": supporting_depth, "assembled_from": haplotype_origins})
-        # "count": support, 
-    # for hap in assembled_haplotypes:
-    #     hap["depths"] = []
-    #     # average depth per position
-    #     partials = [list(hap_seq) for hap_seq in hap["assembled_from"]]
-    #     for i, base in enumerate(list(hap["haplotype"])):
-    #         if base == "?":
-    #             hap["depths"].append(0)
-    #         depth = sum(1 for p in partials if p[i] == base)
-    #         hap["depths"].append(depth)
     return assembled_haplotypes
 
 def main(args):
     import pandas as pd
-    df = pd.read_csv(args.infile, sep="\t")
+    df = pd.read_csv(args.infile, dtype={"marker": "str"}, sep="\t")
     
     if df["sample"].nunique() > 1:
         cexit("Input file contains multiple samples, please provide a single sample haplotype file.")
@@ -140,11 +155,16 @@ def main(args):
         log_fh = open(args.log, "w+")
         os.sys.stdout = log_fh
     
+    if args.seeds is not None:
+        seed_df = pd.read_csv(args.seeds, dtype={"marker": "str"}, sep="\t")
+        seed_df.loc[:, "seeds"] = seed_df["seeds"].astype("str").str.split(",")
+
     haplotype_results = {}
     for marker in df["marker"].unique():
-        print(marker)
+        print(f"Marker: {marker}")
         subdf = df[df["marker"] == marker]
-        haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, prioritise=args.prioritise)
+        seeds = seed_df[seed_df["marker"] == marker]["seeds"].values[0] if args.seeds is not None else None
+        haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, prioritise=args.prioritise, seeds=seeds)
     
     assembled_hap_df = pd.concat([
         pd.DataFrame(
@@ -156,41 +176,3 @@ def main(args):
     assembled_hap_df.loc[:, "q25_depth"] = assembled_hap_df["depths"].apply(lambda r: pd.Series(r).quantile(0.25))
     assembled_hap_df[["sample", "marker", "haplotype", "q25_depth", "assembled_from", "depths"]] \
         .sort_values(["marker", "q25_depth", "haplotype"]).to_csv(args.outfile, sep="\t", index=False)
-
-    # compatibility_matrix = np.zeros((len(subdf), len(subdf)), dtype=bool)
-    # hap_support = subdf["count"].values.reshape(len(subdf), 1)
-    # for i, hap1 in enumerate(subdf["haplotype"]):
-    #     compatibility_matrix[i, i] = True
-    #     for j, hap2 in enumerate(subdf["haplotype"]):
-    #         if i >= j:
-    #             continue
-    #         compatible = True
-    #         for a, b in zip(hap1, hap2):
-    #             if a != "?" and b != "?" and a != b:
-    #                 compatible = False
-    #                 break
-    #         compatibility_matrix[i, j] = compatible
-    #         compatibility_matrix[j, i] = compatible
-
-
-    # def build_weighted_graph(compatibility_matrix, hap_support):
-    #     theoretical_compatible_haplotypes = (np.tril(compatibility_matrix) * hap_support).sum(axis = 0)
-
-    #     iteration_order = []
-    #     while len(iteration_order) < len(theoretical_compatible_haplotypes):
-            
-    #         iteration_order.append()
-
-    #     from collections import defaultdict
-    #     graph = defaultdict(list)
-    #     num_rows = len(matrix) # (lower triangular matrix with diagonal) signifying compatibility and support 
-
-    #     for r in range(num_rows): # go from top to bottom, each column
-    #         for c in range(r + 1):
-    #             weight = matrix[r][r] + matrix[c][r]
-    #             if weight != 0:
-    #                 if r != c:
-    #                     graph[r].append((c, weight))
-    #                     graph[c].append((r, weight))
-    #     return graph
-
