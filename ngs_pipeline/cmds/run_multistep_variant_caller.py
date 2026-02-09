@@ -53,6 +53,17 @@ def init_argparser():
         "filenames to form sample code, counted in reverse",
     )
 
+    p.add_argument(
+        "--remove-underscore-prefix",
+        type=int,
+        default=0,
+        help="the number of underscore to remove from the beginning of the filename",
+    )
+
+    p.add_argument(
+        "--remove-prefix", default=None, help="prefix to remove from original filename"
+    )
+
     p.add_argument("-i", "--manifest", default=None, help="manifest file as input")
 
     p.add_argument("-o", "--outdir", required=True, help="output directory")
@@ -104,6 +115,8 @@ def run_multistep_variant_caller(args, console=True):
         infiles=args.infiles,
         jobs=args.j,
         procfile=args.P,
+        remove_underscore_prefix=args.remove_underscore_prefix,
+        remove_prefix=args.remove_prefix,
         rerun=(args.manifest is None) and not any(args.infiles),
         unlock=args.unlock,
     )

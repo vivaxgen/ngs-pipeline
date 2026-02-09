@@ -25,6 +25,8 @@ jobs = config.get('jobs', 32)
 procfile = config.get('procfile', None)
 rerun = config.get('rerun', False)
 unlock = config.get('unlock', False)
+remove_underscore_prefix = config.get('remove_underscore_prefix', 0)
+remove_prefix = config.get('remove_prefix', None)
 
 # -- extra flags for each steps --
 prepare_sample_directory_flags = config.get('prepare_sample_directory_flags', '')
@@ -136,12 +138,14 @@ rule generate_manifest:
         f'{outdir}/metafile/manifest.tsv' if not rerun else []
     params:
         underscore = f'--underscore {underscore}' if underscore else '',
+        remove_underscore_prefix = f'--remove-underscore-prefix {remove_underscore_prefix}' if remove_underscore_prefix else '',
+        remove_prefix = f'--remove-prefix {remove_prefix}' if remove_prefix else '',
         singleton = '--single' if singleton else '',
         paired_end = '--paired' if paired_end else '',
         manifest = f'-i {manifest}' if manifest else '',
         infiles = ' '.join(infiles)
     shell:
-        'ngs-pl generate-manifest -o {output} {params.underscore} --pause 5 '
+        'ngs-pl generate-manifest -o {output} {params.underscore} {params.remove_underscore_prefix} {params.remove_prefix} --pause 5 '
         '{params.singleton} {params.paired_end} {params.manifest} {infiles}'
 
 
