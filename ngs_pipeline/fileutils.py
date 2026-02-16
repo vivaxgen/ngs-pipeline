@@ -187,7 +187,7 @@ class ReadFileDict(object):
                     err_files.append(
                         f"ERROR: unmatch pair [{prefix_1}] <> [{prefix_2}]"
                     )
-
+                    continue
                 if prefix_1 in self.skip_list:
                     continue
                 if prefix_1 not in self._d:
