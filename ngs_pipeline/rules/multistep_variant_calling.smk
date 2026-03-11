@@ -16,11 +16,12 @@ configfiles_args = ' '.join([f'-c {x}' for x in configfiles])
 
 # -- input/output arguments --
 outdir = config['outdir']
-infiles = config['infiles']
+infiles = config.get('infiles', [])
 underscore = config.get('underscore', 0)
 singleton = config.get('singleton', False)
 paired_end = config.get('paired_end', False)
 manifest = config.get('manifest', None)
+manifest_picklefile = config.get('manifest_picklefile', None)
 jobs = config.get('jobs', 32)
 procfile = config.get('procfile', None)
 rerun = config.get('rerun', False)
