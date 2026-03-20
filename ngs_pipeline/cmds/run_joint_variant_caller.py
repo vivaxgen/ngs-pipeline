@@ -30,6 +30,7 @@ def init_argparser():
     p.arg_dict["snakefile"].choices = [
         "jointvarcall_gatk.smk",
         "jointvarcall_freebayes.smk",
+        "jointvarcall_glnexus.smk",
         "jointhapcall.smk",
     ]
 
