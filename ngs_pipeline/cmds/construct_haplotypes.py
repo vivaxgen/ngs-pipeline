@@ -173,10 +173,16 @@ def construct_haplotypes(args):
         if args.cds_only:
             bcsq = v.INFO.get("BCSQ", None)
             if not bcsq:
-                cexit(
-                    "ERR: VCF file does not have BCSQ tag in INFO field; "
-                    "run bcftools csq first on the VCF file"
+                cerr(
+                    f"""Warning: VCF file does not have BCSQ tag in INFO field; 
+                    This can be ignored if variant are in intron/intergenic regions
+                    {v}"""
                 )
+                continue
+                # cexit(
+                #     "ERR: VCF file does not have BCSQ tag in INFO field; "
+                #     "run bcftools csq first on the VCF file"
+                # )
             if ";" in bcsq:
                 raise NotImplementedError(
                     "multiple field in BCSQ currently not handled"
@@ -209,8 +215,9 @@ def construct_haplotypes(args):
 
     reported_hap_total = 0
     reported_haps = []
+    hap_total = hap_counts.total()
     for h, count in hap_counts.items():
-        proportion = count / hap_counts.total()
+        proportion = count / hap_total if hap_total else 0
         if proportion < 0.15 or count < 5:
             continue
 
@@ -219,28 +226,28 @@ def construct_haplotypes(args):
         f_out.write(f"{'|'.join(h)}\t{proportion:5.3f}\t{count}\t{args.sample}\n")
 
     # import IPython; IPython.embed()
+    d = dict(
+        sample=args.sample,
+        total_reads=total_reads,
+        tagged_reads=tagged_reads,
+        haplotyped_reads=hap_total,
+        haplotyped_reads_ratio=hap_total / tagged_reads if tagged_reads else 0,
+        haplotyped_reported=reported_hap_total,
+        haplotyped_reported_ratio=reported_hap_total / hap_total if hap_total else 0,
+    )
+    
     if args.outlog:
         import json
-
-        d = dict(
-            sample=args.sample,
-            total_reads=total_reads,
-            tagged_reads=tagged_reads,
-            haplotyped_reads=hap_counts.total(),
-            haplotyped_reads_ratio=hap_counts.total() / tagged_reads,
-            haplotyped_reported=reported_hap_total,
-            haplotyped_reported_ratio=reported_hap_total / hap_counts.total(),
-        )
         with open(args.outlog, "w") as json_fout:
             json.dump(d, json_fout)
 
     cerr(f"total reads: {total_reads}")
     cerr(f"tagged reads: {tagged_reads}")
     cerr(
-        f"haplotyped reads: {hap_counts.total()} ({hap_counts.total() / tagged_reads :5.3f})"
+        f"haplotyped reads: {hap_total} ({d['haplotyped_reads_ratio'] :5.3f})"
     )
     cerr(
-        f"haplotyped reported: {reported_hap_total} ({reported_hap_total / hap_counts.total() :5.3f})"
+        f"haplotyped reported: {reported_hap_total} ({d['haplotyped_reported_ratio'] :5.3f})"
     )
 
     if args.outvcf:
