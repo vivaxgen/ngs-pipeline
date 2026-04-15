@@ -11,16 +11,22 @@ def init_argparser():
     p.add_argument("-m", "--max-consider", type=int, default=15,
         help="Maximum number of seeds, default = 15")
     p.add_argument("-s", "--seeds", default=None, help="File containing predefined seed haplotypes [marker, seeds (separated by comma)]")
+    p.add_argument("--strict", action="store_true", help="Strict mode, only join haplotypes if there are overlapping non-missing bases, [join if there are no conflicting bases]")
     p.add_argument("-p", "--prioritise", default="count",
         choices=["count", "completeness"],
         help="Prioritise haplotypes by count or completeness (number of missing bases)")
     p.add_argument("infile", help="haplotype tsv for a single sample")
     return p
 
-def is_compatible(hap1, hap2) -> bool:
-    return all((base1 == base2 or base1 == "?" or base2 == "?") for base1, base2 in zip(hap1, hap2))
+def is_compatible(hap1, hap2, strict=False) -> bool:
+    compatible = all((base1 == base2 or base1 == "?" or base2 == "?") for base1, base2 in zip(hap1, hap2))
+    if strict:
+        has_overlap = any((base1 != "?" and base2 != "?" and base1 == base2) for base1, base2 in zip(hap1, hap2))
+        return compatible and has_overlap
+    else:
+        return compatible
 
-def scan_for_seed(haplotypes: list[str]) -> list[str]:
+def scan_for_seed(haplotypes: list[str], strict=False) -> list[str]:
     seeds = []
     for hap in haplotypes:
         if set(list(hap)) == {"?"}:
@@ -33,14 +39,14 @@ def scan_for_seed(haplotypes: list[str]) -> list[str]:
             has_compatible = False
             for seed in seeds:
                 # if incompatible with all existing seeds, add as new seed
-                if is_compatible(hap, seed):
+                if is_compatible(hap, seed, strict=strict):
                     has_compatible = True
                     break
             if not has_compatible:
                 seeds.append(hap)
     return seeds
 
-def assign_to_groups(hap_df, seeds) -> list[dict]:
+def assign_to_groups(hap_df, seeds, strict=False) -> list[dict]:
     # seeds is predetermined, all haplotypes should be able to be assigned to one of the seeds,
     # if seed has been filtered out, sequence can be ignored
     groups = {s: {"h": [], "t":[]} for s in seeds}
@@ -54,13 +60,13 @@ def assign_to_groups(hap_df, seeds) -> list[dict]:
         # remove single SNP
         if haplotype.count("?") == len(haplotype) - 1:
             continue
-
+        
         compatible_count = 0
         compatible_seed = []
         hap_is_seed = haplotype in seeds
 
         for s in seeds:
-            if is_compatible(haplotype, s):
+            if is_compatible(haplotype, s, strict=strict):
                 compatible_count += 1
                 compatible_seed.append(s)
         
@@ -89,7 +95,7 @@ def assign_to_groups(hap_df, seeds) -> list[dict]:
     
     return compatible_groups
 
-def assemble_haplotype(df, max_consider = 15, prioritise = "count", seeds = None):
+def assemble_haplotype(df, max_consider = 15, prioritise = "count", strict = False, seeds = None):
     if prioritise not in ["count", "completeness"]:
         cerr(f"Invalid prioritise option: {prioritise}, must be one of ['count', 'n_missing']")
         cexit(1)
@@ -107,7 +113,7 @@ def assemble_haplotype(df, max_consider = 15, prioritise = "count", seeds = None
         seeds = scan_for_seed(subdf["haplotype"].tolist())
         print(f"Found {len(seeds)} seeds")
 
-    compatible_groups = assign_to_groups(subdf, seeds)
+    compatible_groups = assign_to_groups(subdf, seeds, strict=strict)
     
     assembled_haplotypes = []
     for group in compatible_groups:
@@ -164,14 +170,24 @@ def main(args):
         print(f"Marker: {marker}")
         subdf = df[df["marker"] == marker]
         seeds = seed_df[seed_df["marker"] == marker]["seeds"].values[0] if args.seeds is not None else None
-        haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, prioritise=args.prioritise, seeds=seeds)
+        haplotype_results[marker] = assemble_haplotype(subdf, max_consider=args.max_consider, strict=args.strict, prioritise=args.prioritise, seeds=seeds)
     
-    assembled_hap_df = pd.concat([
-        pd.DataFrame(
-            [(df["sample"].unique()[0] , marker, hap["haplotype"], hap["depths"], hap["assembled_from"]) for hap in haplotype_results[marker]],
-            columns=["sample", "marker", "haplotype", "depths", "assembled_from"]
-        ) for marker in haplotype_results
-    ])
+    marker_dfs = []
+    for marker in haplotype_results:
+        df_temp = pd.DataFrame(
+                [(df["sample"].unique()[0] , marker, hap["haplotype"], hap["depths"], hap["assembled_from"]) for hap in haplotype_results[marker]],
+                columns=["sample", "marker", "haplotype", "depths", "assembled_from"]
+            )
+        if df_temp.shape[0] == 0:
+            continue
+        marker_dfs.append(df_temp)
+
+    if len(marker_dfs) == 0:
+        assembled_hap_df = pd.DataFrame(columns=["sample", "marker", "haplotype", "depths", "assembled_from"])
+    else:
+        assembled_hap_df = pd.concat([
+            df for df in marker_dfs if df.shape[0] > 0
+        ])
 
     assembled_hap_df.loc[:, "q25_depth"] = assembled_hap_df["depths"].apply(lambda r: pd.Series(r).quantile(0.25))
     assembled_hap_df[["sample", "marker", "haplotype", "q25_depth", "assembled_from", "depths"]] \
