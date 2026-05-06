@@ -425,7 +425,7 @@ def get_sample_name(
     if remove_underline_prefix:
         filename = pathlib.Path(filename.name.split("_", remove_underline_prefix)[-1])
     if underline != 0:
-        return filename.name.rsplit("_", underline)[0]
+        filename = pathlib.Path(filename.name.rsplit("_", underline)[0])
     return filename.name.removesuffix(".fastq.gz")
 
 
