@@ -82,6 +82,13 @@ def init_argparser():
         help="optional initial manifest file to be appended",
     )
 
+    p.add_argument(
+        "--manifest-picklefile",
+        default=None,
+        type=str,
+        help="optional pickle file containing preprocessed manifest data",
+    )
+
     p.add_argument("infiles", nargs="*")
     return p
 
@@ -89,15 +96,22 @@ def init_argparser():
 def generate_manifest(args):
 
     # import heavy modules here if required
+    import pickle
     import pandas as pd
     from ngs_pipeline import fileutils
 
     initial_df = None
+    initial_read_files = None
     if args.initial_manifest:
         cerr(f"[Reading initial manifest file: {args.initial_manifest}]")
         initial_df = pd.read_table(args.initial_manifest)
         if not (("SAMPLE" in initial_df.columns) and ("FASTQ" in initial_df.columns)):
             cexit("[Initial manifest file does not have SAMPLE and/or FASTQ columns]")
+
+    if args.manifest_picklefile:
+        cerr(f"[Reading initial manifest pickle file: {args.manifest_picklefile}]")
+        with open(args.manifest_picklefile, "rb") as fin:
+            initial_read_files = pickle.load(fin)
 
     cerr(f"[Receiving {len(args.infiles)} source files]")
     if (initial_df is None) and (len(args.infiles) == 0):
@@ -130,10 +144,16 @@ def generate_manifest(args):
 
         df = read_files.to_dataframe()
 
-    elif initial_df is None:
+    elif (initial_df is None) and (initial_read_files is None):
         cexit(
             "[No source files as input and no initial manifest file, please check both]"
         )
+
+    if initial_read_files is not None:
+        if initial_df is None:
+            initial_df = initial_read_files.to_dataframe()
+        else:
+            initial_df = pd.concat([initial_df, initial_read_files.to_dataframe()])
 
     # df = pd.DataFrame(dict(SAMPLE=sample_series, FASTQ=fastq_series))
     if initial_df is not None:
