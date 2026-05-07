@@ -4,7 +4,7 @@ OMIT="${OMIT:-}"
 
 if ! [[ "$OMIT" =~ GATK ]]; then
   echo "Installing the latest GATK"
-  retry 5 micromamba -vvv -y install "GATK4>=4.6,<5" -c conda-forge -c bioconda
+  retry 5 micromamba -vvv -y install "GATK4>=4.6,<5" -c conda-forge -c bioconda -c defaults
 fi
 
 echo "Installing other dependencies with micromamba"
