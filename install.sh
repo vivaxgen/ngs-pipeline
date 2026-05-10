@@ -3,8 +3,11 @@
 # installation script for vivaxgen ngs-pipeline [https://github.com/vivaxgen/ngs-pipeline]
 
 # optional variable:
-# - BASEDIR
-# - OMIT
+# - VVG_BASEDIR
+# - PIXI_ENVNAME
+# - VVG_EXCLUDE
+# - VVG_INCLUDE
+# - VVG_NGSPL_REPOURL
 
 set -eu
 
@@ -24,26 +27,26 @@ case "$parent" in
 esac
 
 # Parsing arguments
-if [ -t 0 ] && [ -z "${BASEDIR:-}" ]; then
+if [ -t 0 ] && [ -z "${VVG_BASEDIR:-}" ]; then
   printf "Pipeline base directory? [./vvg-ngspl] "
-  read BASEDIR
+  read VVG_BASEDIR
 fi
 
 # default value
-BASEDIR="${BASEDIR:-./vvg-ngspl}"
+VVG_BASEDIR="${VVG_BASEDIR:-./vvg-ngspl}"
 
-uMAMBA_ENVNAME="${uMAMBA_ENVNAME:-ngs-pl}"
+PIXI_ENVNAME="${PIXI_ENVNAME:-ngs-pl}"
 
-# for dev: source <(curl -L https://raw.githubusercontent.com/vivaxgen/vvg-box/refs/heads/dev/install.sh)
+
+# install pixi-based vvv-box 
 source <(curl -L https://raw.githubusercontent.com/vivaxgen/vvg-box/main/install.sh)
 
-echo "Cloning vivaxGEN ngs-pipeline"
+echo "Cloning vivaxGEN ngs-pipeline repository"
 # add --branch dev for dev
-git clone --depth 1 https://github.com/vivaxgen/ngs-pipeline.git ${ENVS_DIR}/ngs-pipeline  
-ln -sr ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d/10-ngs-pipeline ${BASHRC_DIR}/
-ln -sr ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d/95-prompt-history ${BASHRC_DIR}/
+git clone --depth 1 ${VVG_NGSPL_REPOURL:-https://github.com/vivaxgen/ngs-pipeline.git} ${ENVS_DIR}/ngs-pipeline  
 
-source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
+# source the 2nd stage installation script for dependencies
+# source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
 
 echo "ngs-pipeline" >> ${ETC_DIR}/installed-repo.txt
 
@@ -52,12 +55,12 @@ echo "vivaxGEN ngs-pipeline has been successfully installed. "
 echo "Please read the docs for further setup."
 echo "The base installation directory (VVG_BASEDIR) is:"
 echo
-echo `realpath ${BASEDIR}`
+echo `realpath ${VVG_BASEDIR}`
 echo
 echo "To activate the basic NGS-Pipeline environment (eg. for installing"
 echo "or setting up base enviroment directory), execute the command:"
 echo
-echo `realpath ${BASEDIR}`/bin/activate
+echo `realpath ${VVG_BASEDIR}`/bin/activate
 echo
 
 # EOF
