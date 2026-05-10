@@ -37,17 +37,19 @@ VVG_BASEDIR="${VVG_BASEDIR:-./vvg-ngspl}"
 
 PIXI_ENVNAME="${PIXI_ENVNAME:-ngs-pl}"
 
-
-# install pixi-based vvv-box 
+# install pixi-based vvv-box
+echo ">> Installing pixi-based vvg-box"
 source <(curl -L https://raw.githubusercontent.com/vivaxgen/vvg-box/main/install.sh)
 
-echo "Cloning vivaxGEN ngs-pipeline repository"
+echo ">> Cloning vivaxGEN ngs-pipeline repository"
 # add --branch dev for dev
 git clone --depth 1 ${VVG_NGSPL_REPOURL:-https://github.com/vivaxgen/ngs-pipeline.git} ${ENVS_DIR}/ngs-pipeline  
 
 # source the 2nd stage installation script for dependencies
+echo ">> Executing stage 2 of installation"
 source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
 
+echo ">> Adding ngs-pipeline to installed repositories"
 echo "ngs-pipeline" >> ${ETC_DIR}/installed-repo.txt
 
 echo
