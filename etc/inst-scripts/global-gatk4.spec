@@ -1,1 +1,2 @@
-gatk4=4.6 -c conda-forge -c bioconda
+# GATK spec
+gatk4=4.6 --environment java-based
