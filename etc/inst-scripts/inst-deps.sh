@@ -4,6 +4,7 @@ INST_SCRIPTS_DIR="${ENVS_DIR}/ngs-pipeline/etc/inst-scripts"
 
 ${VVGBIN}/link-resource-files.sh ${ENVS_DIR}/ngs-pipeline/etc/bashrc.d
 
+echo "Setting pixi default channels to conda-forge and bioconda"
 pixi config set default-channels '["conda-forge", "bioconda"]' --global
 pixi config set default-channels '["conda-forge", "bioconda"]'
 
