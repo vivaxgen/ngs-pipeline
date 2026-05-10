@@ -46,7 +46,7 @@ echo "Cloning vivaxGEN ngs-pipeline repository"
 git clone --depth 1 ${VVG_NGSPL_REPOURL:-https://github.com/vivaxgen/ngs-pipeline.git} ${ENVS_DIR}/ngs-pipeline  
 
 # source the 2nd stage installation script for dependencies
-# source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
+source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
 
 echo "ngs-pipeline" >> ${ETC_DIR}/installed-repo.txt
 
