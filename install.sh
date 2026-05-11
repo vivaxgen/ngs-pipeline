@@ -8,6 +8,7 @@
 # - VVG_EXCLUDE
 # - VVG_INCLUDE
 # - VVG_NGSPL_REPOURL
+# - VVG_MANIFEST_FILE
 
 set -eu
 
@@ -38,18 +39,18 @@ VVG_BASEDIR="${VVG_BASEDIR:-./vvg-ngspl}"
 PIXI_ENVNAME="${PIXI_ENVNAME:-ngs-pl}"
 
 # install pixi-based vvv-box
-echo ">> Installing pixi-based vvg-box"
+echo -e "\e[32m>> Installing pixi-based vvg-box\e[0m"
 source <(curl -L https://raw.githubusercontent.com/vivaxgen/vvg-box/main/install.sh)
 
-echo ">> Cloning vivaxGEN ngs-pipeline repository"
+echo -e "\e[32m>> Cloning vivaxGEN ngs-pipeline repository\e[0m"
 # add --branch dev for dev
 git clone --depth 1 ${VVG_NGSPL_REPOURL:-https://github.com/vivaxgen/ngs-pipeline.git} ${ENVS_DIR}/ngs-pipeline  
 
 # source the 2nd stage installation script for dependencies
-echo ">> Executing stage 2 of installation"
-source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-deps.sh
+echo -e "\e[32m>> Executing stage 2 of installation\e[0m"
+source ${ENVS_DIR}/ngs-pipeline/etc/inst-scripts/inst-stage-2.sh
 
-echo ">> Adding ngs-pipeline to installed repositories"
+echo -e "\e[32m>> Adding ngs-pipeline to installed repositories\e[0m"
 echo "ngs-pipeline" >> ${ETC_DIR}/installed-repo.txt
 
 echo
@@ -57,12 +58,12 @@ echo "vivaxGEN ngs-pipeline has been successfully installed. "
 echo "Please read the docs for further setup."
 echo "The base installation directory (VVG_BASEDIR) is:"
 echo
-echo `realpath ${VVG_BASEDIR}`
+echo "$(realpath "${VVG_BASEDIR}")"
 echo
 echo "To activate the basic NGS-Pipeline environment (eg. for installing"
 echo "or setting up base enviroment directory), execute the command:"
 echo
-echo `realpath ${VVG_BASEDIR}`/bin/activate
+echo "$(realpath "${VVG_BASEDIR}")/bin/activate"
 echo
 
 # EOF
