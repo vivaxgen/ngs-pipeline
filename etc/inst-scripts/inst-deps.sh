@@ -4,9 +4,17 @@ echo -e "\e[32m>>>> Setting pixi default channels to conda-forge and bioconda\e[
 pixi config set default-channels '["conda-forge", "bioconda"]' --global
 pixi config set default-channels '["conda-forge", "bioconda"]'
 
+JAVA_BASED=""
+OPTIONAL_PACKAGES=""
 if ! defined_and_contains_any VVG_EXCLUDE gatk4; then
-  echo -e "\e[32m>>>> Installing the latest gatk4\e[0m"
-  pixi-global-install ${INST_SCRIPTS_DIR}/global-gatk4.spec
+  echo -e "\e[32m>>>> Will install the latest gatk4\e[0m"
+  JAVA_BASED="${JAVA_BASED} gatk4=4.6"
+  #pixi-global-install ${INST_SCRIPTS_DIR}/global-gatk4.spec
+fi
+
+if ! defined_and_contains_any VVG_EXCLUDE ONT_TOOLS; then
+  echo -e "\e[32m>>>> Will install the latest ONT data tools\e[0m"
+  OPTIONAL_PACKAGES="${OPTIONAL_PACKAGES} glnexus>=1.4 fastplong>=0.4.1 clair3>=2.0"
 fi
 
 echo -e "\e[32m>>>> Installing global generic dependencies\e[0m"

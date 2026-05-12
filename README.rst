@@ -57,6 +57,20 @@ uses about 5-6 GB of storage.
 
 To uninstall the pipeline, simply remove the whole installation directory.
 
+VVG_EXCLUDE environment variable can be used to exclude some optional dependencies
+from being installed.
+The following values can be used in VVG_EXCLUDE:
+
+* gatk4
+
+  Exclude GATK4 from being installed.
+  This will exclude all GATK4 tools, such as HaplotypeCaller and GenomicsDBImport.
+
+* ONT_TOOLS
+
+  Exclude tools for processing ONT data, such as Clair3, GLnexus and FastPLong.
+
+
 Configuration sets
 ------------------
 

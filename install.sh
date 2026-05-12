@@ -10,6 +10,9 @@
 # - VVG_NGSPL_REPOURL
 # - VVG_MANIFEST_FILE
 
+__VERSION__="2026.05.12.01"
+echo -e "\e[32m>> vivaxGEN NGS-Pipeline installation script version: ${__VERSION__}\e[0m"
+
 set -eu
 
 # run the base.sh
