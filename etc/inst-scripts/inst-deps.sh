@@ -20,8 +20,6 @@ if ! defined_and_contains_any VVG_EXCLUDE ONT_TOOLS; then
   LINUX64_ONLY="glnexus>=1.4"
 fi
 
-if [[ -n "${PIXI_ENVIRONMENT_PLATFORMS:-}"
-
 echo -e "\e[32m>>>> Installing global generic dependencies\e[0m"
 pixi-global-install ${INST_SCRIPTS_DIR}/global-generics.spec
 
