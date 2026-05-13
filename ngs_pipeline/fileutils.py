@@ -25,7 +25,7 @@ class ReadFileDict(object):
         underscore: int,
         underscore_prefix: int = 0,
         remove_prefix: str | None = None,
-        mode: str | None = None,
+        mode: ReadMode | None = None,
         skip_list: list = [],
         manifest_file: str | None = None,
         sort_by_size: bool = False,
@@ -354,7 +354,7 @@ def read_manifest(manifest_file, mode, indir=".", resampling=0, stat_file=True):
                 if not fastq_path.is_file():
                     cexit(
                         f"ERROR: path {fastq_path} does not exist. Plase check "
-                        f"manifest file line {idx+1}"
+                        f"manifest file line {idx+1}"  # type: ignore
                     )
                 path_pair.append(fastq_file)
                 if stat_file:
@@ -466,7 +466,7 @@ def create_relative_symlink(dest: pathlib.Path, source: pathlib.Path, force=Fals
 
 def _make_symlink_for_sample(
     sample: str,
-    path: str,
+    path: str | pathlib.Path,
     outdir: pathlib.Path,
     ext: str,
     *,
