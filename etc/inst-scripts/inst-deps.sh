@@ -12,10 +12,15 @@ if ! defined_and_contains_any VVG_EXCLUDE gatk4; then
   #pixi-global-install ${INST_SCRIPTS_DIR}/global-gatk4.spec
 fi
 
+
+LINUX64_ONLY=""
 if ! defined_and_contains_any VVG_EXCLUDE ONT_TOOLS; then
   echo -e "\e[32m>>>> Will install the latest ONT data tools\e[0m"
-  OPTIONAL_PACKAGES="${OPTIONAL_PACKAGES} glnexus>=1.4 fastplong>=0.4.1 clair3>=2.0"
+  OPTIONAL_PACKAGES="${OPTIONAL_PACKAGES} fastplong>=0.4.1 clair3>=2.0"
+  LINUX64_ONLY="glnexus>=1.4"
 fi
+
+if [[ -n "${PIXI_ENVIRONMENT_PLATFORMS:-}"
 
 echo -e "\e[32m>>>> Installing global generic dependencies\e[0m"
 pixi-global-install ${INST_SCRIPTS_DIR}/global-generics.spec
@@ -23,6 +28,9 @@ pixi-global-install ${INST_SCRIPTS_DIR}/global-generics.spec
 # if PIXI_ENVIRONMENT_PLATFORMS is defined and there is exist filename
 # ${PIXI_ENVIRONMENT_PLATFORMS}.spec, then install the dependencies in that file
 if [[ -n "${PIXI_ENVIRONMENT_PLATFORMS:-}" ]] && [ -f ${INST_SCRIPTS_DIR}/global-${PIXI_ENVIRONMENT_PLATFORMS}.spec ]; then
+  if [[ "${PIXI_ENVIRONMENT_PLATFORMS}" == "linux-64" ]]; then
+    OPTIONAL_PACKAGES="${OPTIONAL_PACKAGES:+$OPTIONAL_PACKAGES }$LINUX64_ONLY"
+  fi
   echo -e "\e[32m>>>> Installing global dependencies for platform ${PIXI_ENVIRONMENT_PLATFORMS}\e[0m"
   pixi-global-install ${INST_SCRIPTS_DIR}/global-${PIXI_ENVIRONMENT_PLATFORMS}.spec
 fi
