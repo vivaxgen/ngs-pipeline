@@ -151,7 +151,7 @@ def run_targeted_variant_caller(args, optional_config={}):
             infiles=[],
             underscore=args.underscore,
             outdir=args.outdir,
-            manifest_picklefile=manifest_picklefile,
+            manifest_picklefile=manifest_picklefile.as_posix(),
         )
         | optional_config
     )
