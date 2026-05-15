@@ -117,7 +117,7 @@ def generate_links(args):
                     sample,
                     item,
                     args.outdir,
-                    read_files.mode,
+                    read_files.mode,  # type: ignore[attr-defined]
                     idx,
                     use_absolute=args.use_absolute_link,
                 )
@@ -126,7 +126,7 @@ def generate_links(args):
                 sample,
                 items[0],
                 args.outdir,
-                read_files.mode,
+                read_files.mode,  # type: ignore[attr-defined]
                 use_absolute=args.use_absolute_link,
             )
 
