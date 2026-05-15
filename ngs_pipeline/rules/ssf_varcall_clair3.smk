@@ -15,7 +15,8 @@ rule ssf_varcall_clair3:
         vcf = "vcf/clair3/variants.vcf.gz",
         vcf_tbi = "vcf/clair3/variants.vcf.gz.tbi",
     log:
-        log1 = "logs/clair3.log"
+        log1 = "logs/clair3.log",
+        log2 = "logs/clair3.err",
     params:
         sample = lambda w: sample if "sample" not in w else w.sample,
         model = config.get('clair3_model', 'ont'),
@@ -27,7 +28,7 @@ rule ssf_varcall_clair3:
         outdir = subpath(output.vcf, parent=True),
         outfmt = "",
     shell:
-        "micromamba run -n ngs-pl-clair3 run_clair3.sh"
+        "run_clair3.sh"
         "  --bam_fn {input.bam}"
         "  --ref_fn {refseq}"
         "  --threads 2 --platform {params.platform}"
@@ -38,7 +39,7 @@ rule ssf_varcall_clair3:
         "  {params.outfmt}"
         "  {params.flags}"
         "  {params.extra_flags}"
-        "  2> {log.log1}"
+        "  1> {log.log1} 2> {log.log2}"
 
 
 rule ssf_varcall_symlink:
@@ -52,7 +53,7 @@ rule ssf_varcall_symlink:
     shell:
         "sleep 2"
         " && ln -srf {input.vcf} {output.vcf}"
-        " && ln -srf {input.idx} {output.tbi}"
+        " && ln -srf {input.tbi} {output.tbi}"
 
 
 use rule ssf_varcall_clair3 as ssf_varcall_clair3_gvcf with:
@@ -63,16 +64,45 @@ use rule ssf_varcall_clair3 as ssf_varcall_clair3_gvcf with:
         outfmt = "--gvcf",
 
 
-rule ssf_varcall_gvcf_noindels:
+
+
+rule ssf_varcall_fix_gvcf:
     input:
         gvcf = "gvcf/clair3/merge_output.gvcf.gz",
         tbi = "gvcf/clair3/merge_output.gvcf.gz.tbi",
+    output:
+        gvcf = f"gvcf/merge_output.fixed.g.vcf.gz",
+        tbi = f"gvcf/merge_output.fixed.g.vcf.gz.tbi",
+    shell:
+        "gatk UpdateVcfSequenceDictionary"
+        " -SD {refseq}"
+        " -I {input.gvcf}"
+        " -O {output.gvcf}"
+        " && bcftools index -t {output.gvcf}"
+
+rule ssf_varcall_sort_gvcf:
+    localrule: True
+    input:
+        gvcf = "gvcf/merge_output.fixed.g.vcf.gz",
+        tbi = "gvcf/merge_output.fixed.g.vcf.gz.tbi",
+    output:
+        gvcf = "gvcf/merge_output.sorted.g.vcf.gz",
+        tbi = "gvcf/merge_output.sorted.g.vcf.gz.tbi",
+    shell:
+        "bcftools sort -o {output.gvcf} {input.gvcf}"
+        " && bcftools index -t {output.gvcf}"
+
+
+rule ssf_varcall_reformat_gvcf:
+    input:
+        gvcf = "gvcf/merge_output.sorted.g.vcf.gz",
+        tbi = "gvcf/merge_output.sorted.g.vcf.gz.tbi",
     output:
         gvcf = f"gvcf/{sample}-{complete_region}.g.vcf.gz",
         tbi = f"gvcf/{sample}-{complete_region}.g.vcf.gz.tbi",
     shell:
         "bcftools annotate -x FORMAT/AF -o {output.gvcf} {input.gvcf}"
         " && bcftools index -t {output.gvcf}"
-    
+
 
 # EOF
