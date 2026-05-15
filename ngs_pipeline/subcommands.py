@@ -50,8 +50,8 @@ def arg_parser(desc: str = ""):
         p = __ARGUMENT_PARSER__(description=desc)
     else:
         # rename program name to reflect the subcommand
-        prog_name = argparse._os.path.basename(argparse._sys.argv[0])
-        subprog_name = argparse._sys.argv[1]
+        prog_name = argparse._os.path.basename(argparse._sys.argv[0])  # type: ignore
+        subprog_name = argparse._sys.argv[1]  # type: ignore
         p = __ARGUMENT_PARSER__(prog=f"{prog_name} {subprog_name}", description=desc)
 
     return add_debug_to_parser(p)
@@ -209,13 +209,13 @@ class SubCommands(object):
             argcomplete.autocomplete(parser)
 
             # if autocomplete does not exit:
-            args = parser.parse_args(args[1:])
+            args = parser.parse_args(args[1:])  # type: ignore
 
             # provide a way to access the argument parser
-            args.__parser__ = parser
+            args.__parser__ = parser  # type: ignore
 
             if main is not None:
-                if args.debug:
+                if args.debug:  # type: ignore
                     from ipdb import launch_ipdb_on_exception
 
                     with launch_ipdb_on_exception():

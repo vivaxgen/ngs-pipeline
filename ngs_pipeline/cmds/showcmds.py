@@ -20,7 +20,7 @@ def init_argparser():
 
 def main(args):
 
-    subcommands.get_subcommands().show_commands()
+    subcommands.get_subcommands().show_commands()  # type: ignore
 
 
 # EOF
