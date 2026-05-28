@@ -39,6 +39,15 @@ def greet():
     cerr(f"Host: {platform.uname().node}")
 
 
+def check_VVG_BASEDIR():
+    if "VVG_BASEDIR" not in os.environ:
+        cexit(
+            "ERROR: VVG_BASEDIR environment is not set. "
+            "Please set proper shell enviroment by sourcing relevant activate.sh"
+        )
+    return os.environ["VVG_BASEDIR"]
+
+
 def check_NGSENV_BASEDIR():
     if "NGSENV_BASEDIR" not in os.environ:
         cexit(
