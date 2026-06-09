@@ -12,29 +12,26 @@ rule ssf_varcall_clair3:
         bam = "maps/mapped-final.bam",
         idx = "maps/mapped-final.bam.bai",
     output:
-        vcf = "vcf/clair3/variants.vcf.gz",
-        vcf_tbi = "vcf/clair3/variants.vcf.gz.tbi",
+        vcf = "vcf/clair3/merge_output.vcf.gz",
+        vcf_tbi = "vcf/clair3/merge_output.vcf.gz.tbi",
     log:
         log1 = "logs/clair3.log",
         log2 = "logs/clair3.err",
     params:
         sample = lambda w: sample if "sample" not in w else w.sample,
-        model = config.get('clair3_model', 'ont'),
         platform = config.get('clair3_platform', 'ont'),
         flags = config.get('clair3_flags', ''),
         extra_flags = config.get('clair3_extra_flags', ''),
         model_path = config.get('clair3_model_path', ''),
-        tmpdir = config.get('tmpdir', '/tmp'),
         outdir = subpath(output.vcf, parent=True),
         outfmt = "",
     shell:
         "run_clair3.sh"
         "  --bam_fn {input.bam}"
         "  --ref_fn {refseq}"
-        "  --threads 2 --platform {params.platform}"
+        "  --threads {threads} --platform {params.platform}"
         "  --output {params.outdir}"
         "  --model_path {params.model_path}"
-        "  --no_phasing_for_fa"
         "  --sample_name={params.sample}"
         "  {params.outfmt}"
         "  {params.flags}"
