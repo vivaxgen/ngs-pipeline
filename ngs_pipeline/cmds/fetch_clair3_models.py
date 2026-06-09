@@ -154,6 +154,44 @@ def download_web_directory(
             except requests.RequestException as e:
                 print(f"Failed to download {decoded_name}: {e}")
 
+def list_available_clair3_models(verify_ssl: bool = True) -> list[str]:
+    """Return a sorted list of available Clair3 model names from all source URLs."""
+
+    import requests
+
+    headers = {"User-Agent": "Mozilla/5.0"}
+    models: set[str] = set()
+
+    for source_url in source_urls:
+        try:
+            response = requests.get(source_url, headers=headers, verify=verify_ssl, timeout=20)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            print(f"Warning: failed to read model index {source_url}: {e}", file=sys.stderr)
+            continue
+
+        parser = IndexLinkParser()
+        parser.feed(response.text)
+
+        for href in parser.links:
+            if not href or href in ["../", "/"] or href.startswith("?"):
+                continue
+
+            parsed_href = urllib.parse.urlparse(href)
+
+            # skip external hosts
+            if parsed_href.netloc:
+                continue
+
+            name = urllib.parse.unquote(href).strip("/")
+
+            # keep only top-level directory-like entries
+            if not name or "/" in name:
+                continue
+
+            models.add(name)
+    return sorted(models)
+    
 
 def fetch_clair3_models(args):
 
