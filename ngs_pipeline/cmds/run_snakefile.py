@@ -9,6 +9,7 @@ import os
 import sys
 import pathlib
 import ngs_pipeline
+from typing import cast
 from ngs_pipeline import (
     cerr,
     check_NGSENV_BASEDIR,
@@ -19,7 +20,6 @@ from ngs_pipeline import (
     subcommands,
 )
 
-
 get_snakefile_path = snakeutils.get_snakefile_path
 
 subcommands.set_argument_parser_class(snakeutils.ArgumentParser)
@@ -27,8 +27,10 @@ subcommands.set_argument_parser_class(snakeutils.ArgumentParser)
 
 def init_argparser(desc=None):
 
+    # subcommands.arg_parser returns an argparse.ArgumentParser; cast to
+    # snakeutils.ArgumentParser to satisfy type checker
     p = snakeutils.init_argparser(
-        p=subcommands.arg_parser(desc=desc or "run arbitrary snakefile")
+        p=cast(snakeutils.ArgumentParser, subcommands.arg_parser(desc=desc or "run arbitrary snakefile"))
     )
     return p
 
