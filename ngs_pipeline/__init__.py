@@ -116,7 +116,21 @@ def get_mode(filename, mode):
 def setup_config(d={}):
     d["NGSENV_BASEDIR"] = check_NGSENV_BASEDIR()
     d["NGS_PIPELINE_BASE"] = check_NGS_PIPELINE_BASE()
-    return d
+
+    def _path_to_str(value):
+        if isinstance(value, pathlib.Path):
+            return value.as_posix()
+        if isinstance(value, dict):
+            return {k: _path_to_str(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [_path_to_str(v) for v in value]
+        if isinstance(value, tuple):
+            return tuple(_path_to_str(v) for v in value)
+        if isinstance(value, set):
+            return {_path_to_str(v) for v in value}
+        return value
+
+    return _path_to_str(d)
 
 
 def prepare_command_log():
