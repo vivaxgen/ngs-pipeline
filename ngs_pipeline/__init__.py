@@ -39,7 +39,7 @@ def greet():
     cerr(f"Host: {platform.uname().node}")
 
 
-def check_VVG_BASEDIR():
+def check_VVG_BASEDIR() -> str:
     if "VVG_BASEDIR" not in os.environ:
         cexit(
             "ERROR: VVG_BASEDIR environment is not set. "
@@ -48,7 +48,7 @@ def check_VVG_BASEDIR():
     return os.environ["VVG_BASEDIR"]
 
 
-def check_NGSENV_BASEDIR():
+def check_NGSENV_BASEDIR() -> str:
     if "NGSENV_BASEDIR" not in os.environ:
         cexit(
             "ERROR: NGSENV_BASEDIR environment is not set. "
@@ -57,7 +57,7 @@ def check_NGSENV_BASEDIR():
     return os.environ["NGSENV_BASEDIR"]
 
 
-def check_NGS_PIPELINE_BASE():
+def check_NGS_PIPELINE_BASE() -> str:
     if "NGS_PIPELINE_BASE" not in os.environ:
         cexit(
             "ERROR: NGS_PIPELINE_BASE environment is not set. "
@@ -66,7 +66,7 @@ def check_NGS_PIPELINE_BASE():
     return os.environ["NGS_PIPELINE_BASE"]
 
 
-def check_multiplexer(prompt=False, remote_only=True):
+def check_multiplexer(prompt=False, remote_only=True) -> bool:
     if remote_only and not os.environ.get("SSH_TTY", None):
         return True
     if os.environ.get("NGS_IGNORE_TERM_MULTIPLEXER_CHECK", None):
@@ -92,11 +92,11 @@ def check_multiplexer(prompt=False, remote_only=True):
     return False
 
 
-def check_force(force):
-    return force or os.environ.get("NGS_PIPELINE_FORCE", 0)
+def check_force(force: bool) -> bool:
+    return force or bool(os.environ.get("NGS_PIPELINE_FORCE", 0))
 
 
-def add_pgline(alignment_file, pg_dict):
+def add_pgline(alignment_file, pg_dict) -> dict:
     """append new PG line using a PG dict, return the full header"""
 
     header = alignment_file.header.to_dict()
@@ -106,14 +106,14 @@ def add_pgline(alignment_file, pg_dict):
     return header
 
 
-def get_mode(filename, mode):
+def get_mode(filename, mode) -> str:
     """return either (r, rb, w, wb) depending on file name"""
     if filename.endswith(".bam"):
         return mode + "b"
     return mode
 
 
-def setup_config(d={}):
+def setup_config(d={}) -> dict:
     d["NGSENV_BASEDIR"] = check_NGSENV_BASEDIR()
     d["NGS_PIPELINE_BASE"] = check_NGS_PIPELINE_BASE()
 
@@ -130,7 +130,12 @@ def setup_config(d={}):
             return {_path_to_str(v) for v in value}
         return value
 
-    return _path_to_str(d)
+    # this function needs to return a dict
+
+    for k, v in d.items():
+        d[k] = _path_to_str(v)
+
+    return d
 
 
 def prepare_command_log():
