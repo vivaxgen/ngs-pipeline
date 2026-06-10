@@ -26,7 +26,7 @@ rule ssf_varcall_clair3:
         outdir = subpath(output.vcf, parent=True),
         outfmt = "",
     shell:
-        "run_clair3.sh"
+        "run_clair3"
         "  --bam_fn {input.bam}"
         "  --ref_fn {refseq}"
         "  --threads {threads} --platform {params.platform}"
