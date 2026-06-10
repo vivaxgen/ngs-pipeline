@@ -14,6 +14,7 @@ cerr('Running: msf_panel_varcall_lr.smk')
 
 include: "utilities.smk"
 include: "msf_params.smk"
+include: "global_params.smk"
 
 if read_files.mode != read_files.ReadMode.PAIRED_END:
     raise ValueError('Input files are not paired-end read file per sample(s)')
@@ -23,7 +24,7 @@ include: "msf_prepare_sample_files.smk"
 
 # use null trimmer since we rely on minimap2 to perform soft-clipping
 # on primers and adapters:
-include: "msf_trimmer_null.smk"
+include: config.get('msf_trimmer_wf', "msf_trimmer_null.smk") 
 
 # use minimap2 mapper & map merger
 include: "msf_mapper_minimap2_pe.smk"

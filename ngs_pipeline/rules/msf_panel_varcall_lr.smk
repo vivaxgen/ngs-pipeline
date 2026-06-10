@@ -10,12 +10,13 @@ cerr('Running: msf_panel_varcall_lr.smk')
 
 include: "utilities.smk"
 include: "msf_params.smk"
+include: "global_params.smk"
 
 # prepare sample directory structure
 include: "msf_prepare_sample_files.smk"
 
 # use long-read trimmer:
-include: "msf_trimmer_lr.smk"
+include: config.get('msf_trimmer_wf', "msf_trimmer_lr.smk")
 
 # use minimap2 mapper, filter & map merger
 include: "msf_mapper_minimap2_lr.smk"

@@ -111,5 +111,10 @@ regions: []
 
 contaminant_regions: []
 
+# fastplong trimmer defaults
+fastplong_cut_tail_window_size: 10
+fastplong_cut_tail_mean_quality: 1
+fastplong_trim_front: 20
+fastplong_trim_tail: 20
 
 # EOF
