@@ -99,12 +99,11 @@ the mandatory steps to prepare the base environment directory:
 
           NGS-PIPELINE_INSTALL_DIR/activate
 
-#.  Setup the base working directory, eg: ``/data/Pv-wgs/PvP01_v1``:
+#.  Setup the base working directory, eg: ``/data/Pv-wgs/PvP01_v2``:
 
     .. prompt:: bash
 
-          ngs-pl setup-base-directory /data/Pv-wgs/PvP01_v1
-          cd /data/Pv-wgs/PvP01_v1
+          ngs-pl setup-base-directory /data/Pv-wgs/PvP01_v2
 
     .. tip::
 
@@ -125,13 +124,13 @@ the mandatory steps to prepare the base environment directory:
     .. prompt:: bash
 
           exit
-          /data/Pv-wgs/PvP01_v1/activate
+          /data/Pv-wgs/PvP01_v2/activate
 
     Once activated, the environment directory can be accessed using environment
     variable ``NGSENV_BASEDIR``.
 
 To continue preparing the base enviroment directory with automatic method
-using preset settings for *P vivax* with PvP01_v1 reference sequence, change to
+using preset settings for *P vivax* with PvP01_v2 reference sequence, change to
 base environment directory:
 
 .. prompt:: bash
@@ -140,27 +139,27 @@ base environment directory:
 
 If running in an HPC/cluster system or workstation/server with 16-core or more,
 use the following command to setup the base environment directory with full
-version of PvP01_v1 setting:
+version of PvP01_v2 setting:
 
 .. prompt:: bash
 
-      bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/setup.sh)
+      bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v2/setup.sh)
 
 If running in a laptop or desktop with less than 16-core, use the following 
-command to setup the base enviroment directory with lite version of PvP01_v1
+command to setup the base enviroment directory with lite version of PvP01_v2
 setting:
 
 .. prompt:: bash
 
-      bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v1/setup-lite.sh)
+      bash <(curl -L https://raw.githubusercontent.com/vivaxgen/vgnpc-plasmodium-spp/main/Pvivax/PvP01_v2/setup-lite.sh)
 
 The full version setup will take some time as it needs to download both the
-PvP01_v1 genome sequence (~ 23MB), human GRCh38.p14 genome (~ 928MB),
+PvP01_v2 genome sequence (~ 23MB), human GRCh38.p14 genome (~ 928MB),
 uncompress the human genome, and generate index file for both PvP01 and the
 human genome sequences using ``bwa-mem2``.
 
 The lite version setup will take less time as it only needs to download the
-PvP01_v1 genome sequence (~ 23MB) and generate index file for only PvP01
+PvP01_v2 genome sequence (~ 23MB) and generate index file for only PvP01
 sequences.
 
 .. note::
@@ -194,7 +193,7 @@ chromosomes).
 
     .. prompt:: bash
       
-      /data/Pv-wgs/PvP01_v1/activate
+      /data/Pv-wgs/PvP01_v2/activate
 
 #.  Enter the directory for containing data sets, and create a new directory,
     and enter to the new directory:
@@ -407,7 +406,7 @@ Once the joint variant calling process finishes, inspect the result in the
 ``new-joint``directory.
 
 
-Expoloring Further
+Exploring Further
 ------------------
 
 To read more about ``NGS-Pipeline`` features, please consult the rest of the
