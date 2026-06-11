@@ -3,7 +3,7 @@
 
 __copyright__ = "(c) 2024-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.10.20.01"
+__version__ = "2026.05.30.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -330,7 +330,7 @@ class SnakeExecutor(object):
             if self.args.profile is None:
                 self.args.profile = os.environ["SNAKEMAKE_PROFILE"]
 
-        if self.args.nocluster:
+        if self.args.nocluster or "SNAKEMAKE_NOCLUSTER" in os.environ:
             # nocluster means prevent from running using batch/job scheduler,
             # then use special profile "none"
             self.args.profile = "none"

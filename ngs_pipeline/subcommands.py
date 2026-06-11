@@ -1,9 +1,9 @@
 # subcommands.py
 # [https://github.com/trmznt/subcommands]
 
-__copyright__ = "(c) 2024-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+__copyright__ = "(c) 2024-2026, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
-__version__ = "2025.10.28.01"
+__version__ = "2026.06.11.01"
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
@@ -20,16 +20,16 @@ from typing import Callable
 L = logging.getLogger(__name__)
 
 
-def _cout(msg: str):
+def _cout(msg: str) -> None:
     print(msg, file=sys.stdout)
 
 
-def _cerr(msg: str):
+def _cerr(msg: str) -> None:
     print(msg, file=sys.stderr)
     sys.stderr.flush()
 
 
-def _cexit(msg: str, exit_code: int = 1):
+def _cexit(msg: str, exit_code: int = 1) -> None:
     _cerr(msg)
     sys.exit(exit_code)
 
@@ -37,12 +37,12 @@ def _cexit(msg: str, exit_code: int = 1):
 __ARGUMENT_PARSER__ = argparse.ArgumentParser
 
 
-def set_argument_parser_class(class_):
+def set_argument_parser_class(class_) -> None:
     global __ARGUMENT_PARSER__
     __ARGUMENT_PARSER__ = class_
 
 
-def arg_parser(desc: str = ""):
+def arg_parser(desc: str = "") -> argparse.ArgumentParser:
 
     if "_ARGCOMPLETE" in os.environ:
         # keep original program name when invoked by argcomplete since sys.argv
@@ -57,7 +57,7 @@ def arg_parser(desc: str = ""):
     return add_debug_to_parser(p)
 
 
-def add_debug_to_parser(p: argparse.ArgumentParser):
+def add_debug_to_parser(p: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
     try:
         p.add_argument(
@@ -125,7 +125,7 @@ class SubCommands(object):
             else:
                 self.modules += module_envs
 
-    def autocomplete(self, tokens: list[str]):
+    def autocomplete(self, tokens: list[str]) -> None:
 
         last_token = tokens[-1]
 
@@ -144,7 +144,7 @@ class SubCommands(object):
         out_stream.write(ifs.join(completions))
         sys.exit(0)
 
-    def generic_usage(self):
+    def generic_usage(self) -> None:
         if self.copyright:
             _cerr(self.copyright)
         _cexit(
@@ -156,14 +156,14 @@ class SubCommands(object):
             f"  try: {self.prog_name} -l"
         )
 
-    def generic_greet(self):
+    def generic_greet(self) -> None:
         _cerr(f"{self.prog_name} - command line interface")
         _cerr(f"Host: {platform.uname().node}")
 
-    def generic_help(self):
+    def generic_help(self) -> None:
         self.generic_usage()
 
-    def version(self):
+    def version(self) -> None:
         _cerr(f"subcommand version: {__version__}")
         _cerr(f"try version command: {self.prog_name} version")
 
@@ -189,7 +189,7 @@ class SubCommands(object):
             cmds.append(p.stem.replace("_", "-"))
         return sorted(set(cmds))
 
-    def show_commands(self):
+    def show_commands(self) -> None:
         _cout("Available commands:")
         for cmd in self.get_command_list():
             _cout(f"  {cmd}")
@@ -197,7 +197,7 @@ class SubCommands(object):
 
     def run_main(
         self, main: Callable | None, init_argparser: Callable | None, args: list[str]
-    ):
+    ) -> None:
 
         if init_argparser is not None:
             parser = init_argparser()
@@ -242,7 +242,7 @@ class SubCommands(object):
                 "argument"
             )
 
-    def run_cmd(self, args: list[str]):
+    def run_cmd(self, args: list[str]) -> None:
         """this method will run module init_argparser() and main()"""
 
         command = args[0].replace("-", "_")
@@ -266,7 +266,7 @@ class SubCommands(object):
             getattr(M, "main", None), getattr(M, "init_argparser", None), args
         )
 
-    def run_script(self, args: list[str]):
+    def run_script(self, args: list[str]) -> None:
         """this method will run an arbitrary python script"""
 
         path = args[0]
@@ -288,7 +288,7 @@ class SubCommands(object):
             _g["__name__"] = "__anyscript_main__"
             self.run_main(_g.get("main", None), _g.get("init_argparser", None), args)
 
-    def main(self):
+    def main(self) -> None:
 
         tokens = []
 
