@@ -1,8 +1,14 @@
-# __init__.py - ngs-pipeline
-# [https://github.com/vivaxgen/ngs-pipeline]
+# SPDX-FileCopyrightText: 2023-2006 Hidayat Trimarsanto <trimarsanto@gmail.com>
+# SPDX-License-Identifier: MIT
 
-__copyright__ = "(c) 2023, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+from __future__ import annotations
+
+__copyright__ = "(c) 2023-2006 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com>"
+__author__ = "trimarsanto@gmail.com"
 __license__ = "MIT"
+
+# __init__.py - ngs-pipeline package
+# [https://github.com/vivaxgen/ngs-pipeline]
 
 # library providing file common functions
 
