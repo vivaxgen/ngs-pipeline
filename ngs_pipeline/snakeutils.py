@@ -1,9 +1,16 @@
+# SPDX-FileCopyrightText: 2024-2006 Hidayat Trimarsanto <trimarsanto@gmail.com>
+# SPDX-License-Identifier: MIT
+
+from __future__ import annotations
+
+__copyright__ = "(c) 2024-2006 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com>"
+__author__ = "trimarsanto@gmail.com"
+__license__ = "MIT"
+
 # snakeutils.py
 # [https://github.com/trmznt/py-snakeutils]
 
-__copyright__ = "(c) 2024-2025, Hidayat Trimarsanto <trimarsanto@gmail.com>"
-__license__ = "MIT"
-__version__ = "2026.05.30.01"
+__version__ = "2026.07.17.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -19,35 +26,34 @@ import types
 import typing
 import importlib
 
-
 L = logging.getLogger(__name__)
 
 
 __DEFAULT_RULE_PATH__ = None
 
 
-def _cout(msg: str):
+def _cout(msg: str) -> None:
     print(msg, file=sys.stdout)
 
 
-def _cerr(msg: str):
+def _cerr(msg: str) -> None:
     print(msg, file=sys.stderr)
     sys.stderr.flush()
 
 
-def _cexit(msg: str, exit_code: int = 1):
+def _cexit(msg: str, exit_code: int = 1) -> None:
     _cerr(msg)
     sys.exit(exit_code)
 
 
-def set_default_rule_path(module: types.ModuleType):
+def set_default_rule_path(module: types.ModuleType) -> None:
     global __DEFAULT_RULE_PATH__
     __DEFAULT_RULE_PATH__ = pathlib.Path(module.__path__[0]) / "rules"
 
 
 class ArgumentParser(argparse.ArgumentParser):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.arg_dict = {}
 
@@ -55,12 +61,12 @@ class ArgumentParser(argparse.ArgumentParser):
 __ARGUMENT_PARSER__ = ArgumentParser
 
 
-def set_argument_parser_class(class_):
+def set_argument_parser_class(class_) -> None:
     global __ARGUMENT_PARSER__
     __ARGUMENT_PARSER__ = class_
 
 
-def init_argparser(desc: str = "", p: ArgumentParser | None = None):
+def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentParser:
     """provide common arguments for snakemake-based cli"""
 
     p = p or __ARGUMENT_PARSER__(description=desc)
@@ -168,15 +174,29 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None):
     return p
 
 
-def check_env(env_name: str):
+def check_env(env_name: str) -> bool:
     if env_name in os.environ:
         return True
     return False
 
 
-def setup_config(config):
+def setup_config(config) -> dict:
     # dummy setup configurator
     return config
+
+
+def path_to_str(value) -> typing.Any:
+    if isinstance(value, pathlib.Path):
+        return value.as_posix()
+    if isinstance(value, dict):
+        return {k: path_to_str(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [path_to_str(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(path_to_str(v) for v in value)
+    if isinstance(value, set):
+        return {path_to_str(v) for v in value}
+    return value
 
 
 class SnakeExecutor(object):
@@ -204,7 +224,7 @@ class SnakeExecutor(object):
         # default configuration file (eg from software installation)
         # if exists, this would be added as the first configuration file to parse
         default_config_file: str | pathlib.Path | None = None,
-    ):
+    ) -> None:
 
         from snakemake import cli
 
@@ -247,7 +267,7 @@ class SnakeExecutor(object):
         force: bool = False,
         # prevent from performing cascading configuration parsing
         no_config_cascade: bool = False,
-    ):
+    ) -> tuple[int, datetime.timedelta]:
 
         from snakemake import cli
         import shlex
@@ -361,7 +381,7 @@ class SnakeExecutor(object):
             # set args further from self.args
             args.configfile = configfiles
             # cargs.config = [f'{k}={v}' for k, v in setup_config(config).items()]
-            args.config = self.setup_config_func(config)
+            args.config = path_to_str(self.setup_config_func(config))
             args.targets = targets
 
             # running mode
@@ -393,7 +413,7 @@ def get_snakefile_path(
     filepath: str | pathlib.Path,
     snakefile_root: pathlib.Path | None = None,
     from_module: types.ModuleType | None = None,
-):
+) -> pathlib.Path:
     """
     - return real path of snakefile
     - filepath can be string or pathlib.Path with either absolute, relative or plain filename
@@ -407,7 +427,7 @@ def get_snakefile_path(
     elif is_abs_or_rel_path(filepath):
         if type(filepath) == str:
             return pathlib.Path(filepath)
-        return filepath
+        return filepath  # type: ignore
 
     if from_module is not None:
         snakefile_root = pathlib.Path(from_module.__path__[0]) / "rules"
@@ -418,7 +438,7 @@ def get_snakefile_path(
     raise ValueError(f"ERR: cannot determine the path for {filepath}")
 
 
-def is_abs_or_rel_path(filepath: str | pathlib.Path):
+def is_abs_or_rel_path(filepath: str | pathlib.Path) -> bool:
     filepath = filepath.as_posix() if isinstance(filepath, pathlib.Path) else filepath
     if (
         filepath.startswith("/")
@@ -429,7 +449,7 @@ def is_abs_or_rel_path(filepath: str | pathlib.Path):
     return False
 
 
-def scan_for_config_keywords(path):
+def scan_for_config_keywords(path) -> list[str]:
     """return a list of keywords used as config keys in any of the
     snakemake rules
     """

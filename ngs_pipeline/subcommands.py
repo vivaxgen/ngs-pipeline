@@ -1,9 +1,16 @@
-# subcommands.py
-# [https://github.com/trmznt/subcommands]
+# SPDX-FileCopyrightText: 2024-2006 Hidayat Trimarsanto <trimarsanto@gmail.com>
+# SPDX-License-Identifier: MIT
 
-__copyright__ = "(c) 2024-2026, Hidayat Trimarsanto <trimarsanto@gmail.com>"
+from __future__ import annotations
+
+__copyright__ = "(c) 2024-2006 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com>"
+__author__ = "trimarsanto@gmail.com"
 __license__ = "MIT"
-__version__ = "2026.06.11.01"
+
+# subcommands.py
+# [https://github.com/trmznt/py-subcommands]
+
+__version__ = "2026.07.17.01"
 
 # this module provides subcommands, eg. PROG subcommand [options]
 
