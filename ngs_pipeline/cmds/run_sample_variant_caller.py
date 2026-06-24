@@ -17,7 +17,6 @@ import sys
 import os
 from ngs_pipeline import cerr, cexit, arg_parser, check_multiplexer, check_force
 
-
 # usage: run_varcall.py
 
 
@@ -74,12 +73,27 @@ def init_argparser():
     p.add_argument(
         "--snakefile",
         default=None,
-        choices=["var_call.smk", "var_call_ont.smk", "ssf_construct_haplotypes.smk"],
+        choices=[
+            "var_call.smk",
+            "var_call_ont.smk",
+            "ssf_construct_haplotypes.smk",
+            "ssf_varcall_pe.smk",
+            "ssf_varcall_lr.smk",
+        ],
         help="snakemake file to be run (or from VARCALL_SMK env) [var_call.smk]",
     )
     p.add_argument(
         "--target",
-        choices=["all", "mapping", "clean", "all_no_qc", "haplotypes_report"],
+        choices=[
+            "all",
+            "trimming",
+            "mapping",
+            "clean",
+            "all_no_qc",
+            "haplotypes_report",
+            "custom_1",
+            "custom_2",
+        ],
         default="all",
         help="target of snakemake module, use 'all' for GATK joint "
         "variant or 'mapping' for FreeBayes joint variant call",
