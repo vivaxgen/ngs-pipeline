@@ -24,6 +24,18 @@ from ngs_pipeline.cmds import run_snakefile
 def init_argparser():
     p = run_snakefile.init_argparser("run whole steps of discovery variant caller")
 
+    p.add_argument(
+        "--sample-variant-caller-target",
+        default="all",
+        help="target for sample variant caller",
+    )
+
+    p.add_argument(
+        "--sample-variant-caller-wf",
+        default="ssf_varcall_pe.smk",
+        help="snakefile for sample variant caller",
+    )
+
     # file input arguments, similar to generate-manifest command
     m = p.add_mutually_exclusive_group()
     m.add_argument(
@@ -115,6 +127,8 @@ def run_multistep_variant_caller(args, console=True):
         infiles=args.infiles,
         jobs=args.j,
         procfile=args.P,
+        sample_variant_caller_target=args.sample_variant_caller_target,
+        sample_variant_caller_wf=args.sample_variant_caller_wf,
         remove_underscore_prefix=args.remove_underscore_prefix,
         remove_prefix=args.remove_prefix,
         rerun=(args.manifest is None) and not any(args.infiles),
