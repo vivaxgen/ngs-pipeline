@@ -10,17 +10,17 @@ optdedup = config.get('optical_dedup', False)
 rule reads_trimming:
     threads: thread_allocations.get('trimming', 8)
     input:
-        read1 = "trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "reads/raw-{idx}_R1.fastq.gz",
-        read2 = "trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "reads/raw-{idx}_R2.fastq.gz"
+        read1 = "<sp>trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R1.fastq.gz",
+        read2 = "<sp>trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R2.fastq.gz"
     output:
-        trimmed1 = temp("trimmed-reads/trimmed-{idx}_R1.fastq.gz"),
-        trimmed2 = temp("trimmed-reads/trimmed-{idx}_R2.fastq.gz")
+        trimmed1 = temp("<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz"),
+        trimmed2 = temp("<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz")
     log:
-        log1 = "logs/reads_trimming-{idx}.log",
-        log2 = "logs/fastp-{idx}.json",
-        log3 = "logs/fastp-{idx}.html"
+        log1 = "<sp>logs/reads_trimming-{idx}.log",
+        log2 = "<sp>logs/fastp-{idx}.json",
+        log3 = "<sp>logs/fastp-{idx}.html"
     params:
-        sample = sample,
+        sample = get_sample,
         nextseq_arg = '--trim_poly_g' if is_nextseq_or_novaseq() else '',
         length_arg = f'--length_limit {maxlen}' if maxlen > 0 else '-L',
         minlen_arg = f'--length_required {minlen}' if minlen > 0 else '',
@@ -35,9 +35,9 @@ rule reads_trimming:
 rule trimming_stat:
     localrule: True
     input:
-        "logs/fastp-{idx}.json"
+        "<sp>logs/fastp-{idx}.json"
     output:
-        "logs/trimming_stat-{idx}.json"
+        "<sp>logs/trimming_stat-{idx}.json"
     run:
         import json
 

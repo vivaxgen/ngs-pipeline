@@ -13,10 +13,10 @@ def get_haplotypecaller_region(wildcards):
 rule gatk_calibrate_STR:
     threads: 1
     input:
-        bam = "maps/mapped-final.bam",
-        bam_index = "maps/mapped-final.bam.bai",
+        bam = "<sp>maps/mapped-final.bam",
+        bam_index = "<sp>maps/mapped-final.bam.bai",
     output:
-        model = "maps/dragstr_model.txt"
+        model = "<sp>maps/dragstr_model.txt"
     shell:
         "gatk {java_opts} CalibrateDragstrModel  -R {refseq}  -str {strtable_file}"
         "  -I {input.bam}"
@@ -27,13 +27,13 @@ rule gatk_drag_haplotypecaller:
     threads: thread_allocations.get('haplotyping', 2)
     input:
         # GATK DRAGEN use non-calibrated bam input
-        bam = "maps/mapped-final.bam",
-        bam_index = "maps/mapped-final.bam.bai",
-        model = "maps/dragstr_model.txt" if gatk_calibrate_str else [],
+        bam = "<sp>maps/mapped-final.bam",
+        bam_index = "<sp>maps/mapped-final.bam.bai",
+        model = "<sp>maps/dragstr_model.txt" if gatk_calibrate_str else [],
     output:
-        gvcf = "gvcf/{sample}-{reg}.g.vcf.gz",
+        gvcf = "<sp>gvcf/{sample}-{reg}.g.vcf.gz",
     log:
-        "logs/haplotypecaller-{sample}-{reg}.log"
+        "<sp>logs/haplotypecaller-{sample}-{reg}.log"
     params:
         sample = sample,
         reg = get_haplotypecaller_region,
