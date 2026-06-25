@@ -14,6 +14,9 @@ include: "utilities.smk"
 sample = pathlib.Path.cwd().name
 IDXS, = glob_wildcards('reads/raw-{idx}_R1.fastq.gz')
 
+# single sample, so prefix pathvar should be empty string
+pathvars:
+    sp = ''
 
 # utilities
 
