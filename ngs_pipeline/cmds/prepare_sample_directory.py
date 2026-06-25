@@ -106,7 +106,7 @@ def prepare_samples(args):
             cexit(f"[ERROR: {outdir} is not relative to {NGSENV_BASEDIR}]")
 
     # check and search for indir & outdir common parent directory
-    common_parent = None
+    common_parent = ""
     for idx in range(len(outdir.parents)):
         if indir.is_relative_to(outdir.parents[idx]):
             common_parent = outdir.parents[idx]
@@ -165,7 +165,7 @@ def prepare_samples(args):
                 if not fastq_path.is_file():
                     cexit(
                         f"ERROR: path {fastq_path} does not exist. Plase check "
-                        f"manifest file line {idx+1}"
+                        f"manifest file line {idx+1}"  # type: ignore
                     )
                 path_pair.append(fastq_file)
                 filesize += fastq_path.stat().st_size
