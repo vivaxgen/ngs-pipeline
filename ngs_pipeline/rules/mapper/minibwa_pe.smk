@@ -11,6 +11,9 @@ rule reads_mapping:
     input:
         read1 = "<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz",
         read2 = "<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz",
+        # the following is for sanity check purposes
+        refseq = refseq,
+        refmap = f"{refseq}.{idx_extension}"
     output:
         bam = temp_unless(get_mapped_bam_file(), keep_paired_bam),
     log:
@@ -30,7 +33,12 @@ rule reads_mapping:
         "minibwa map -t {params.threads} {params.rg}"
         "  {params.flags} {params.extra_flags}"
         "  {refseq} {input.read1} {input.read2} 2> {log.log1}"
-        #" | samtools collate -u -O -"
         " | samtools fixmate -m - - 2> {log.log4}"
         " | ngs-pl filter-reads-region -o {output.bam} --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
 
+# NOTE:
+# need further thoughts on the order of filtering, eg fixmate -> filter-reads-region, or filter-reads-region -> fixmate
+# I believe filter-reads-region -> fixmate is better since fixmate will maintain (or fix) the proper pairing information
+#
+
+# EOF

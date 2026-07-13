@@ -31,7 +31,7 @@ rule gatk_drag_haplotypecaller:
         bam_index = "<sp>maps/mapped-final.bam.bai",
         model = "<sp>maps/dragstr_model.txt" if gatk_calibrate_str else [],
     output:
-        gvcf = "<sp>gvcf/{sample}-{reg}.g.vcf.gz",
+        gvcf = replace_sp("<sp>gvcf/{sample}-{reg}.g.vcf.gz"),
     log:
         "<sp>logs/haplotypecaller-{sample}-{reg}.log"
     params:

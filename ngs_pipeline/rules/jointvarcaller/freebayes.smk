@@ -18,8 +18,9 @@ __license__ = "MIT"
 #   concat_split_vcfs
 #   concat_region_vcfs
 
+from ngs_pipeline.rules import inc
 
-include: "jointvarcall_utils.smk"
+include: inc("ngs_pipeline::jointvarcaller/utils.smk")
 
 # flags is for mandatory arguments
 freebayes_flags = config.get('freebayes_flags', '--min-alternate-count 2')

@@ -19,24 +19,23 @@ rule reads_mapping:
     # the final bam file is suitable for uploading to SRA public database
     threads: thread_allocations.get('bwa_mapping', 16)
     input:
-        read1 = "trimmed-reads/trimmed-{idx}_R1.fastq.gz",
-        read2 = "trimmed-reads/trimmed-{idx}_R2.fastq.gz",
+        read1 = "<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz",
+        read2 = "<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz",
         # the following is for sanity check purposes
         refseq = refseq,
         refmap = f"{refseq}.{idx_extension}"
 
     output:
-        bam = "maps/mapped-{idx}.bam" if keep_paired_bam else temp("maps/mapped-{idx}.bam"),
+        bam = temp_unless(get_mapped_bam_file(), keep_paired_bam),
     log:
-        log0 = f"logs/reads_mapping-{sample}-{{idx}}.log",
-        log1 = "logs/bwa-mem2-{idx}.log",
-        log2 = "logs/filter-reads-{idx}.json",
-        log3 = "logs/filter_reads_region-{idx}.log",
-        log4 = "logs/fixmate-{idx}.log"
+        log1 = "<sp>logs/bwa-mem2-{idx}.log",
+        log2 = "<sp>logs/filter-reads-{idx}.json",
+        log3 = "<sp>logs/filter_reads_region-{idx}.log",
+        log4 = "<sp>logs/fixmate-{idx}.log"
 
     params:
-        sample = sample,
-        rg = lambda w: f"-R '@RG\tID:{sample}-{w.idx}\tSM:{sample}\tLB:LIB-{sample}-{w.idx}\tPL:{ngs_platform}'",
+        sample = get_sample,
+        rg = lambda w: f"-R '@RG\\tID:{get_sample(w)}-{w.idx}\\tSM:{get_sample(w)}\\tLB:LIB-{get_sample(w)}-{w.idx}\\tPL:{ngs_platform}'",
         regions = ' '.join(CONTAMINANT_REGIONS) if CONTAMINANT_REGIONS else ' '.join(REGIONS),
         mode = '--remove' if CONTAMINANT_REGIONS else '',
         flags = config.get('bwamem2_flags', ''),

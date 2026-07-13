@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2024-2006 Hidayat (Anto)Trimarsanto <trimarsanto@gmail.com>
+# SPDX-License-Identifier: MIT
+
+__copyright__ = "(c) 2024-2006 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com>"
+__author__ = "trimarsanto@gmail.com"
+__license__ = "MIT"
 
 fastplong_cut_tail_window_size = config.get('fastplong_cut_tail_window_size', 10)
 fastplong_cut_tail_mean_quality = config.get('fastplong_cut_tail_mean_quality', 1)
@@ -5,16 +11,16 @@ fastplong_trim_front = config.get('fastplong_trim_front', 20)
 fastplong_trim_tail = config.get('fastplong_trim_tail', 20)
 
 
-rule msf_trim_reads:
+rule reads_trimming_lr:
     threads: 4
     input:
-        read = "{pfx}/{sample}/reads/raw-{idx}.fastq.gz"
+        read = "<sp>reads/raw-{idx}.fastq.gz"
     output:
-        trimmed = "{pfx}/{sample}/trimmed-reads/trimmed-{idx}.fastq.gz"
+        trimmed = temp_unless("<sp>trimmed-reads/trimmed-{idx}.fastq.gz", keep_trimmed_fastq)
     log:
-        log1 = "{pfx}/{sample}/logs/reads_trimming-{idx}.log",
-        log2 = "{pfx}/{sample}/logs/fastp-{idx}.json",
-        log3 = "{pfx}/{sample}/logs/fastp-{idx}.html"
+        log1 = "<sp>logs/reads_trimming-{idx}.log",
+        log2 = "<sp>logs/fastplong-{idx}.json",
+        log3 = "<sp>logs/fastplong-{idx}.html"
     params:
         length_arg = f'--length_limit {maxlen}' if maxlen > 0 else '-L',
         minlen_arg = f'--length_required {minlen}' if minlen > 0 else '',
@@ -27,5 +33,23 @@ rule msf_trim_reads:
         "  {params.qual_arg} {params.cut_tail} {params.trim}"
         "  -o {output.trimmed} -i {input.read}"
         "  -j {log.log2} -h {log.log3} > {log.log1}"
+
+
+rule trimming_stat:
+    localrule: True
+    input:
+        "<sp>logs/fastplong-{idx}.json"
+    output:
+        "<sp>logs/trimming_stat-{idx}.json"
+    run:
+        import json
+
+        fastp_d = json.load(open(input[0]))
+        d = dict(
+            original_reads=fastp_d['summary']['before_filtering']['total_reads'],
+            filtered_reads=fastp_d['summary']['after_filtering']['total_reads']
+        )
+
+        json.dump(d, open(output[0], 'w'))
 
 # EOF

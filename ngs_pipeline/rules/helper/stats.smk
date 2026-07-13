@@ -12,7 +12,7 @@ rule map_stats:
     output:
         "<sp>logs/{filename}.stats.txt"
     params:
-        sample = sample,
+        sample = get_sample,
     shell:
         "samtools stats {input} > {output}"
 
@@ -25,7 +25,7 @@ rule map_samtools_stats:
     output:
         "<sp>logs/{filename}.stats.txt-unused"
     params:
-        sample = sample,
+        sample = get_sample,
     shell:
         "samtools stats {input} > {output}"
 
@@ -41,7 +41,7 @@ rule map_sambamba_depth_base:
     log:
         log1 = "<sp>logs/sambamba-depth-{filename}.log",
     params:
-        sample = sample,
+        sample = get_sample,
     shell:
         "sambamba depth base {input.bam} 2> {log.log1} | gzip > {output.tsv}"
 
@@ -54,7 +54,7 @@ rule map_depth:
     output:
         '<sp>logs/{filename}.depths.txt.gz'
     params:
-        sample = sample,
+        sample = get_sample,
     shell:
         'samtools depth {input} | gzip > {output}'
 
@@ -72,7 +72,7 @@ rule depth_plot:
         '<sp>logs/plot-depth.txt'
     shell:
         'ngs-pl plot-depth --outplot {output} {params.chroms} --sort '
-        '--infile {input} {sample} 2> {log}'
+        '--infile {input} {params.sample} 2> {log}'
 
 
 # EOF

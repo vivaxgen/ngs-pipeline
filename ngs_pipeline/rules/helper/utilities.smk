@@ -73,6 +73,18 @@ rule index_mmi:
         "minimap2 -x sr -d {output.index} {input.fasta}"
 
 
+rule index_minibwa:
+    threads: 1
+    input:
+        fasta = "{pfx}/{fn}.fasta"
+    output:
+        index1 = "{pfx}/{fn}.fasta.l2b",
+        index2 = "{pfx}/{fn}.fasta.mbw"
+    shell:
+        #"minibwa index -t{threads} {input.fasta}"
+        "minibwa index -l {input.fasta}"
+
+
 rule index_bwamem2:
     threads: 1
     input:

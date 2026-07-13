@@ -8,6 +8,8 @@
 #   on the adapters
 # - the variant caller is GATK or FreeBayes since these variant-callers will look up at base quality
 
+from ngs_pipeline.rules import inc
+
 #config['instrument'] = ''
 config['correction'] = False
 config['libprep'] = 'null'
@@ -16,5 +18,6 @@ maxlen = 0
 min_read_quality = 0
 min_avg_quality = 13
 
-include: "trimmer_fastp.smk"
+include: inc("ngs_pipeline::trimmer/fastp.smk")
 
+# EOF

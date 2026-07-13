@@ -6,8 +6,8 @@ __license__ = "MIT"
 
 # prepare global params
 
-include: "global_params.smk"
-include: "utilities.smk"
+include: inc("ngs_pipeline::global_params.smk")
+include: inc("ngs_pipeline::helper/utilities.smk")
 
 
 # source directories would be provided using config=dict() args of snakemake()

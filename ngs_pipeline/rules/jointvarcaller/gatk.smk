@@ -4,6 +4,8 @@
 __copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
 
+from ngs_pipeline.rules import inc
+
 # jointvarcall_utils.smk will provide the following:
 # variables:
 #   srcdirs
@@ -19,7 +21,7 @@ __license__ = "MIT"
 #   concat_region_vcfs
 
 
-include: "jointvarcall_utils.smk"
+include: inc("ngs_pipeline::jointvarcaller/utils.smk")
 
 # additional settings and parameters
 

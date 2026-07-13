@@ -1,1 +1,1 @@
-reporter_genreport.smk
+helper/genereport.smk

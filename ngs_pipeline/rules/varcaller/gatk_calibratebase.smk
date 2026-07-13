@@ -5,14 +5,14 @@ rule gatk_baserecalibrator:
     # this rule generates calibration table from deduplicated bam file for each region
     threads: 1
     input:
-        bam = 'maps/mapped-final.bam',
-        idx = "maps/mapped-final.bam.bai",
+        bam = '<sp>maps/mapped-final.bam',
+        idx = "<sp>maps/mapped-final.bam.bai",
         # the following is for sanity check only
         known = f'{knownvariants_dir}/{{reg}}.bed.gz',
     output:
-        temp("maps/recal-{reg}.table")
+        temp("<sp>maps/recal-{reg}.table")
     log:
-        "logs/gatk-BaseRecalibrator-{reg}.log"
+        "<sp>logs/gatk-BaseRecalibrator-{reg}.log"
     params:
         sample = sample,
         known = f"--known-sites {knownvariants_dir}/{{reg}}.bed.gz",
@@ -29,12 +29,12 @@ rule gatk_gatherbsqr:
     # this rule merges all calibration tables into single table
     threads: 2
     input:
-        expand('maps/recal-{reg}.table',
+        expand('<sp>maps/recal-{reg}.table',
                reg=[complete_region] if complete_region else REGIONS)
     output:
-        "maps/recal.table"
+        "<sp>maps/recal.table"
     log:
-        "logs/gatk-GatherBSQRReports.log"
+        "<sp>logs/gatk-GatherBSQRReports.log"
     params:
         sample = sample,
         flags = config.get('gatherbqsrr_flags', ''),
@@ -51,16 +51,16 @@ rule gatk_applybqsr:
     # this rule applies calibration from the single calibration table
     threads: 2
     input:
-        bam = "maps/mapped-final.bam",
-        table = "maps/recal.table"
+        bam = "<sp>maps/mapped-final.bam",
+        table = "<sp>maps/recal.table"
     output:
-        "maps/mapped-final-recal.bam" if keep_recalibrated_bam else temp("maps/mapped-final-recal.bam")
+        temp_unless("<sp>maps/mapped-final-recal.bam", keep_recalibrated_bam)
     params:
         sample = sample,
         flags = config.get('applybqsr_flags', ''),
         extra_flags = config.get('applybqsr_extra_flags', '')
     log:
-        "logs/gatk-ApplyBQSR.log"
+        "<sp>logs/gatk-ApplyBQSR.log"
     shell:
         "gatk {java_opts} ApplyBQSR {params.flags} {params.extra_flags} "
         "-R {refseq} -I {input.bam} --bqsr-recal-file {input.table} -O {output} 2>{log}"

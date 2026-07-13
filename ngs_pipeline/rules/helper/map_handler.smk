@@ -9,7 +9,7 @@
 from ngs_pipeline.rules import inc
 from time import sleep
 
-include: inc("reporter_stats.smk")
+include: inc("ngs_pipeline::helper/stats.smk")
 
 rule map_link:
     # this rule generate a hard link mapped-final.bam to the actual bam file
@@ -19,15 +19,16 @@ rule map_link:
         get_final_bam_files
     output:
         temp("<sp>maps/mapped-final-{idx}.bam")
+    params:
+        sample = get_sample,
     shell:
         "ln {input} {output}"
-
 
 
 # to get only mapped, properly paired (FR) reads use filter-reads-orientation with
 # --remove-unmapped --remove-RF --remove-FF --remove-RF --remove-trans
 
-rule map_filter:
+rule map_filter_orientation:
     threads: thread_allocations.get('map_filtering', 4)
     input:
         get_mapped_bam_file()
@@ -43,6 +44,24 @@ rule map_filter:
     shell:
         "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
         "| samtools sort -@4 -o {output} 2> {log.log2} "
+
+
+rule map_filter_region:
+    # this rule prepares final bam file by filtering the mapped reads based on target regions
+    threads: thread_allocations.get('map_filtering', 4)
+    input:
+        bam = "<sp>maps/{sample}-{idx}.bam",
+    output:
+        bam = temp("<sp>maps/mapped-filtered-{idx}.bam")
+    params:
+        sample = get_sample,
+        region_opts = f'-L {targetregion_file}' if targetregion_file else ""
+    run:
+        # if no target region specified, just symbolic link the input as output
+        if params.region_opts:
+            shell(f"ln -srf {input.bam} {output.bam}")
+        else:
+            shell(f"samtools view -o {output.bam} {params.region_opts} {input.bam}")
 
 
 rule map_dedup:

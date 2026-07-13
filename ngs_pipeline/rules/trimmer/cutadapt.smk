@@ -33,12 +33,12 @@ optdedup = config.get('optical_dedup', False)
 
 rule optical_dedup:
     input:
-        read1 = "reads/raw-{idx}_R1.fastq.gz",
-        read2 = "reads/raw-{idx}_R2.fastq.gz"
+        read1 = "<sp>reads/raw-{idx}_R1.fastq.gz",
+        read2 = "<sp>reads/raw-{idx}_R2.fastq.gz"
     output:
-        dedup1 = "trimmed-reads/dedup-{idx}_R1.fastq.gz",
-        dedup2 = "trimmed-reads/dedup-{idx}_R2.fastq.gz"
-    log: "logs/optical_dedup-{idx}.log"
+        dedup1 = temp_unless("<sp>trimmed-reads/dedup-{idx}_R1.fastq.gz", keep_optdeduped_fastq),
+        dedup2 = temp_unless("<sp>trimmed-reads/dedup-{idx}_R2.fastq.gz", keep_optdeduped_fastq)
+    log: "<sp>logs/optical_dedup-{idx}.log"
     shell:
         "clumpify.sh in={input.read1} in2={input.read2} out1={output.dedup1} out2={output.dedup2} dedupe optical %s 2> {log}"
         % ('spany adjacent' if is_nextseq_or_novaseq() else '')
@@ -47,12 +47,12 @@ rule optical_dedup:
 rule reads_trimming:
     threads: 8
     input:
-        read1 = "trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "reads/raw-{idx}_R1.fastq.gz",
-        read2 = "trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "reads/raw-{idx}_R2.fastq.gz"
+        read1 = "<sp>trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R1.fastq.gz",
+        read2 = "<sp>trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R2.fastq.gz"
     output:
-        trimmed1 = temp("trimmed-reads/trimmed-{idx}_R1.fastq.gz"),
-        trimmed2 = temp("trimmed-reads/trimmed-{idx}_R2.fastq.gz")
-    log: "logs/reads_trimming-{idx}.log"
+        trimmed1 = temp_unless("<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz", keep_trimmed_fastq),
+        trimmed2 = temp_unless("<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz", keep_trimmed_fastq)
+    log: "<sp>logs/reads_trimming-{idx}.log"
     params:
         nextseq_arg = '--nextseq-trim 20' if is_nextseq_or_novaseq() else '',
         length_arg = f'--length {maxlen}' if maxlen > 0 else '',
@@ -65,9 +65,9 @@ rule reads_trimming:
 rule trimming_stat:
     localrule: True
     input:
-        "logs/reads_trimming-{idx}.log"
+        "<sp>logs/reads_trimming-{idx}.log"
     output:
-        "logs/trimming_stat-{idx}.json"
+        "<sp>logs/trimming_stat-{idx}.json"
     run:
         import json
 
@@ -84,5 +84,6 @@ rule trimming_stat:
                     break
 
         json.dump(d, open(output[0], 'w'))
+
 
 # EOF

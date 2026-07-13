@@ -7,7 +7,7 @@ __license__ = "MIT"
 # required variables:
 # - refmap
 
-rule reads_mapping:
+rule reads_mapping_pe:
     threads: 8
     input:
         read1 = "<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz",

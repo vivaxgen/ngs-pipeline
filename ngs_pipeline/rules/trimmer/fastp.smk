@@ -7,7 +7,7 @@ def is_nextseq_or_novaseq():
 optdedup = config.get('optical_dedup', False)
 
 
-rule reads_trimming:
+rule reads_trimming_pe:
     threads: thread_allocations.get('trimming', 8)
     input:
         read1 = "<sp>trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R1.fastq.gz",
