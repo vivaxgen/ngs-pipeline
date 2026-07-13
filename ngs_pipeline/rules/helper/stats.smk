@@ -64,7 +64,7 @@ rule depth_plot:
     input:
         "<sp>logs/mapped-final.depths.txt.gz"
     params:
-        sample = sample,
+        sample = get_sample,
         chroms = ('--chrom ' + ','.join(REGIONS)) if any(REGIONS) else '',
     output:
         '<sp>logs/depths.png'
