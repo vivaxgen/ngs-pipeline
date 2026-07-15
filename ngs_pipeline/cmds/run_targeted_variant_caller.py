@@ -20,13 +20,14 @@ from ngs_pipeline.cmds import run_snakefile
 
 def init_argparser():
     p = run_snakefile.init_argparser(desc="run targeted variant calling")
-    p.arg_dict["snakefile"].choices = [
-        "msf_targeted_varcall.smk",
-        "panel_varcall_pe.smk",
-        "panel_varcall_lr.smk",
-        "msf_panel_varcall_pe.smk",
-        "msf_panel_varcall_lr.smk",
-    ]
+    #p.arg_dict["snakefile"].choices = [
+    #    "msf_targeted_varcall.smk",
+    #    "panel_varcall_pe.smk",
+    #    "panel_varcall_lr.smk",
+    #    "msf_panel_varcall_pe.smk",
+    #    "msf_panel_varcall_lr.smk",
+    #    "msf_panel_varcall_null_pe.smk",
+    #]
     p.arg_dict["snakefile"].default = "msf_targeted_varcall.smk"
 
     # input/output options

@@ -27,12 +27,12 @@ from ngs_pipeline.cmds import run_snakefile
 
 def init_argparser():
     p = run_snakefile.init_argparser(desc="run joint variant calling")
-    p.arg_dict["snakefile"].choices = [
-        "jointvarcall_gatk.smk",
-        "jointvarcall_freebayes.smk",
-        "jointvarcall_glnexus.smk",
-        "jointhapcall.smk",
-    ]
+    # p.arg_dict["snakefile"].choices = [
+    #    "jointvarcall_gatk.smk",
+    #    "jointvarcall_freebayes.smk",
+    #    "jointvarcall_glnexus.smk",
+    #    "jointhapcall.smk",
+    # ]
 
     # input/output options
     p.add_argument(
