@@ -1,6 +1,7 @@
 
 # necessary imports
 import pathlib
+from ngs_pipeline import cerr
 
 # generic parameters
 
@@ -54,12 +55,15 @@ wildcard_constraints:
 # for indexing, use the correct extension for bwa / bwa-mem2
 
 bwa_bin = config.get('bwa_bin', 'bwa-mem2')
-if bwa_bin == 'bwa-mem2':
-    idx_extension = 'bwt.2bit.64'
-elif bwa_bin == 'bwa':
-    idx_extension = 'bwt'
-else:
-    raise RuntimeError(f'ERR: the bwa_bin {bwa_bin} is not recognized')
+match bwa_bin:
+    case 'bwa-mem2':
+        idx_extension = 'bwt.2bit.64'
+    case 'bwa':
+        idx_extension = 'bwt'
+    case 'minibwa':
+        idx_extension = 'l2b'
+    case _:
+        raise RuntimeError(f'ERR: the bwa_bin {bwa_bin} is not recognized')
 
 
 # for micromamba sub-environment
