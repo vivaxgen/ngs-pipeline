@@ -58,7 +58,7 @@ rule msf_merge_map:
         #expand('{{pfx}}/{{sample}}/maps/sorted-{idx}.bam', idx=read_files.get_indexes)
         get_final_bam_files
     output:
-        bam = "{pfx}/{sample}/maps/final.bam"
+        bam = "{pfx}/{sample}/maps/mapped-final.bam"
     run:
         if len(input) > 1:
             shell('samtools merge -@4 {output.bam} {input}')
