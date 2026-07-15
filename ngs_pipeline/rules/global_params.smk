@@ -13,12 +13,18 @@ targetregion_file = get_abspath(fn if (fn := config.get('targetregion_file')) el
 deduplicate = config.get('deduplicate', True)
 
 # parameters to save storage space
+
+keep_optdeduped_fastq = config.get('keep_optdeduped_fastq', False)
+keep_trimmed_fastq = config.get('keep_trimmed_fastq', False)
+
 keep_paired_bam = config.get('keep_paired_bam', False)
+keep_mapped_bam = config.get('keep_mapped_bam', False) # identical to keep_paired_bam
 keep_proper_bam = config.get('keep_proper_bam', False)
 keep_final_bam = config.get('keep_final_bam', False)
 keep_filtered_bam = config.get('keep_filtered_bam', False) or (keep_final_bam if not deduplicate else False)
 keep_deduplicated_bam = config.get('keep_deduplicated_bam', False) or keep_final_bam
 keep_recalibrated_bam = config.get('keep_recalibrated_bam', False)
+keep_realigned_bam = config.get('keep_realigned_bam', False)
 
 # parameters for read trimming
 minlen = int(config['minlen']) if 'minlen' in config else int(config['read_length'] / 3)
