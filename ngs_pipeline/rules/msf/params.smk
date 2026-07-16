@@ -6,12 +6,13 @@ __license__ = "MIT"
 
 from ngs_pipeline import cerr, fileutils
 
-include: "general_params.smk"
-include: "params_region.smk"
+include: pkg("ngs_pipeline::general_params.smk")
+include: pkg("ngs_pipeline::params_region.smk")
 
 # reference-related configuration
 target_regions = get_abspath(config['target_regions'], ngsenv_basedir)
 target_variants = get_abspath(config['target_variants'], ngsenv_basedir)
+target_variants_vcf = get_abspath(config['target_variants_vcf'], ngsenv_basedir)
 variant_info = get_abspath(config.get('variant_info', 'NOFILE'), ngsenv_basedir)
 
 # input/output related configuration
@@ -31,8 +32,8 @@ outdir = config['outdir']
 
 # read quality-related configuration
 min_read_qual = config['min_read_qual']
-max_read_len = config['max_read_len']
-min_read_len = config['min_read_len']
+max_read_len = config.get('max_read_len', 0)
+min_read_len = config.get('min_read_len', 0)
 headcrop = config.get('headcrop', 0)
 tailcrop = config.get('tailcrop', 0)
 

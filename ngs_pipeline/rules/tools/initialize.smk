@@ -4,11 +4,14 @@
 __copyright__ = "(C) 2024, Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
 
+
+from ngs_pipeline.rules import pkg
 # prepares files for usage
 
+
 # include utilites.smk and general_params.smk from vivaxGEN ngs-pipeline
-include: "utilities.smk"
-include: "general_params.smk"
+include: pkg("ngs_pipeline::helper/utilities.smk")
+include: pkg("ngs_pipeline::general_params.smk")
 
 
 rule wgs:

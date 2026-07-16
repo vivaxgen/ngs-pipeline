@@ -3,21 +3,19 @@
 # the multi-sample flow (msf) rules.
 # DO NOT define any rules here.
 
-from ngs_pipeline.rules import inc
-
 # include the global parameters
-include: inc("global_params.smk")
+include: pkg("ngs_pipeline::global_params.smk")
 
 # include the utilities
-include: inc("utilities.smk")
+include: pkg("ngs_pipeline::helper/utilities.smk")
 
 # specific for multi-sample flow, we need to know all the sample names and their indexes
 # to be able to expand the input files for each sample
-include: inc("msf_params.smk")
+include: pkg("ngs_pipeline::msf/params.smk")
 
 # specific for multi-sample flow, we need to know how to prepare the sample files (reads)
 # in each sample directory.
-include: inc("msf_prepare_sample_files.smk")
+include: pkg("ngs_pipeline::msf/prepare_sample_files.smk")
 
 # prepare sample-related parameters
 
@@ -77,16 +75,12 @@ def expand_sample_index(w, template_pattern):
     return result
 
 
-include: inc("handler_funcs.smk")
+include: pkg("ngs_pipeline::helper/funcs.smk")
 
 
 def get_mapped_bam_file():
     """ return the mapped bam file for the given sample and index """
     return replace_sp("<sp>maps/{sample}-{idx}.bam")
-
-def get_final_bam_files(w):
-    """ return the final bam file for further processing """
-    return ("<sp>maps/mapped-dedup-{idx}.bam" if deduplicate else "<sp>maps/mapped-filtered-{idx}.bam")
 
 
 def get_merge_input_bam_files(w):
