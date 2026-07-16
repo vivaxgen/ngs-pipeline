@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 Hidayat Trimarsanto <trimarsanto@gmail.com>
+# SPDX-License-Identifier: MIT
+
+__copyright__ = "(c) 2026 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com>"
+__author__ = "trimarsanto@gmail.com"
+__license__ = "MIT"
+
+from ngs_pipeline.rules import pkg
+
+# use null trimmer since we rely on mappers to perform soft-clipping
+# on primers and adapters:
+config["trimmer_wf"] = config.get("trimmer_wf", "ngs_pipeline::trimmer/null.smk")
+
+# for panel sequencing, we default to minimap2
+config["mapper_wf"] = config.get("mapper_wf", "ngs_pipeline::mapper/minimap2_pe.smk")
+
+# for panel variant calling, we default to freebayes
+config["varcaller_wf"] = config.get("varcaller_wf", "ngs_pipeline::varcaller/freebayes.smk")
+
+include: pkg("ngs_pipeline::msf/panel_varcall.smk")
+
+
+# EOF
