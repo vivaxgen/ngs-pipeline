@@ -4,6 +4,8 @@
 __copyright__ = "(C) 2024 Hidayat Trimarsanto <trimarsanto@gmail.com>"
 __license__ = "MIT"
 
+from ngs_pipeline import cerr
+
 
 rule map_stats:
     threads: 1
