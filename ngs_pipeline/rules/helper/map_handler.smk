@@ -11,18 +11,32 @@ from time import sleep
 
 include: inc("ngs_pipeline::helper/stats.smk")
 
-rule map_link:
-    # this rule generate a hard link mapped-final.bam to the actual bam file
-    # we use hard link because the actual bam might get deleted if set temporary
-    localrule: True
-    input:
-        get_final_bam_files
-    output:
-        temp("<sp>maps/mapped-final-{idx}.bam")
-    params:
-        sample = get_sample,
-    shell:
-        "ln {input} {output}"
+def get_final_bam_file(w):
+    """ return the final bam file for further processing """
+    return ("<sp>maps/mapped-dedup-{idx}.bam" if deduplicate else "<sp>maps/mapped-filtered-{idx}.bam")
+
+
+if not targetregion_file:
+    # If no target, this rule is explicitly marked local globally
+    rule map_final_link:
+        localrule: True
+        input:
+            bam = get_final_bam_file
+        output:
+            bam = temp("<sp>maps/mapped-final-{idx}.bam")
+        shell:
+            "ln -f {input.bam} {output.bam}"
+else:
+    rule map_final_filter:
+        threads: thread_allocations.get('map_filtering', 4)
+        input:
+            bam = get_final_bam_file
+        output:
+            bam = temp("<sp>maps/mapped-final-{idx}.bam")
+        params:
+            region_opts = f'-L {targetregion_file}'
+        shell:
+            "samtools view -@ {threads} -o {output.bam} {params.region_opts} {input.bam}"
 
 
 # to get only mapped, properly paired (FR) reads use filter-reads-orientation with
@@ -44,24 +58,6 @@ rule map_filter_orientation:
     shell:
         "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
         "| samtools sort -@4 -o {output} 2> {log.log2} "
-
-
-rule map_filter_region:
-    # this rule prepares final bam file by filtering the mapped reads based on target regions
-    threads: thread_allocations.get('map_filtering', 4)
-    input:
-        bam = "<sp>maps/{sample}-{idx}.bam",
-    output:
-        bam = temp("<sp>maps/mapped-filtered-{idx}.bam")
-    params:
-        sample = get_sample,
-        region_opts = f'-L {targetregion_file}' if targetregion_file else ""
-    run:
-        # if no target region specified, just symbolic link the input as output
-        if params.region_opts:
-            shell(f"ln -srf {input.bam} {output.bam}")
-        else:
-            shell(f"samtools view -o {output.bam} {params.region_opts} {input.bam}")
 
 
 rule map_dedup:
