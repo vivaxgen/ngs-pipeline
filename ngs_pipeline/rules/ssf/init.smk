@@ -1,11 +1,11 @@
 # params and functions to initialize the single-sample variant calling workflow
 
 # prepare necessary global parameters
-from ngs_pipeline.rules import inc
+from ngs_pipeline.rules import pkg
 
-include: inc("global_params.smk")
+include: pkg("ngs_pipeline::global_params.smk")
 
-include: inc("utilities.smk")
+include: pkg("ngs_pipeline::helper/utilities.smk")
 # prepare sample-related parameters
 
 sample = pathlib.Path.cwd().name
@@ -18,7 +18,7 @@ pathvars:
 
 prefix = ""
 
-include: inc("handler_funcs.smk")
+include: pkg("ngs_pipeline::helper/funcs.smk")
 
 
 def get_sample(w):
@@ -37,7 +37,7 @@ def get_mapped_bam_file():
     """ return the mapped bam file for the given sample and index """
     return "maps/{sample}-{{idx}}.bam".format(sample=sample)
 
-def get_final_bam_files(w):
+def xxx_get_final_bam_file(w):
     """ return the final bam file for further processing """
     return ("maps/mapped-dedup-{idx}.bam" if deduplicate else "maps/mapped-filtered-{idx}.bam")
 
