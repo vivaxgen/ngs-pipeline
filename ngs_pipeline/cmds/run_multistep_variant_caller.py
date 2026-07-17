@@ -32,7 +32,7 @@ def init_argparser():
 
     p.add_argument(
         "--sample-variant-caller-wf",
-        default="ssf_varcall_pe.smk",
+        default="ngs_pipeline::ssf/varcall_pe.smk",
         help="snakefile for sample variant caller",
     )
 
