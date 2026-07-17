@@ -30,7 +30,7 @@ def initialize(args):
     import ngs_pipeline
 
     args.snakefile = run_snakefile.get_snakefile_path(
-        "initialize.smk", from_module=ngs_pipeline
+        "ngs_pipeline::tools/initialize.smk"
     )
     args.no_config_cascade = True
     args.force = True
