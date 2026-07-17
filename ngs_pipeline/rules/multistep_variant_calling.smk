@@ -6,6 +6,7 @@ __license__ = "MIT"
 
 
 import pathlib
+from ngs_pipeline.rules import inc
 
 # -- preserved  keywords from snakeutils --
 
@@ -38,20 +39,21 @@ joint_variant_caller_flags = config.get('joint_variant_caller_flags', '')
 sample_variant_caller_target = config.get('sample_variant_caller_target', 'all')
 sample_variant_caller_wf = config.get("sample_variant_caller_wf", "var_call.smk")
 joint_variant_caller_target = config.get('joint_variant_caller_target', 'all')
-joint_variant_caller_wf = config.get('joint_variant_caller_wf', 'jointvarcall_gatk.smk')
+joint_variant_caller_wf = config.get('joint_variant_caller_wf', 'ngs_pipeline::jointvarcaller/gatk.smk')
 
-include: "general_params.smk"
-include: 'utilities.smk'
+include: inc("ngs_pipeline::general_params.smk")
+include: inc("ngs_pipeline::helper/utilities.smk")
 
 
 # retouch necessary touched files if rerun
 if rerun or unlock:
-    for fn in [f'{outdir}/analysis/._prepared_']:
+    for fn in [f'{outdir}/samples/._prepared_']:
         if (fp := pathlib.Path(fn)).exists():
             fp.touch()
 
 
 rule all:
+    localrule: True
     input:
         f'{outdir}/joint/concatenated.vcf.gz.tbi',
         f'{outdir}/stats.tsv',
@@ -59,6 +61,7 @@ rule all:
 
 
 rule annotated_concatd_vcf:
+    localrule: True
     input:
         f'{outdir}/joint/concatenated-bcsq.vcf.gz.tbi',
         f'{outdir}/stats.tsv',
@@ -66,41 +69,60 @@ rule annotated_concatd_vcf:
 
 
 rule varcall_result:
+    localrule: True
     input:
         f'{outdir}/metafile/manifest.tsv',
-        f'{outdir}/analysis/._completed_',
+        f'{outdir}/samples/._completed_',
         f'{outdir}/joint/._completed_',
 
 
-rule sample_variant_calling:
+rule sample_read_trimming:
+    localrule: True
     input:
         branch(
             not unlock,
             then=[
-                f'{outdir}/analysis/._completed_',
+                f'{outdir}/samples/._completed_',
+                f'{outdir}/completed_samples/._completed_',
+            ],
+            otherwise=[
+                f'{outdir}/samples/._completed_',
+            ]
+        )
+
+rule sample_variant_calling:
+    localrule: True
+    input:
+        branch(
+            not unlock,
+            then=[
+                f'{outdir}/samples/._completed_',
                 f'{outdir}/completed_samples/._completed_',
                 f'{outdir}/stats.tsv',
                 f'{outdir}/reports/._completed_',
             ],
             otherwise=[
-                f'{outdir}/analysis/._completed_',
+                f'{outdir}/samples/._completed_',
             ]
         )
 
 
 rule VCF:
+    localrule: True
     input:
         f'{outdir}/joint/._completed_',
         f'{outdir}/reports/._completed_',
 
 
 rule concatenated_VCF:
+    localrule: True
     input:
         f'{outdir}/joint/concatenated.vcf.gz.tbi',
         f'{outdir}/reports/._completed_',
 
 
 rule consolidated_reports:
+    localrule: True
     input:
         f'{outdir}/reports/depth-base/._completed_',
         f'{outdir}/reports/maps/._completed_',
@@ -155,21 +177,21 @@ rule run_prepare_sample_directory:
     input:
         f'{outdir}/metafile/manifest.tsv',
     output:
-        touch(f'{outdir}/analysis/._prepared_')
+        touch(f'{outdir}/samples/._prepared_')
     params:
         extra_flags = prepare_sample_directory_flags
     shell:
         'ngs-pl prepare-sample-directory {params.extra_flags} '
-        '-o {outdir}/analysis -i {input} .'
+        '-o {outdir}/samples -i {input} .'
 
 
 rule run_sample_variant_caller:
     localrule: True
     input:
-        flag = f'{outdir}/analysis/._prepared_',
+        flag = f'{outdir}/samples/._prepared_',
         cfg = f'{outdir}/metafile/config.yaml',
     output:
-        touch(f'{outdir}/analysis/._completed_')
+        touch(f'{outdir}/samples/._completed_')
     params:
         jobs = jobs,
         procfile = f'-P {procfile}' if procfile else '',
@@ -183,19 +205,19 @@ rule run_sample_variant_caller:
         '  -j {params.jobs} {params.procfile} {params.rerun} {params.unlock}'
         '  --target {params.target}'
         '  --snakefile {sample_variant_caller_wf}'
-        '  {outdir}/analysis'
+        '  {outdir}/samples'
 
 
 rule run_check_sample_variant_result:
     localrule: True
     input:
-        f'{outdir}/analysis/._completed_'
+        f'{outdir}/samples/._completed_'
     output:
         touch(f'{outdir}/completed_samples/._completed_'),
         touch(f'{outdir}/failed_samples/._completed_'),
     shell:
         'ngs-pl consolidate-samples -o {outdir}/completed_samples '
-        '-f {outdir}/failed_samples {outdir}/analysis/'
+        '-f {outdir}/failed_samples {outdir}/samples/'
 
 
 rule run_joint_variant_caller:
@@ -241,11 +263,11 @@ rule csq_vcf:
 rule gather_stats:
     localrule: True
     input:
-        f'{outdir}/analysis/._completed_'
+        f'{outdir}/samples/._completed_'
     output:
         f'{outdir}/stats.tsv'
     shell:
-        'ngs-pl gather-stats -o {output} {outdir}/analysis'
+        'ngs-pl gather-stats -o {output} {outdir}/samples'
 
 
 rule consolidate_depth_base:
@@ -256,7 +278,7 @@ rule consolidate_depth_base:
         touch(f'{outdir}/reports/depth-base/._completed_')
     shell:
         'ngs-pl consolidate-reports -o {outdir}/reports/depth-base '
-        '-t depth-base {outdir}/analysis/'
+        '-t depth-base {outdir}/samples/'
 
 
 rule consolidate_maps:
@@ -267,7 +289,7 @@ rule consolidate_maps:
         touch(f'{outdir}/reports/maps/._completed_')
     shell:
         'ngs-pl consolidate-reports -o {outdir}/reports/maps '
-        '-t map {outdir}/analysis/'
+        '-t map {outdir}/samples/'
 
 
 # EOF
