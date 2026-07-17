@@ -13,10 +13,16 @@ minlen: 33
 maxlen: 325
 
 # use base correction for fastp (eg. for denovo-assembling, etc)
+# for variant calling, it is not recommended to use base correction
+# to avoid over-correction of true variants
 correction: False
 
-# for WGS data, deduplicate is important
+# for WGS data, deduplicate is important; for amplicon data, set to False
 deduplicate: True
+
+# whether to keep trimmed fastq files in any of the steps
+keep_optdeduped_fastq: False
+keep_trimmed_fastq: False
 
 # whether to keep bam files in any of the steps 
 keep_paired_bam: False
@@ -36,6 +42,7 @@ knownvariants_dir: ''
 # regions
 target_regions: null
 target_variants: null
+target_variants_vcf: null
 
 # gff and annotation files
 gff_file: GFF-FILE-NOT-DEFINED
@@ -47,6 +54,15 @@ snpEff_db: SNPEFF-DB-NOT-DEFINED
 # parameter for bwa-mem2
 bwamem2_flags: ''
 bwamem2_extra_flags: ''
+
+# parameter for minibwa
+minibwa_flags: ''
+minibwa_extra_flags: ''
+
+# parameter for minimap2
+minimap2_flags: ''
+minimap2_extra_flags: ''
+
 
 # filter to apply for deduplicated BAM
 # read_filters options:
@@ -61,6 +77,11 @@ read_filters: --remove_trans --remove_unmapped --remove_secondary --remove_suppl
 
 reads_trimmer_wf: trimmer_null.smk
 reads_mapper_wf: mapper_bwa-mem2.smk
+
+# the following are workflow files that are required to be defined in the config file
+# trimmer_wf:
+# mapper_wf:
+# varcaller_wf:
 
 # parameter for joint variant calling
 variant_file: null
@@ -88,7 +109,6 @@ haplotypecaller_flags: ''
 
 ggvcf_flags: -stand-call-conf 10 -new-qual
 ggvcf_extra_flags: ''
-
 
 
 # -- options for multistep variant calling --
