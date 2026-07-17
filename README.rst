@@ -44,7 +44,7 @@ on shell/terminal:
 
 .. code-block:: bash
 
-    "${SHELL}" <(curl -L https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
+    "${SHELL}" <(curl -sSL https://raw.githubusercontent.com/vivaxgen/ngs-pipeline/main/install.sh)
 
 When prompted for the directory to install the pipeline, enter the directory
 where the pipeline will be installed.
