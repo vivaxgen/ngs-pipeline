@@ -16,11 +16,11 @@ def path(snakefile: str):
 
 __included_snakefiles__ = set()
 __void_snakefile__ = path_to_str(
-    get_snakefile_path("ngs_pipeline::void.smk", strict_mode=True)
+    get_snakefile_path("ngs_pipeline::helper/void.smk", strict_mode=True)
 )
 
 
-def inc(fn):
+def pkg(fn):
     if not fn:
         cexit("include: empty filename")
 
@@ -35,5 +35,8 @@ def inc(fn):
     # cerr(f"fullpath: {fullpath}")
     return fullpath
 
+
+# alias
+inc = pkg
 
 # EOF
