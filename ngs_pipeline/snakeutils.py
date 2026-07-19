@@ -10,7 +10,7 @@ __license__ = "MIT"
 # snakeutils.py
 # [https://github.com/trmznt/py-snakeutils]
 
-__version__ = "2026.07.18.01"
+__version__ = "2026.07.19.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -23,8 +23,10 @@ import datetime
 import logging
 import argparse
 import types
-import typing
 import importlib
+
+from abc import ABC, abstractmethod
+from typing import Callable, Iterable, Iterator, Sequence, Any
 
 L = logging.getLogger(__name__)
 
@@ -58,11 +60,498 @@ def set_default_rule_path(module: types.ModuleType, overwrite: bool = False) -> 
     _DEFAULT_RULE_PATH = pathlib.Path(module.__path__[0]) / "rules"
 
 
-class ArgumentParser(argparse.ArgumentParser):
+#
+# argument parser helpers
+#
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.arg_dict = {}
+FilePredicate = Callable[[pathlib.Path, argparse.Namespace], bool]
+
+
+class ValueProvider(ABC):
+    """Provides values for completion or validation."""
+
+    @abstractmethod
+    def values(self) -> Sequence[str]:
+        """Return available values."""
+        raise NotImplementedError
+
+
+class LazyProvider(ValueProvider):
+    """
+    Lazily computes values once and caches them.
+
+    The cache can be invalidated explicitly.
+    """
+
+    def __init__(
+        self,
+        loader: Callable[[], Iterable[str]],
+    ) -> None:
+        self._loader = loader
+        self._cache: list[str] | None = None
+
+    def values(self) -> list[str]:
+        if self._cache is None:
+            self._cache = list(self._loader())
+        return self._cache
+
+    def invalidate(self) -> None:
+        """Clear the cached values."""
+        self._cache = None
+
+    def reload(self) -> list[str]:
+        """Reload and return the latest values."""
+        self.invalidate()
+        return self.values()
+
+
+class StaticProvider(ValueProvider):
+    """Provider backed by static values."""
+
+    def __init__(
+        self,
+        values: Iterable[str],
+    ) -> None:
+        self._values = list(values)
+
+    def values(self) -> Sequence[str]:
+        return self._values
+
+
+class CompletionSource(ABC):
+    """Base completion source."""
+
+    @abstractmethod
+    def help_items(self) -> Sequence[str]: ...
+
+    @abstractmethod
+    def complete(
+        self,
+        prefix: str,
+        parsed_args: object,
+        **kwargs,
+    ) -> Iterable[str]: ...
+
+
+class SuggestionsSource(CompletionSource):
+    """Completion from a ValueProvider."""
+
+    def __init__(
+        self,
+        provider: ValueProvider,
+        *,
+        label: str = "Suggested:",
+        help_limit: int = 8,
+    ) -> None:
+
+        self.provider = provider
+        self.label = label
+        self.help_limit = help_limit
+
+    def help_items(self) -> Sequence[str]:
+
+        values = list(self.provider.values())
+
+        if len(values) > self.help_limit:
+            return [
+                *values[: self.help_limit],
+                "...",
+            ]
+
+        return values
+
+    def complete(
+        self,
+        prefix: str,
+        parsed_args: object,
+        **kwargs,
+    ) -> Iterator[str]:
+        for item in self.provider.values():
+            if item.startswith(prefix):
+                yield item
+
+
+class FilesSource(CompletionSource):
+    """
+    Filesystem completion source.
+
+    Parameters
+    ----------
+    predicate
+        Optional callback used to decide whether a filesystem entry
+        should be included.
+
+        The callback receives
+
+        - the candidate Path
+        - the parsed argparse Namespace
+    """
+
+    def __init__(
+        self,
+        *,
+        predicate: FilePredicate | None = None,
+    ) -> None:
+
+        self._predicate = predicate
+
+    def help_items(self) -> list[str]:
+        return []
+
+    def complete(
+        self,
+        prefix: str,
+        parsed_args: argparse.Namespace,
+        **kwargs,
+    ) -> Iterator[str]:
+
+        # Preserve whether user typed:
+        #   workflows/
+        # versus
+        #   workflows
+        has_trailing_slash = prefix.endswith("/")
+
+        if has_trailing_slash:
+
+            parent = pathlib.Path(prefix)
+            partial = ""
+
+        else:
+
+            path = pathlib.Path(prefix)
+            parent = (
+                path.parent if path.parent != pathlib.Path("") else pathlib.Path(".")
+            )
+            partial = path.name
+
+        try:
+            children = sorted(
+                parent.iterdir(),
+                key=lambda p: p.name,
+            )
+
+        except OSError:
+            return
+
+        for child in children:
+
+            if partial and not child.name.startswith(partial):
+                continue
+
+            if self._predicate is not None:
+
+                try:
+                    if not self._predicate(
+                        child,
+                        parsed_args,
+                    ):
+                        continue
+
+                except Exception:
+                    continue
+
+            if child.is_dir():
+                yield str(child) + "/"
+            else:
+                yield str(child)
+
+
+class Argument:
+    """
+    Wrapper around argparse.Action.
+
+    Unknown attributes are delegated to argparse.Action.
+    """
+
+    def __init__(
+        self,
+        action: Any,
+    ) -> None:
+
+        object.__setattr__(
+            self,
+            "_action",
+            action,
+        )
+
+        object.__setattr__(
+            self,
+            "_completion_sources",
+            [],
+        )
+
+        action._argument_wrapper = self
+
+    def __getattr__(
+        self,
+        name: str,
+    ) -> Any:
+
+        return getattr(
+            self._action,
+            name,
+        )
+
+    def __setattr__(
+        self,
+        name: str,
+        value: Any,
+    ) -> None:
+
+        if name.startswith("_"):
+            object.__setattr__(
+                self,
+                name,
+                value,
+            )
+        else:
+            setattr(
+                self._action,
+                name,
+                value,
+            )
+
+    @property
+    def completion_sources(
+        self,
+    ) -> list[CompletionSource]:
+
+        return self._completion_sources
+
+    def suggestions(
+        self,
+        provider: ValueProvider | Callable[[], Iterable[str]],
+        *,
+        label: str = "Suggested",
+        help_limit: int = 8,
+    ) -> Argument:
+        """
+        Configure suggestion completion.
+
+        Parameters
+        ----------
+        provider:
+            ValueProvider or callable returning strings.
+
+        label:
+            Text shown in --help.
+
+        help_limit:
+            Number of examples displayed.
+        """
+
+        if not isinstance(
+            provider,
+            ValueProvider,
+        ):
+            provider = LazyProvider(provider)
+
+        self._completion_sources[:] = [
+            source
+            for source in self._completion_sources
+            if not isinstance(
+                source,
+                SuggestionsSource,
+            )
+        ]
+
+        self._completion_sources.append(
+            SuggestionsSource(
+                provider,
+                label=label,
+                help_limit=help_limit,
+            )
+        )
+
+        return self
+
+    def files(
+        self,
+        *,
+        predicate: FilePredicate | None = None,
+    ) -> Argument:
+        """
+        Enable filesystem completion.
+
+        Parameters
+        ----------
+        predicate
+            Optional callback that filters filesystem entries.
+
+            example:
+
+            predicate=lambda path, args: (
+                path.is_dir()
+                or path.suffix == ".vcf"
+            )
+
+        """
+
+        self._completion_sources[:] = [
+            s for s in self._completion_sources if not isinstance(s, FilesSource)
+        ]
+
+        self._completion_sources.append(
+            FilesSource(
+                predicate=predicate,
+            )
+        )
+
+        return self
+
+    def complete(
+        self,
+        prefix: str,
+        parsed_args: object,
+        **kwargs: Any,
+    ) -> Iterator[str]:
+
+        seen = set()
+
+        for source in self.completion_sources:
+            try:
+                for item in source.complete(
+                    prefix,
+                    parsed_args,
+                    **kwargs,
+                ):
+                    if item not in seen:
+                        seen.add(item)
+                        yield item
+            except Exception:
+                pass
+
+
+class SuggestionHelpFormatter(argparse.HelpFormatter):
+    """
+    Help formatter that displays completion previews.
+    """
+
+    def _expand_help(
+        self,
+        action: argparse.Action,
+    ) -> str:
+
+        text = super()._expand_help(action)
+
+        argument = getattr(
+            action,
+            "_argument_wrapper",
+            None,
+        )
+
+        if argument is None:
+            return text
+
+        for source in argument.completion_sources:
+
+            try:
+                items = source.help_items()
+
+            except Exception:
+                continue
+
+            if not items:
+                continue
+
+            label = getattr(
+                source,
+                "label",
+                "Available",
+            )
+
+            text += (
+                "\n" + " " * self._current_indent + f"{label}: " + "\n, ".join(items)
+            )
+
+        return text
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    """
+    Extended argparse parser.
+
+    Features
+    --------
+    - Keeps argparse behavior unchanged.
+    - Provides register_argument().
+    - Maintains arg_dict externally.
+    - Supports argcomplete integration.
+    """
+
+    LazyProvider = LazyProvider
+
+    def __init__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+
+        kwargs.setdefault(
+            "formatter_class",
+            SuggestionHelpFormatter,
+        )
+
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        self.arg_dict: dict[str, Argument] = {}
+
+    def register_argument(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Argument:
+        """
+        Add an argument and return an Argument wrapper.
+        """
+
+        action = super().add_argument(
+            *args,
+            **kwargs,
+        )
+
+        return Argument(action)
+
+    def enable_completion(self) -> None:
+        """
+        Enable argcomplete support.
+
+        This must be called after all arguments are registered.
+        """
+
+        import argcomplete
+
+        for action in self._actions:
+
+            argument = getattr(
+                action,
+                "_argument_wrapper",
+                None,
+            )
+
+            if argument is None:
+                continue
+
+            def completer(
+                prefix: str,
+                parsed_args: object,
+                argument: Argument = argument,
+                **kwargs: Any,
+            ):
+                return list(
+                    argument.complete(
+                        prefix,
+                        parsed_args,
+                        **kwargs,
+                    )
+                )
+
+            action.completer = completer  # type: ignore
+
+        argcomplete.autocomplete(self)
 
 
 __ARGUMENT_PARSER__ = ArgumentParser
@@ -149,14 +638,14 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
     )
 
     # general options
-    p.arg_dict["target"] = p.add_argument(
+    p.arg_dict["target"] = p.register_argument(
         "-t",
         "--target",
         default=[],
         action="append",
         help="target rule(s) in the snakefile [all]",
     )
-    p.arg_dict["snakefile"] = p.add_argument(
+    p.arg_dict["snakefile"] = p.register_argument(
         "--snakefile", default=None, help="snakemake file to be called"
     )
 
@@ -167,7 +656,7 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
         help="path for base configuration file, relative to "
         "base environment directory",
     )
-    p.arg_dict["panel"] = p.add_argument(
+    p.arg_dict["panel"] = p.register_argument(
         "--panel",
         default=None,
         help="panel to be used (eg. PANEL -> configs/PANEL.yaml as base config)",
@@ -204,7 +693,7 @@ def setup_config(config) -> dict:
     return config
 
 
-def path_to_str(value) -> typing.Any:
+def path_to_str(value) -> Any:
     if isinstance(value, pathlib.Path):
         return value.as_posix()
     if isinstance(value, dict):
@@ -226,7 +715,7 @@ class SnakeExecutor(object):
         args,
         *,
         # basic configuration
-        setup_config_func: typing.Callable[
+        setup_config_func: Callable[
             [
                 dict,
             ],
