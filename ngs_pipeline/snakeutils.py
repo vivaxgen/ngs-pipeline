@@ -10,7 +10,7 @@ __license__ = "MIT"
 # snakeutils.py
 # [https://github.com/trmznt/py-snakeutils]
 
-__version__ = "2026.07.17.01"
+__version__ = "2026.07.18.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -29,7 +29,7 @@ import importlib
 L = logging.getLogger(__name__)
 
 
-__DEFAULT_RULE_PATH__ = None
+_DEFAULT_RULE_PATH = None
 
 
 def _cout(msg: str) -> None:
@@ -46,9 +46,16 @@ def _cexit(msg: str, exit_code: int = 1) -> None:
     sys.exit(exit_code)
 
 
-def set_default_rule_path(module: types.ModuleType) -> None:
-    global __DEFAULT_RULE_PATH__
-    __DEFAULT_RULE_PATH__ = pathlib.Path(module.__path__[0]) / "rules"
+def set_default_rule_path(module: types.ModuleType, overwrite: bool = False) -> None:
+    global _DEFAULT_RULE_PATH
+
+    if _DEFAULT_RULE_PATH is not None and not overwrite:
+        return
+
+    if not hasattr(module, "__path__") or not module.__path__:
+        raise ValueError(f"Module '{module.__name__}' does not have a valid __path__.")
+
+    _DEFAULT_RULE_PATH = pathlib.Path(module.__path__[0]) / "rules"
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -76,8 +83,10 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
     p.add_argument(
         "-j", type=int, default=32, help="number of jobs to be executed in parallel"
     )
+
+    # debugging process
     p.add_argument(
-        "--dryrun", default=False, action="store_true", help="run in dry-mode"
+        "--dry-run", default=False, action="store_true", help="run in dry-mode"
     )
     p.add_argument(
         "--showcmds",
@@ -99,6 +108,14 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
         help="show the order of config files to parse",
     )
     p.add_argument(
+        "--keep-incomplete",
+        default=False,
+        action="store_true",
+        help="keep incomplete files",
+    )
+
+    # continuation of previous run
+    p.add_argument(
         "--unlock",
         default=False,
         action="store_true",
@@ -117,6 +134,8 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
         help="touch all output files, to avoid re-running the ngs-pipeline "
         "such as after modifying/debugging snakemake file",
     )
+
+    # running configuration
     p.add_argument(
         "--profile",
         default=None,
@@ -368,7 +387,16 @@ class SnakeExecutor(object):
             else:
                 argv = []
 
+            # add compatible additional arguments from command line
+            if self.args.keep_incomplete:
+                argv.append("--keep-incomplete")
+
+            # extend the arguments with additional arguments from the function call
             argv.extend(shlex.split(additional_cli_args))
+
+            # extra argument pass from SNAKEMAKE_EXTRA_ARGS environment variable
+            if "SNAKEMAKE_EXTRA_ARGS" in os.environ:
+                argv.extend(shlex.split(os.environ["SNAKEMAKE_EXTRA_ARGS"]))
 
             # XXX: need to modify to use snakemake API
             L.debug("parsing snakemake arguments")
@@ -385,7 +413,9 @@ class SnakeExecutor(object):
             args.targets = targets
 
             # running mode
-            args.dryrun = self.args.dryrun
+            args.dryrun = self.args.dry_run
+            args.reason = True if self.args.dry_run else False
+            args.keep_incomplete = self.args.keep_incomplete
             args.touch = self.args.touch
             args.rerun_incomplete = self.args.rerun
             args.unlock = self.args.unlock
@@ -413,6 +443,7 @@ def get_snakefile_path(
     filepath: str | pathlib.Path,
     snakefile_root: pathlib.Path | None = None,
     from_module: types.ModuleType | None = None,
+    strict_mode: bool = True,
 ) -> pathlib.Path:
     """
     - return real path of snakefile
@@ -433,8 +464,10 @@ def get_snakefile_path(
         snakefile_root = pathlib.Path(from_module.__path__[0]) / "rules"
     if snakefile_root is not None:
         return snakefile_root / filepath
-    if __DEFAULT_RULE_PATH__:
-        return __DEFAULT_RULE_PATH__ / filepath
+    if _DEFAULT_RULE_PATH and strict_mode:
+        return _DEFAULT_RULE_PATH / filepath
+    if not strict_mode:
+        return pathlib.Path(filepath)
     raise ValueError(f"ERR: cannot determine the path for {filepath}")
 
 
