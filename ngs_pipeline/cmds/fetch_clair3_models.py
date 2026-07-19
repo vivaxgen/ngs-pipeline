@@ -154,6 +154,7 @@ def download_web_directory(
             except requests.RequestException as e:
                 print(f"Failed to download {decoded_name}: {e}")
 
+
 def list_available_clair3_models(verify_ssl: bool = True) -> list[str]:
     """Return a sorted list of available Clair3 model names from all source URLs."""
 
@@ -164,10 +165,15 @@ def list_available_clair3_models(verify_ssl: bool = True) -> list[str]:
 
     for source_url in source_urls:
         try:
-            response = requests.get(source_url, headers=headers, verify=verify_ssl, timeout=20)
+            response = requests.get(
+                source_url, headers=headers, verify=verify_ssl, timeout=20
+            )
             response.raise_for_status()
         except requests.RequestException as e:
-            print(f"Warning: failed to read model index {source_url}: {e}", file=sys.stderr)
+            print(
+                f"Warning: failed to read model index {source_url}: {e}",
+                file=sys.stderr,
+            )
             continue
 
         parser = IndexLinkParser()
@@ -191,7 +197,7 @@ def list_available_clair3_models(verify_ssl: bool = True) -> list[str]:
 
             models.add(name)
     return sorted(models)
-    
+
 
 def fetch_clair3_models(args):
 
@@ -215,8 +221,33 @@ def fetch_clair3_models(args):
         sys.exit(1)
 
 
+def check_and_fetch_clair3_model(args):
+
+    # lock the directory to prevent concurrent downloads using flufl-lock
+    from flufl.lock import Lock
+    import pathlib
+
+    vvg_basedir = check_VVG_BASEDIR()
+    base_dir = pathlib.Path(vvg_basedir) / "opt" / "clair3-models"
+    model = args.model.strip().replace(".", "").replace("@", "_")
+    model_dir = base_dir / model
+
+    lock_file = base_dir / ".fetch_clair3_model.lock"
+    with Lock(lock_file, lifetime=60 * 60, acquire_timeout=10):
+        if model_dir.exists() and any(model_dir.iterdir()):
+            print(f"Model '{model}' already exists at {model_dir}. Skipping download.")
+        else:
+            fetch_clair3_models(args)
+
+
 def main(args):
     fetch_clair3_models(args)
 
+
+# TODO:
+# - use flufl-lock to check_and_fetch to prevent multiple processes downloading the same model
+#   simultaneously, which can lead to corrupted downloads.
+#   This is especially important in share environments where multiple jobs may attempt to fetch
+#   the same model concurrently.
 
 # EOF
