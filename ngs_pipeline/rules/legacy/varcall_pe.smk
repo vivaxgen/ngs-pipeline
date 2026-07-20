@@ -2,7 +2,7 @@
 # variant calling workflow for paired-end data
 
 from ngs_pipeline import cerr
-from ngs_pipeline.rules import inc
+from ngs_pipeline.rules import pkg
 from time import sleep
 
 # utilities
@@ -11,7 +11,7 @@ from time import sleep
 # define local rules
 localrules: all, clean, mapping
 
-include: inc("handler_map.smk")
+include: pkg("ngs_pipeline:helper/map_handler.smk")
 
 rule all:
     input:
@@ -54,10 +54,10 @@ rule mapping:
 #include: config.get('variant_caller_wf', 'varcall_gatk.smk')
 #include: config.get('stats_wf', 'stats.smk')
 
-include: inc(config.get("trimmer_wf", "trimmer_fastp.smk"))
+include: pkg(config.get("trimmer_wf", "trimmer/fastp.smk"))
 
-include: inc(config.get("mapper_wf", "mapper_bwa-mem2.smk"))
+include: pkg(config.get("mapper_wf", "mapper/bwa-mem2.smk"))
 
-include: inc(config.get("varcall_wf", "varcall_gatk.smk"))
+include: pkg(config.get("varcaller_wf", "varcaller/gatk.smk"))
 
 # EOF
