@@ -5,5 +5,7 @@ pandas matplotlib>=3.10.1 Pillow>=11.2.1 pycairo>=1.28 openpyxl>=3.1.5
 IPython>=9.2.0 argcomplete>=3.6.2 ipdb
 multiqc>=1.28
 cutadapt>=5.0
+cython>=3.2.5
+--pypi fqadjust@git+https://github.com/vivaxgen/fqadjust.git
 
 # EOF
