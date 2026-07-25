@@ -39,25 +39,41 @@ else:
             "samtools view -@ {threads} -o {output.bam} {params.region_opts} {input.bam}"
 
 
-# to get only mapped, properly paired (FR) reads use filter-reads-orientation with
-# --remove-unmapped --remove-RF --remove-FF --remove-RF --remove-trans
+if ngs_platform.upper() in ['ONT']:
 
-rule map_filter_orientation:
-    threads: thread_allocations.get('map_filtering', 4)
-    input:
-        get_mapped_bam_file()
-    output:
-        temp("<sp>maps/mapped-filtered-{idx}.bam")
-    log:
-        log1 = "<sp>logs/filter_orientation-{idx}.log",
-        log2 = "<sp>logs/samtools-sort-{idx}.log",
-        read_orientation = "<sp>logs/read-orientation-{idx}.json"
-    params:
-        sample = get_sample,
-        args = config.get('read_filters', '') or '--remove_unmapped',
-    shell:
-        "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
-        "| samtools sort -@4 -o {output} 2> {log.log2} "
+    rule map_pass_filter_orientation:
+        threads: 1
+        localrule: True
+        input:
+            bam = get_mapped_bam_file()
+        output:
+            bam = temp("<sp>maps/mapped-filtered-{idx}.bam")
+        params:
+            sample = get_sample,
+        shell:
+            "ln -f {input.bam} {output.bam}"
+
+else:
+    # filtering for read orientation for paired-end reads
+    # to get only mapped, properly paired (FR) reads use filter-reads-orientation with
+    # --remove-unmapped --remove-RF --remove-FF --remove-RF --remove-trans
+
+    rule map_filter_orientation:
+        threads: thread_allocations.get('map_filtering', 4)
+        input:
+            get_mapped_bam_file()
+        output:
+            temp("<sp>maps/mapped-filtered-{idx}.bam")
+        log:
+            log1 = "<sp>logs/filter_orientation-{idx}.log",
+            log2 = "<sp>logs/samtools-sort-{idx}.log",
+            read_orientation = "<sp>logs/read-orientation-{idx}.json"
+        params:
+            sample = get_sample,
+            args = config.get('read_filters', '') or '--remove_unmapped',
+        shell:
+            "ngs-pl filter-reads-orientation --outstat {log.read_orientation} {params.args} {input} 2> {log.log1} "
+            "| samtools sort -@4 -o {output} 2> {log.log2} "
 
 
 rule map_dedup:
