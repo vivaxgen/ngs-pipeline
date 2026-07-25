@@ -35,6 +35,7 @@ def get_gvcf_files(region):
     # traversing on all source directories
     return [f'{s_dir}/gvcf/{s}-{region}.g.vcf.gz' for (s_dir, s) in zip(SAMPLE_DIRS, SAMPLES)]
 
+
 # get the list of all gvcfs
 rule prepare_gvcf_list:
     localrule: True
@@ -50,12 +51,16 @@ rule prepare_gvcf_list:
             )
         with open(output[0], 'w') as f_out:
             for s, a_file in zip(SAMPLES, input):
+                # need to resolve the path to avoid relative path issues when running glnexus_cli
+                # under snakemake shadow: "minimal" mechanism
+                a_file = pathlib.Path(a_file).resolve()
                 f_out.write(f'{a_file}\n')
 
 
 rule jointvarcall_glnexus:
     # glnexus can work with multiple threads
     threads: 16
+    shadow: "minimal"
     input:
         f"{destdir}/maps/{regpart.notation}.tsv"
     output:
@@ -64,6 +69,8 @@ rule jointvarcall_glnexus:
         # or
         #    f"{destdir}/vcfs/{{reg}}.vcf.gz"
         regpart.region_vcf
+    log:
+        f"{destdir}/logs/glnexus-{regpart.notation}.log"
     params:
         # regpart.get_interval() will return either one of the following:
         # --region CHROM, --region CHROM:START-END, --targets BEDFILE_PATH
@@ -71,7 +78,7 @@ rule jointvarcall_glnexus:
     shell:
         "glnexus_cli --config DeepVariant"
         "  --threads {threads}"
-        "  --list {input}"
+        "  --list {input} 2> {log} "
         "| bcftools view -o {output}"
 
 
