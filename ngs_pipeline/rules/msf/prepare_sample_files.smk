@@ -39,4 +39,19 @@ rule msf_link_reads_pe:
             dest_file.symlink_to(src_file)  
 
 
+rule check_clair3_models:
+    localrule: True
+    input:
+        # list all possible input files
+        expand_pattern(f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}.fastq.gz")
+    output:
+        # list all possible model files
+        expand_pattern(f"{outdir}/samples/{{sample}}/reads/model-{{idx}}.txt")
+    params:
+        n_files = lambda w, output: len(output),
+    shell:
+        # run check-clair3-models for the whole sample directories
+        "ngs-pl check-clair3-models --file-numbers {params.n_files} {outdir}/samples/"
+
+
 # EOF
