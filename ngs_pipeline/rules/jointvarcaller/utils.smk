@@ -11,20 +11,30 @@ include: inc("ngs_pipeline::helper/utilities.smk")
 
 
 # source directories would be provided using config=dict() args of snakemake()
-
-srcdirs = set(config['srcdirs'])
-destdir = config.get('destdir', 'vcfs')
+if "outdir" in locals():
+    # this rule file is executed under multi-sample flow
+    destdir = f"{outdir}/joint/"
+else:
+    # this rule file is executed independently using run-joint-variant-caller command
+    destdir = config.get('destdir', "joint-vcfs")
 
 # get all samples and sample directories
 
-SAMPLES = []
-SAMPLE_DIRS = []
-for a_dir in srcdirs:
-    S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
-    # filter for non-sample directories/files
-    S = [s for s in S if s != 'config.yaml']
-    SAMPLES += S
-    SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
+
+if "read_files" in locals():
+    # use read_files to generate SAMPLES and SAMPLE_DIRS
+    SAMPLES = read_files.samples()
+    SAMPLE_DIRS = [f"{outdir}/samples/{sample}" for sample in SAMPLES]
+else:
+    srcdirs = set(config['srcdirs'])
+    SAMPLES = []
+    SAMPLE_DIRS = []
+    for a_dir in srcdirs:
+        S, = glob_wildcards(a_dir + '/{sample,[\\w-]+}')
+        # filter for non-sample directories/files
+        S = [s for s in S if s != 'config.yaml']
+        SAMPLES += S
+        SAMPLE_DIRS += [f'{a_dir}/{s}' for s in S]
 
 
 # region definition
@@ -71,6 +81,7 @@ rule concat_region_vcfs:
         f'{destdir}/logs/bcftools-concat.log'
     shell:
         'bcftools concat -o {output} {input} 2> {log}'
+
 
 rule csq_vcf:
     input:
