@@ -5,6 +5,11 @@ __copyright__ = "(c) 2023-2026 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com
 __author__ = "trimarsanto@gmail.com"
 __license__ = "MIT"
 
+# set this up so joint variant caller knows which variant caller is used in this workflow
+if "varcaller" in locals() and varcaller:
+    cexit(f"varcaller is already defined as {varcaller}, cannot redefine it in freebayes.smk")
+_varcaller = "freebayes"
+
 # varcall_freebayes.smk - ngs-pipeline rules
 # [https://github.com/vivaxgen/ngs-pipeline]
 

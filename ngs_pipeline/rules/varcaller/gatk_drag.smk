@@ -1,4 +1,9 @@
 
+# set this up so joint variant caller knows which variant caller is used in this workflow
+if "varcaller" in locals() and varcaller:
+    cexit(f"varcaller is already defined as {varcaller}, cannot redefine it in gatk_drag.smk")
+_varcaller = "gatk"
+
 gatk_calibrate_str = config.get('gatk_calibrate_str', False)
 
 

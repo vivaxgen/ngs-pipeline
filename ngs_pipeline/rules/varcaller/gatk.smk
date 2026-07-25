@@ -1,4 +1,9 @@
 
+# set this up so joint variant caller knows which variant caller is used in this workflow
+if "varcaller" in locals() and varcaller:
+    cexit(f"varcaller is already defined as {varcaller}, cannot redefine it in gatk.smk")
+_varcaller = "gatk"
+
 include: config.get("base_calibrator_wf", "gatk_calibratebase.smk")
 
 def get_haplotypecaller_region(wildcards):
