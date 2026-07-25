@@ -24,7 +24,7 @@ from ngs_pipeline.cmds import run_snakefile
 def init_argparser():
     p = run_snakefile.init_argparser(desc="check configuration")
     p.arg_dict["snakefile"].choices = [
-        "check_configs.smk",
+        "ngs_pipeline::tool/check_configs.smk",
     ]
 
     # input/output options
@@ -46,7 +46,7 @@ def check_configs(args):
 
     import pathlib
 
-    args.snakefile = "check_configs.smk"
+    args.snakefile = "ngs_pipeline::tool/check_configs.smk"
 
     config = dict(outfile=args.outfile, infiles=[], underscore=None, outdir=None)
     status, elapsed_time = run_snakefile.run_snakefile(
