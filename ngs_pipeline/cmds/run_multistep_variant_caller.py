@@ -136,7 +136,7 @@ def run_multistep_variant_caller(args, console=True):
     )
 
     args.snakefile = run_snakefile.get_snakefile_path(
-        "multistep_variant_calling.smk", from_module=ngs_pipeline
+        "workflow/multistep_variant_calling.smk", from_module=ngs_pipeline
     )
 
     if config["rerun"]:
