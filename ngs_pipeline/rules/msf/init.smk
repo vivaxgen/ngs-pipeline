@@ -6,16 +6,9 @@
 # include the global parameters
 include: pkg("ngs_pipeline::global_params.smk")
 
-# include the utilities
-include: pkg("ngs_pipeline::helper/utilities.smk")
-
 # specific for multi-sample flow, we need to know all the sample names and their indexes
 # to be able to expand the input files for each sample
 include: pkg("ngs_pipeline::msf/params.smk")
-
-# specific for multi-sample flow, we need to know how to prepare the sample files (reads)
-# in each sample directory.
-include: pkg("ngs_pipeline::msf/prepare_sample_files.smk")
 
 # prepare sample-related parameters
 
@@ -75,7 +68,14 @@ def expand_sample_index(w, template_pattern):
     return result
 
 
-include: pkg("ngs_pipeline::helper/funcs.smk")
+def expand_pattern(pattern):
+    """ expand the given pattern with the list of samples and indexes """
+    result = []
+    for sample in read_files.samples():
+        idxs = read_files.get_indexes(sample)
+        for idx in idxs:
+            result.append(pattern.format(sample=sample, idx=idx))
+    return result
 
 
 def get_mapped_bam_file():
@@ -95,5 +95,14 @@ def get_final_file(w):
         return f'<sp>gvcf/{w.sample}-{complete_region}.g.vcf.gz'
     return [f"<sp>gvcf/{w.sample}-{reg}.g.vcf.gz" for reg in REGIONS]
 
+
+# include the utilities
+include: pkg("ngs_pipeline::helper/funcs.smk")
+include: pkg("ngs_pipeline::helper/utilities.smk")
+
+
+# specific for multi-sample flow, we need to know how to prepare the sample files (reads)
+# in each sample directory.
+include: pkg("ngs_pipeline::msf/prepare_sample_files.smk")
 
 # EOF
