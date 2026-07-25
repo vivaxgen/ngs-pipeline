@@ -17,14 +17,14 @@ import sys
 import os
 
 import ngs_pipeline
-from ngs_pipeline import cerr, cexit, arg_parser, snakeutils
-
+from ngs_pipeline import cerr, cexit, arg_parser
+from ngs_pipeline.cmds import run_snakefile
 
 # usage: run_amtofastq.py
 
 
 def init_argparser():
-    p = snakeutils.init_argparser(
+    p = run_snakefile.init_argparser(
         "convert alignment map file (SAM/BAM/CRAM) to fastq files"
     )
 
@@ -78,11 +78,11 @@ def amtofastq(args):
         SOURCES=sources,
     )
 
-    args.snakefile = snakeutils.get_snakefile_path(
-        "amtofastq.smk", from_module=ngs_pipeline
+    args.snakefile = run_snakefile.get_snakefile_path(
+        "ngs_pipeline::tool/amtofastq.smk"
     )
 
-    status, elapsed_time = snakeutils.run_snakefile(args, config=config)
+    status, elapsed_time = run_snakefile.run_snakefile(args, config=config)
 
     if not status:
         cerr("[ERR: amtofastq did not successfully complete]")
