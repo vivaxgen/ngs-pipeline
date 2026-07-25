@@ -37,7 +37,7 @@ def run_multiqc(args):
     os.environ["NGSENV_BASEDIR"] = os.environ["NGS_PIPELINE_BASE"]
 
     args.snakefile = run_snakefile.get_snakefile_path(
-        "multiqc.smk", from_module=ngs_pipeline
+        "tool/multiqc.smk", from_module=ngs_pipeline
     )
     args.no_config_cascade = True
     args.force = True
