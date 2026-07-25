@@ -47,6 +47,8 @@ class RegPartition(object):
 
     def get_all_region_vcf(self, w):
         if not self.split:
+            # NOTE: this function is only executed for split region
+            # if your rule execute this function when not in split region, then fix your rule!
             raise RuntimeError('Region is not split!')
         return list(
             [f"{destdir}/split/{w.reg}~{idx}.vcf.gz"
