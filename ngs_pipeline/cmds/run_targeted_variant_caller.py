@@ -21,23 +21,18 @@ from ngs_pipeline.cmds import run_snakefile
 def init_argparser():
 
     def list_snakefiles():
-        cerr("I was called.. hiks")
         snakefiles = [
             "ngs_pipeline::msf/panel_varcall_pe.smk",
             "ngs_pipeline::msf/panel_varcall_lr.smk",
+            "ngs_pipeline::msf/targeted_varcall_pe.smk",
+            "ngs_pipeline::msf/targeted_varcall_lr.smk",
         ]
         return snakefiles
 
     p = run_snakefile.init_argparser(desc="run targeted variant calling")
-    # p.arg_dict["snakefile"].choices = [
-    #    "msf_targeted_varcall.smk",
-    #    "panel_varcall_pe.smk",
-    #    "panel_varcall_lr.smk",
-    #    "msf_panel_varcall_pe.smk",
-    #    "msf_panel_varcall_lr.smk",
-    #    "msf_panel_varcall_null_pe.smk",
-    # ]
-    p.arg_dict["snakefile"].default = "ngs_pipeline::msf/panel_varcall_pe.smk"
+    p.arg_dict["snakefile"].default = (
+        "ngs_pipeline::workflow/targeted_variant_calling.smk"
+    )
     p.arg_dict["snakefile"].suggestions(p.LazyProvider(list_snakefiles)).files()
 
     # input/output options
