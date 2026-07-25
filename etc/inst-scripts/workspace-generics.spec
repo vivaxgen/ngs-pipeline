@@ -6,6 +6,7 @@ IPython>=9.2.0 argcomplete>=3.6.2 ipdb
 multiqc>=1.28
 cutadapt>=5.0
 cython>=3.2.5
+flufl.lock>=9.1.0
 --pypi fqadjust@git+https://github.com/vivaxgen/fqadjust.git
 
 # EOF
