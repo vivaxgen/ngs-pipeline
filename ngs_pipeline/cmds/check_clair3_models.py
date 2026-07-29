@@ -134,9 +134,13 @@ def process_dictionary(headers: HeaderDB) -> int:
             missing_models.append(model)
 
     if any(missing_models):
-        cerr(f"Missing ONT models: {sorted(missing_models)}")
         cexit(
-            "Please fetch the missing models using the 'fetch_clair3_models' command."
+            f"\n\n"
+            f"ERROR!\n"
+            f"Missing ONT models: {sorted(missing_models)}\n"
+            f"Please fetch the missing models using the 'fetch-clair3-models' command.\n"
+            f"eg. ngs-pipeline fetch-clair3-models --model {missing_models[0]}"
+            f"\n\n\n"
         )
 
     return N
@@ -284,8 +288,10 @@ async def run(
     no_of_files = process_dictionary(headers)
     if config.file_numbers > 0 and no_of_files != config.file_numbers:
         cexit(
+            f"\n\n"
             f"ERR: Expected {config.file_numbers} files, "
             f"but processing {no_of_files} files."
+            f"\n\n"
         )
 
     # Stage 3
