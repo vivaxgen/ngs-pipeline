@@ -270,6 +270,15 @@ def run_sample_variant_caller(args):
     cerr(
         f"[Completed: {completed}, Uncompleted: {len(uncompleted)}, Unknown: {len(unknown)}]"
     )
+
+    if completed == 0:
+        cexit(
+            "\n\nERR:\n"
+            "All samples failed during the run!\n"
+            "Aborting the workflow...\n\n\n",
+            err_code=102,
+        )
+
     cerr("\n")
 
 
