@@ -41,6 +41,7 @@ def xxx_get_final_bam_file(w):
     """ return the final bam file for further processing """
     return ("maps/mapped-dedup-{idx}.bam" if deduplicate else "maps/mapped-filtered-{idx}.bam")
 
+
 def get_merge_input_bam_files(w):
     """ return the list of input bam files to be merged """
     return expand('maps/mapped-final-{idx}.bam', idx=IDXS)
