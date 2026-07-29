@@ -17,6 +17,21 @@ maxlen: 325
 # to avoid over-correction of true variants
 correction: False
 
+# set the map handler workflow, default is ngs_pipeline::helper/map_handler.smk
+map_handler_wf: ngs_pipeline::helper/map_handler.smk
+
+# final bam files, the default is to set everything as temporary files (except the final one)
+# this one will filter by default (remove FF, RR, RF orientations, remove unmapped, trans, secondary
+# and supplementary reads) ie filter:ff:rr:rf:unmapped:trans:sec:sup
+# and remove duplicates, ie: dup(rm)
+final_bam_file: "<sp>maps/mapped-filter_-dup_-{idx}.bam"
+# some of the alternatives:
+# for ONT targeted sequencing: <sp>maps/mapped-target_-{idx}.bam
+# for paired-end panel sequencing: <sp>maps/mapped-filter_-{idx}.bam
+# for ONT/long-read panel sequencing: <sp>maps/mapped-{idx}.bam
+# for paired-end WGS sequencing: <sp>maps/mapped-filter_-dup_-{idx}.bam
+
+
 # for WGS data, deduplicate is important; for amplicon data, set to False
 deduplicate: True
 

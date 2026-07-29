@@ -8,7 +8,7 @@ __license__ = "MIT"
 from ngs_pipeline.rules import pkg
 
 include: pkg("ngs_pipeline::msf/init.smk")
-include: pkg("ngs_pipeline::helper/map_handler.smk")
+include: pkg(config.get("map_handler_wf", "ngs_pipeline::helper/map_handler.smk"))
 include: pkg("ngs_pipeline::helper/genereport.smk")
 
 # include trimmer

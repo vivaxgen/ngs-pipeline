@@ -13,7 +13,7 @@ from time import sleep
 # define local rules
 localrules: all, clean, mapping
 
-include: pkg("ngs_pipeline::helper/map_handler.smk")
+include: pkg(config.get("map_handler_wf", "ngs_pipeline::helper/map_handler.smk"))
 
 rule all:
     input:
