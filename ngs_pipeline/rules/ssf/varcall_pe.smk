@@ -5,6 +5,9 @@ __copyright__ = "(c) 2026 Hidayat (Anto) Trimarsanto <trimarsanto@gmail.com>"
 __author__ = "trimarsanto@gmail.com"
 __license__ = "MIT"
 
+# this is the entry point for the single-sample flow (SSF) variant calling workflow for paired-end reads
+# this workflow should be called by run-indv-varcall command by run-sample-variant-caller command
+
 from ngs_pipeline.rules import pkg
 
 # set the reads file name as being set by ngs-pl prepare-sample-directory command
