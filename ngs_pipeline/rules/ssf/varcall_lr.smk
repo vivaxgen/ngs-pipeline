@@ -7,6 +7,9 @@ __license__ = "MIT"
 
 from ngs_pipeline.rules import pkg
 
+# set the reads file name as being set by ngs-pl prepare-sample-directory command
+config["reads_file"] = config.get("reads_file", "reads/raw-{idx}_R0.fastq.gz")
+
 # use null trimmer since we rely on mappers to perform soft-clipping
 # on primers and adapters:
 config["trimmer_wf"] = config.get("trimmer_wf", "ngs_pipeline::trimmer/fastplong.smk")

@@ -9,7 +9,7 @@ include: pkg("ngs_pipeline::helper/utilities.smk")
 # prepare sample-related parameters
 
 sample = pathlib.Path.cwd().name
-IDXS, = glob_wildcards('reads/raw-{idx}_R1.fastq.gz')
+IDXS, = glob_wildcards(config["reads_file"])
 
 # for single sample flow, we set sp (sample prefix) pathvar to empty string
 SP = ""
