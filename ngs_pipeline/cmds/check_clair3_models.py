@@ -39,7 +39,7 @@ class Config:
         object.__setattr__(
             self,
             "raw_pattern",
-            re.compile(rf"{re.escape(self.input_prefix)}-(\d+)\.fastq\.gz$"),
+            re.compile(rf"{re.escape(self.input_prefix)}-(\d+)_R0\.fastq\.gz$"),
         )
 
     @property

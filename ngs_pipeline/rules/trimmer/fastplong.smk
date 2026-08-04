@@ -14,7 +14,7 @@ fastplong_trim_tail = config.get('fastplong_trim_tail', 20)
 rule reads_trimming_lr:
     threads: 4
     input:
-        read = "<sp>reads/raw-{idx}.fastq.gz",
+        read = "<sp>reads/raw-{idx}_R0.fastq.gz",
         model = "<sp>reads/model-{idx}.txt" if ngs_platform.upper() in ['ONT'] else []
     output:
         trimmed = temp_unless("<sp>trimmed-reads/trimmed-{idx}.fastq.gz", keep_trimmed_fastq)

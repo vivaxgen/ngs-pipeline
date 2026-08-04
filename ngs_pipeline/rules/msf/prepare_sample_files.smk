@@ -7,11 +7,12 @@ __license__ = "MIT"
 import pathlib
 
 rule msf_link_reads_se:
+    # this is for singleton/long reads
     localrule: True
     input:
         lambda w: read_files.get_read_file(w)
     output:
-        f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}.fastq.gz"
+        f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}_R0.fastq.gz"
     run:
 
         dest_file = pathlib.Path(output[0])
@@ -20,6 +21,7 @@ rule msf_link_reads_se:
 
 
 rule msf_link_reads_pe:
+    # this is for paired-end reads
     localrule: True
     input:
         lambda w: read_files.get_read_file(w)
@@ -40,10 +42,11 @@ rule msf_link_reads_pe:
 
 
 rule check_clair3_models:
+    # this rule is only intended for singleton/long reads from ONT
     localrule: True
     input:
         # list all possible input files
-        expand_pattern(f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}.fastq.gz")
+        expand_pattern(f"{outdir}/samples/{{sample}}/reads/raw-{{idx}}_R0.fastq.gz")
     output:
         # list all possible model files
         expand_pattern(f"{outdir}/samples/{{sample}}/reads/model-{{idx}}.txt")
