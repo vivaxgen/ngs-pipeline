@@ -15,6 +15,7 @@ Please read the README.txt of this software.
 
 import sys
 import os
+import typing
 
 from ngs_pipeline import cerr, arg_parser
 
@@ -52,7 +53,7 @@ def parse_read_trimming(infiles):
     return (original_reads, filtered_reads)
 
 
-def parse_number(line, func=int):
+def parse_number(line, func: typing.Callable[[str], typing.Any] = int):
     # read number after colon
     return func(line.split(":")[-1].strip().split()[0].replace(",", ""))
 
