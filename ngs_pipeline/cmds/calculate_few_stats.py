@@ -354,9 +354,12 @@ def calculate_few_stats(args):
 
     # save to file
     outfile = sys.stdout if args.outfile == "-" else open(args.outfile, "w")
-    outfile.write("%s\n" % "\t".join(headers))
-    outfile.write("%s\n" % "\t".join(values))
-    outfile.close()
+    try:
+        print("\t".join(headers), file=outfile)
+        print("\t".join(values), file=outfile)
+    finally:
+        if outfile is not sys.stdout:
+            outfile.close()
 
 
 def main(args):
