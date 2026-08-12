@@ -26,8 +26,10 @@ rule reads_trimming_lr:
         length_arg = f'--length_limit {maxlen}' if maxlen > 0 else '-L',
         minlen_arg = f'--length_required {minlen}' if minlen > 0 else '',
         qual_arg = f"-q {min_read_qual}" if min_read_qual > 0 else '-Q',
-        cut_tail = f"--cut_tail --cut_tail_window_size {fastplong_cut_tail_window_size} --cut_tail_mean_quality {fastplong_cut_tail_mean_quality}",
-        trim = f"--trim_front {fastplong_trim_front} --trim_tail {fastplong_trim_tail}",
+        cut_tail = (f"--cut_tail --cut_tail_window_size {fastplong_cut_tail_window_size} --cut_tail_mean_quality {fastplong_cut_tail_mean_quality}"
+                    if fastplong_cut_tail_window_size > 0 and fastplong_cut_tail_mean_quality > 0 else ''),
+        trim = (f"--trim_front {fastplong_trim_front} --trim_tail {fastplong_trim_tail}"
+                if fastplong_trim_front > 0 and fastplong_trim_tail > 0 else ''),
         adapter_arg = "--disable_adapter_trimming"
     shell:
         "fastplong -w {threads} {params.adapter_arg} {params.length_arg} {params.minlen_arg}"
