@@ -13,7 +13,7 @@ include: inc("ngs_pipeline::helper/utilities.smk")
 # source directories would be provided using config=dict() args of snakemake()
 if "outdir" in locals():
     # this rule file is executed under multi-sample flow
-    destdir = f"{outdir}/joint/"
+    destdir = f"{outdir}/joint"
 else:
     # this rule file is executed independently using run-joint-variant-caller command
     destdir = config.get('destdir', "joint-vcfs")
