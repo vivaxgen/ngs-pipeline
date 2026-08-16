@@ -6,7 +6,7 @@
 # prepend with @ for temporary file
 # {sample}-filtered{ff,rr,rf,trans,sec,sup,unmapped}@-optdup{rm}@-clipped@-target{g6pd}@-{idx}.bam
 
-# A Chained Path-Encoded State (CPES) is a workflow design pattern in which
+# A Cumulative Path-Encoded State (CPES) is a workflow design pattern in which
 # the requested output path encodes the desired sequence of transformations,
 # allowing the workflow engine to infer the corresponding execution graph
 
@@ -22,7 +22,7 @@
 # Note: since the filename might contains parentheses, all arguments in shell requiring the filename
 # should be quoted, e.g. '{input.bam}' or "{input.bam}" to avoid shell interpretation of special characters
 # Note: the following characters are not quoted by ls: # % : @ {} ~
-# alternative: {sample}-filter:ff:rf:trans:sec:sup:unmapped:maxis%300_-dup:rm_-clip:soft_-target:g6pd-{idx}.bam
+# alternative: {sample}-filter:ff:rf:trans:sec:sup:unmapped:maxis=300_-dup:rm_-clip:soft_-target:g6pd-{idx}.bam
 
 from time import sleep
 from ngs_pipeline.rules import inc
