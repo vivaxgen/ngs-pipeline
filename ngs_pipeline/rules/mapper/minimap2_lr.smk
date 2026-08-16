@@ -22,7 +22,7 @@ rule reads_mapping_lr:
         flags = config.get('minimap2_flags', ''),
         extra_flags = config.get('minimap2_extra_flags', ''),
     shell:
-        "minimap2 -t {params.threads} -a {refmap}"
+        "minimap2 -t {params.threads} -a {refmap} -y"
         "  {params.flags} {params.rg} {params.extra_flags}"
         "  {input.read} 2> {log.log1}"
         " | samtools sort -@4 -o {output.bam}"
