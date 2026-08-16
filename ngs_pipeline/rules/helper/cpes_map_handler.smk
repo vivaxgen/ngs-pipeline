@@ -6,11 +6,11 @@
 # prepend with @ for temporary file
 # {sample}-filtered{ff,rr,rf,trans,sec,sup,unmapped}@-optdup{rm}@-clipped@-target{g6pd}@-{idx}.bam
 
-# A filename-encoded workflow (FEW) is a workflow design pattern in which
-# the requested output filename encodes the desired sequence of transformations,
+# A Chained Path-Encoded State (CPES) is a workflow design pattern in which
+# the requested output path encodes the desired sequence of transformations,
 # allowing the workflow engine to infer the corresponding execution graph
 
-# The FEW grammar for this module is:
+# The CPES grammar for this module is:
 # - clip
 # - dup
 # - optdup
@@ -388,7 +388,7 @@ rule collect_pipeline_logs:
 
     threads: 1
     shell:
-        'ngs-pl calculate-few-stats -o {output.collected} --mindepth {min_depth}'
+        'ngs-pl calculate-cpes-stats -o {output.collected} --mindepth {min_depth}'
         ' {params.trimmed} {params.mapped} {params.depthed} --sample {params.sample}'
         ' {params.args}'
 

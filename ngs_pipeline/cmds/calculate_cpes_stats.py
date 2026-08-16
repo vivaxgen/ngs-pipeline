@@ -17,7 +17,7 @@ import typing
 
 from ngs_pipeline import cerr, arg_parser
 
-# command-line calculate-few-stats:
+# command-line calculate-cpes-stats:
 
 
 def init_argparser():
@@ -198,7 +198,7 @@ def calculate_depths(infiles, mindepth=5):
     return (L, average, q1)
 
 
-def calculate_few_stats(args):
+def calculate_cpes_stats(args):
 
     initial_reads, trimmed_reads = parse_read_trimming(args.trimmed)
 
@@ -363,7 +363,7 @@ def calculate_few_stats(args):
 
 
 def main(args):
-    calculate_few_stats(args)
+    calculate_cpes_stats(args)
 
 
 # EOF
