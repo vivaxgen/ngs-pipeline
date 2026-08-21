@@ -2,6 +2,7 @@
 # necessary imports
 import pathlib
 from ngs_pipeline import cerr
+from ngs_pipeline.rules import dbgmsg
 
 # generic parameters
 
@@ -9,6 +10,10 @@ from ngs_pipeline import cerr
 ngs_pipeline_basedir = config['NGS_PIPELINE_BASE']
 ngsenv_basedir = config['NGSENV_BASEDIR']
 
+
+# debug params
+_workdir = pathlib.Path(config.get('__workdir__', '.')).absolute()
+_verbosity = int(config.get('__verbosity__', 0))
 
 def get_abspath(p, prefix=ngsenv_basedir):
     if p is None:

@@ -4,6 +4,7 @@ from ngs_pipeline.snakeutils import (
     get_snakefile_path,
     path_to_str,
     set_default_rule_path,
+    dbgmsg,
 )
 
 # set the default rule path to ngs_pipeline
@@ -27,12 +28,12 @@ def pkg(fn):
     fullpath = path_to_str(get_snakefile_path(fn, strict_mode=False))
 
     if fullpath in __included_snakefiles__:
-        cerr(f"including: {fn} (already included, skipping)")
+        dbgmsg(f"including: {fn} (already included, skipping)", 3)
         return __void_snakefile__
 
     __included_snakefiles__.add(fullpath)
-    cerr(f"including: {fn}")
-    # cerr(f"fullpath: {fullpath}")
+    dbgmsg(f"including: {fn}", 3)
+    dbgmsg(f"  {fn} -> {fullpath}", 4)
     return fullpath
 
 
