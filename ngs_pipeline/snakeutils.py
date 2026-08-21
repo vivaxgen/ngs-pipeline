@@ -10,7 +10,7 @@ __license__ = "MIT"
 # snakeutils.py
 # [https://github.com/trmznt/py-snakeutils]
 
-__version__ = "2026.07.19.01"
+__version__ = "2026.08.21.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -32,6 +32,7 @@ L = logging.getLogger(__name__)
 
 
 _DEFAULT_RULE_PATH = None
+_VERBOSITY = 0
 
 
 def _cout(msg: str) -> None:
@@ -46,6 +47,11 @@ def _cerr(msg: str) -> None:
 def _cexit(msg: str, exit_code: int = 1) -> None:
     _cerr(msg)
     sys.exit(exit_code)
+
+
+def dbgmsg(msg: str, level: int = 1) -> None:
+    if _VERBOSITY >= level:
+        _cerr(msg)
 
 
 def set_default_rule_path(module: types.ModuleType, overwrite: bool = False) -> None:
@@ -602,6 +608,9 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
         action="store_true",
         help="keep incomplete files",
     )
+    p.add_argument(
+        "-v", "--verbosity", action="count", default=0, help="increase verbosity level"
+    )
 
     # continuation of previous run
     p.add_argument(
@@ -780,11 +789,18 @@ class SnakeExecutor(object):
         from snakemake import cli
         import shlex
 
+        global _VERBOSITY
+
         cwd = self.workdir or pathlib.Path.cwd()
         if "__workdir__" in config:
             raise ValueError('ERR: config key "__workdir__" is reserved')
         config["__workdir__"] = cwd
         _cerr(f"Current working directory: {cwd}")
+
+        if "__verbosity__" in config:
+            raise ValueError('ERR: config key "__verbosity__" is reserved')
+        config["__verbosity__"] = self.args.verbosity
+        _VERBOSITY = self.args.verbosity
 
         if not (force or self.args.force) and not cwd.is_relative_to(self.env_basedir):
             _cexit(
@@ -879,6 +895,8 @@ class SnakeExecutor(object):
             # add compatible additional arguments from command line
             if self.args.keep_incomplete:
                 argv.append("--keep-incomplete")
+
+            # add mitigation for WSL2 filesystem time-skew issue
 
             # extend the arguments with additional arguments from the function call
             argv.extend(shlex.split(additional_cli_args))
