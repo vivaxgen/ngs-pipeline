@@ -18,11 +18,11 @@ def _expand_sp(w, pattern):
                     dbgmsg(f"expanding pattern: {pattern} with pfx: {w.pfx}, sample: {get_sample(w)} and indexes: {idxs}", 4)
                     return expand(pattern, pfx=w.pfx, sample=get_sample(w), idx=idxs)
 
-                dbgmsg(f"expanding pattern: {pattern} with sample: {get_sample(w)} and indexes: {idxs}", 4)
+                dbgmsg(f"expanding pattern: {pattern} with sample: {get_sample(w)} and indexes: {idxs}", 3)
                 return expand(pattern, sample=get_sample(w), idx=idxs)
                 
             # just expand the pattern with the list of indexes for the given sample
-            dbgmsg(f"expanding pattern: {pattern} with indexes: {idxs}", 4)
+            dbgmsg(f"expanding pattern: {pattern} with indexes: {idxs}", 3)
             return expand(pattern, idx=idxs)
         # if the pattern does not contain {idx}, we just return the pattern with the sample prefix and sample name
         return [pattern.format(pfx=w.pfx, sample=get_sample(w))]

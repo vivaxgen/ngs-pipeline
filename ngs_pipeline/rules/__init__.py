@@ -28,12 +28,12 @@ def pkg(fn):
     fullpath = path_to_str(get_snakefile_path(fn, strict_mode=False))
 
     if fullpath in __included_snakefiles__:
-        dbgmsg(f"including: {fn} (already included, skipping)", 3)
+        dbgmsg(f"including: {fn} (already included, skipping)", 1)
         return __void_snakefile__
 
     __included_snakefiles__.add(fullpath)
-    dbgmsg(f"including: {fn}", 3)
-    dbgmsg(f"  {fn} -> {fullpath}", 4)
+    dbgmsg(f"including: {fn}", 1)
+    dbgmsg(f"  {fn} -> {fullpath}", 2)
     return fullpath
 
 
