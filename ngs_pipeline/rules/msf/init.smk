@@ -12,13 +12,22 @@ include: pkg("ngs_pipeline::msf/params.smk")
 
 # prepare sample-related parameters
 
+sample_re = re.compile(r"/samples/(?P<sample>[^/]+)/")
 
 def get_sample(w):
     # return the sample name from the sample wildcard
     # check if wildcard contains sample, if not raise error
-    if not hasattr(w, 'sample'):
-        raise ValueError("wildcard does not contain sample")
-    return w.sample
+    if hasattr(w, 'sample'):
+        return w.sample
+
+    if hasattr(w, 'anypath'):
+        # parse anypath for */samples/{sample}/*
+        match = sample_re.search(w.anypath)
+        if match:
+            return match.group('sample')
+        raise ValueError(f"Could not extract sample name from anypath: {w.anypath}")
+
+    raise ValueError("wildcard does not contain sample or anypath")
 
 
 def get_indexes(w):
