@@ -29,10 +29,10 @@ vcf_variants = get_abspath(config["vcf_variants"]) if "vcf_variants" in config e
 rule freebayes:
     threads: 2
     input:
-        bam = "<sp>maps/mapped-final.bam",
-        idx = "<sp>maps/mapped-final.bam.bai"
+        bam = "{anypath}maps/mapped-final.bam",
+        idx = "{anypath}maps/mapped-final.bam.bai"
     output:
-        vcf = "<sp>vcfs/variants.vcf.gz",
+        vcf = "{anypath}vcfs/variants.vcf.gz",
     params:
         target = f"--target {target_variants}" if target_variants else "",
         vcf_target = f"-@ {vcf_variants} -l" if vcf_variants else "",

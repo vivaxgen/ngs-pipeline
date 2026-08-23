@@ -38,16 +38,16 @@ def get_model_flag(w, input):
 rule clair3:
     threads: thread_allocations.get('variant_calling', 4)
     input:
-        bam = "<sp>maps/mapped-final.bam",
-        idx = "<sp>maps/mapped-final.bam.bai",
+        bam = "{anypath}maps/mapped-final.bam",
+        idx = "{anypath}maps/mapped-final.bam.bai",
         # we assume the model is identical for all index in a sample, hence use model-0.txt
-        model = "<sp>reads/model-0.txt" if ngs_platform.upper() in ['ONT'] else [],
+        model = "{anypath}reads/model-0.txt" if ngs_platform.upper() in ['ONT'] else [],
     output:
-        vcf = "<sp>vcfs/clair3/merge_output.vcf.gz",
-        idx = "<sp>vcfs/clair3/merge_output.vcf.gz.tbi",
+        vcf = "{anypath}vcfs/clair3/merge_output.vcf.gz",
+        idx = "{anypath}vcfs/clair3/merge_output.vcf.gz.tbi",
     log:
-        log1 = "<sp>logs/clair3.log",
-        log2 = "<sp>logs/clair3.err",
+        log1 = "{anypath}logs/clair3.log",
+        log2 = "{anypath}logs/clair3.err",
     params:
         sample = get_sample,
         platform = ngs_platform.lower(),
@@ -59,7 +59,11 @@ rule clair3:
         outfmt = "",
         # generate-null-gvcf params
         dict_file = f"{refseq.removesuffix('.fasta')}.dict",
-        contig = lambda w: f"--contig {w.region}" if w.region != complete_region else "",
+        # XXX: fix this in case region is not defined, eg. hasattr(w, "region") and w.region != complete_region
+        contig = lambda w: (f"--contig {w.region}"
+                            if getattr(w, 'region', None) and getattr(w, 'region') != complete_region
+                            else "")
+        # contig = lambda w: f"--contig {w.region}" if w.region != complete_region else "",
     shell:
         "run_clair3"
         "  --bam_fn {input.bam}"
@@ -98,19 +102,19 @@ rule clair3_symlink:
 
 use rule clair3 as clair3_gvcf with:
     output:
-        vcf = "<sp>gvcf/clair3/merge_output.gvcf.gz",
-        idx = "<sp>gvcf/clair3/merge_output.gvcf.gz.tbi",
+        vcf = "{anypath}gvcf/clair3/merge_output.gvcf.gz",
+        idx = "{anypath}gvcf/clair3/merge_output.gvcf.gz.tbi",
     params:
         outfmt = "--gvcf",
 
 
 use rule clair3 as clair3_gvcf_region with:
     output:
-        vcf = "<sp>gvcf/clair3-{region}/merge_output.gvcf.gz",
-        idx = "<sp>gvcf/clair3-{region}/merge_output.gvcf.gz.tbi",
+        vcf = "{anypath}gvcf/clair3-{region}/merge_output.gvcf.gz",
+        idx = "{anypath}gvcf/clair3-{region}/merge_output.gvcf.gz.tbi",
     log:
-        log1 = "<sp>logs/clair3-{region}.log",
-        log2 = "<sp>logs/clair3-{region}.err",
+        log1 = "{anypath}logs/clair3-{region}.log",
+        log2 = "{anypath}logs/clair3-{region}.err",
     params:
         outfmt = lambda w: f"--gvcf --include_all_ctgs" if (w.region == complete_region) else f"--gvcf --ctg_name {w.region}",
 

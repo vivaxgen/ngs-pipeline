@@ -17,11 +17,12 @@ def get_haplotypecaller_region(wildcards):
 rule gatk_haplotypecaller:
     threads: thread_allocations.get('haplotyping', 2)
     input:
-        "<sp>maps/mapped-final-recal.bam"
+        #"<sp>maps/mapped-final-recal.bam"
+        "{anypath}maps/mapped-final.bam"
     output:
-        replace_sp("<sp>gvcf/{sample}-{reg}.g.vcf.gz"),
+        "{anypath}gvcf/variants-{reg}.g.vcf.gz",
     log:
-        "<sp>logs/haplotypecaller-{sample}-{reg}.log"
+        "{anypath}logs/haplotypecaller-{reg}.log"
     params:
         sample = get_sample,
         reg = get_haplotypecaller_region,
@@ -31,5 +32,22 @@ rule gatk_haplotypecaller:
         "gatk {java_opts} HaplotypeCaller  --native-pair-hmm-threads {threads}"
         "  -R {refseq}  -I {input} {params.reg}  -ploidy {ploidy}  -ERC GVCF"
         "  {params.flags} {params.extra_flags}  -O {output}  2> {log}"
+
+
+rule gatk_haplotypecaller_rename:
+    # this is needed to make sure that the gvcf files have unique filenames
+    # by having sample name, instead of just the region name
+    localrule: True
+    input:
+        gvcf = "<sp>gvcf/variants-{reg}.g.vcf.gz",
+        gvcf_index = "<sp>gvcf/variants-{reg}.g.vcf.gz.tbi",
+    output:
+        gvcf = replace_sp("<sp>gvcf/{sample}-{reg}.g.vcf.gz"),
+        gvcf_index = replace_sp("<sp>gvcf/{sample}-{reg}.g.vcf.gz.tbi"),
+    shell:
+        "ln {input.gvcf} {output.gvcf}"
+        " && "
+        "ln {input.gvcf_index} {output.gvcf_index}"
+
 
 # EOF
