@@ -379,18 +379,20 @@ rule collect_pipeline_logs:
         depths = expand_sp('<sp>logs/mapped-final-{idx}.depths.txt.gz'),
     output:
         collected = '<sp>logs/stats.tsv'
+    log:
+        log1 = '<sp>logs/stats-collect.log',
     params:
         sample = get_sample,
         args = construct_log_args,
         trimmed = lambda wildcards, input: '--trimmed ' + ' --trimmed '.join(input.trims),
         mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps),
         depthed = lambda wildcards, input: '--depth ' + ' --depth '.join(input.depths),
-
     threads: 1
     shell:
         'ngs-pl calculate-cpes-stats -o {output.collected} --mindepth {min_depth}'
         ' {params.trimmed} {params.mapped} {params.depthed} --sample {params.sample}'
         ' {params.args}'
+        ' 2> {log.log1}'
 
 
 # EOF
