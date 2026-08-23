@@ -56,6 +56,7 @@ thread_allocations = config.get('thread_allocations', {})
 wildcard_constraints:
     sample = r'[.\w-]+',
     idx = r'\d',
+    anypath = r"(.*/)?",    # matches either a path ending in '/' or empty string
 
 # for indexing, use the correct extension for bwa / bwa-mem2
 
