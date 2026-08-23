@@ -8,7 +8,7 @@ __license__ = "MIT"
 # this snakemake rules is intended to generate null bam files to allow
 # DAG to generate the necessary input files for trimming rules
 
-include: "mapper_null_pe.smk"
+include: "null_pe.smk"
 
 use rule mapping_pe as mapping_lr:
     input:
