@@ -44,16 +44,6 @@ def get_final_bam_file(w):
     return config.get("final_bam_file","<sp>maps/mapped-filter-dup:rm-{idx}.bam")
 
 
-rule map_link:
-    localrule: True
-    input:
-        bam = get_mapped_bam_file()
-    output:
-        bam = temp("<sp>maps/mapped-{idx}.bam")
-    shell:
-        "ln -f {input.bam} {output.bam}"
-
-
 rule map_final_link:
     localrule: True
     input:

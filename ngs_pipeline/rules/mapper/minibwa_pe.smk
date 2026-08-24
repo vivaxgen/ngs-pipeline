@@ -6,21 +6,24 @@ __author__ = "trimarsanto@gmail.com"
 __license__ = "MIT"
 
 
+include: "init.smk"
+
+
 rule reads_mapping:
     threads: 8
     input:
-        read1 = "<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz",
-        read2 = "<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz",
+        read1 = "{anypath}trimmed-reads/trimmed-{idx}_R1.fastq.gz",
+        read2 = "{anypath}trimmed-reads/trimmed-{idx}_R2.fastq.gz",
         # the following is for sanity check purposes
         refseq = refseq,
         refmap = f"{refseq}.{idx_extension}"
     output:
-        bam = temp_unless(get_mapped_bam_file(), keep_paired_bam),
+        bam = temp_unless("{anypath}maps/mapped-{idx}.bam", keep_paired_bam),
     log:
-        log1 = "<sp>logs/minibwa-{idx}.log",
-        log2 = "<sp>logs/filter-reads-{idx}.json",
-        log3 = "<sp>logs/filter_reads_region-{idx}.log",
-        log4 = "<sp>logs/fixmate-{idx}.log",
+        log1 = "{anypath}logs/minibwa-{idx}.log",
+        log2 = "{anypath}logs/filter-reads-{idx}.json",
+        log3 = "{anypath}logs/filter_reads_region-{idx}.log",
+        log4 = "{anypath}logs/fixmate-{idx}.log",
     params:
         sample = get_sample,
         rg = lambda w: f"-R '@RG\\tID:{get_sample(w)}-{w.idx}\\tSM:{get_sample(w)}\\tLB:LIB-{get_sample(w)}-{w.idx}\\tPL:{ngs_platform}'",

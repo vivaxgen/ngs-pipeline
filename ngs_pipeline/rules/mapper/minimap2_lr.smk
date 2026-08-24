@@ -7,15 +7,18 @@ __license__ = "MIT"
 # required variables:
 # - refmap
 
+include: "init.smk"
+
+
 rule reads_mapping_lr:
     threads: 8
     input:
-        read = "<sp>trimmed-reads/trimmed-{idx}.fastq.gz"
+        read = "{anypath}trimmed-reads/trimmed-{idx}.fastq.gz"
     output:
         #bam = temp("{pfx}/{sample}/maps/{sample}-{idx}.bam")
-        bam = temp_unless(get_mapped_bam_file(), keep_paired_bam),
+        bam = temp_unless("{anypath}maps/mapped-{idx}.bam", keep_paired_bam),
     log:
-        log1 = "<sp>logs/minimap2-{idx}.log",
+        log1 = "{anypath}logs/minimap2-{idx}.log",
     params:
         rg = lambda w: f"-R @RG\\\\tID:{get_sample(w)}-{w.idx}\\\\tSM:{get_sample(w)}\\\\tLB:LIB-{get_sample(w)}-{w.idx}",
         threads = lambda wildcards, threads: threads - 1,

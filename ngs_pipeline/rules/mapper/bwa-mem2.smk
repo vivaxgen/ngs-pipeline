@@ -10,6 +10,8 @@
 # LB: library prep ID, can be batch or set name for simplicity
 # PL: sequencing platform, eg: ILLUMINA
 
+include: "init.smk"
+
 
 rule reads_mapping:
     # this rule provides a name-sorted bam file with only mapped paired reads with:
@@ -19,19 +21,19 @@ rule reads_mapping:
     # the final bam file is suitable for uploading to SRA public database
     threads: thread_allocations.get('bwa_mapping', 16)
     input:
-        read1 = "<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz",
-        read2 = "<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz",
+        read1 = "{anypath}trimmed-reads/trimmed-{idx}_R1.fastq.gz",
+        read2 = "{anypath}trimmed-reads/trimmed-{idx}_R2.fastq.gz",
         # the following is for sanity check purposes
         refseq = refseq,
         refmap = f"{refseq}.{idx_extension}"
 
     output:
-        bam = temp_unless(get_mapped_bam_file(), keep_paired_bam),
+        bam = temp_unless("{anypath}maps/mapped-{idx}.bam", keep_paired_bam),
     log:
-        log1 = "<sp>logs/bwa-mem2-{idx}.log",
-        log2 = "<sp>logs/filter-reads-{idx}.json",
-        log3 = "<sp>logs/filter_reads_region-{idx}.log",
-        log4 = "<sp>logs/fixmate-{idx}.log"
+        log1 = "{anypath}logs/bwa-mem2-{idx}.log",
+        log2 = "{anypath}logs/filter-reads-{idx}.json",
+        log3 = "{anypath}logs/filter_reads_region-{idx}.log",
+        log4 = "{anypath}logs/fixmate-{idx}.log"
 
     params:
         sample = get_sample,
@@ -44,5 +46,6 @@ rule reads_mapping:
         "bwa-mem2 mem -M -t {threads} {params.flags} {params.extra_flags} {params.rg} {refseq} {input.read1} {input.read2} 2> {log.log1}"
         " | ngs-pl filter-reads-region --outstat {log.log2} {params.mode} {params.regions} 2> {log.log3}"
         " | samtools fixmate -m - {output.bam} 2> {log.log4}"
+
 
 # EOF
