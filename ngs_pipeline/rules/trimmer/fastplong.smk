@@ -14,14 +14,14 @@ fastplong_trim_tail = config.get('fastplong_trim_tail', 20)
 rule reads_trimming_lr:
     threads: 4
     input:
-        read = "<sp>reads/raw-{idx}_R0.fastq.gz",
-        model = "<sp>reads/model-{idx}.txt" if ngs_platform.upper() in ['ONT'] else []
+        read = "{anypath}reads/raw-{idx}_R0.fastq.gz",
+        model = "{anypath}reads/model-{idx}.txt" if ngs_platform.upper() in ['ONT'] else []
     output:
-        trimmed = temp_unless("<sp>trimmed-reads/trimmed-{idx}.fastq.gz", keep_trimmed_fastq)
+        trimmed = temp_unless("{anypath}trimmed-reads/trimmed-{idx}.fastq.gz", keep_trimmed_fastq)
     log:
-        log1 = "<sp>logs/reads_trimming-{idx}.log",
-        log2 = "<sp>logs/fastplong-{idx}.json",
-        log3 = "<sp>logs/fastplong-{idx}.html"
+        log1 = "{anypath}logs/reads_trimming-{idx}.log",
+        log2 = "{anypath}logs/fastplong-{idx}.json",
+        log3 = "{anypath}logs/fastplong-{idx}.html"
     params:
         length_arg = f'--length_limit {maxlen}' if maxlen > 0 else '-L',
         minlen_arg = f'--length_required {minlen}' if minlen > 0 else '',
@@ -41,9 +41,9 @@ rule reads_trimming_lr:
 rule trimming_stat:
     localrule: True
     input:
-        "<sp>logs/fastplong-{idx}.json"
+        "{anypath}logs/fastplong-{idx}.json"
     output:
-        "<sp>logs/trimming_stat-{idx}.json"
+        "{anypath}logs/trimming_stat-{idx}.json"
     run:
         import json
 

@@ -33,12 +33,12 @@ optdedup = config.get('optical_dedup', False)
 
 rule optical_dedup:
     input:
-        read1 = "<sp>reads/raw-{idx}_R1.fastq.gz",
-        read2 = "<sp>reads/raw-{idx}_R2.fastq.gz"
+        read1 = "{anypath}reads/raw-{idx}_R1.fastq.gz",
+        read2 = "{anypath}reads/raw-{idx}_R2.fastq.gz"
     output:
-        dedup1 = temp_unless("<sp>trimmed-reads/dedup-{idx}_R1.fastq.gz", keep_optdeduped_fastq),
-        dedup2 = temp_unless("<sp>trimmed-reads/dedup-{idx}_R2.fastq.gz", keep_optdeduped_fastq)
-    log: "<sp>logs/optical_dedup-{idx}.log"
+        dedup1 = temp_unless("{anypath}trimmed-reads/dedup-{idx}_R1.fastq.gz", keep_optdeduped_fastq),
+        dedup2 = temp_unless("{anypath}trimmed-reads/dedup-{idx}_R2.fastq.gz", keep_optdeduped_fastq)
+    log: "{anypath}logs/optical_dedup-{idx}.log"
     shell:
         "clumpify.sh in={input.read1} in2={input.read2} out1={output.dedup1} out2={output.dedup2} dedupe optical %s 2> {log}"
         % ('spany adjacent' if is_nextseq_or_novaseq() else '')
@@ -47,12 +47,12 @@ rule optical_dedup:
 rule reads_trimming:
     threads: 8
     input:
-        read1 = "<sp>trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R1.fastq.gz",
-        read2 = "<sp>trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "<sp>reads/raw-{idx}_R2.fastq.gz"
+        read1 = "{anypath}trimmed-reads/dedup-{idx}_R1.fastq.gz" if optdedup else "{anypath}reads/raw-{idx}_R1.fastq.gz",
+        read2 = "{anypath}trimmed-reads/dedup-{idx}_R2.fastq.gz" if optdedup else "{anypath}reads/raw-{idx}_R2.fastq.gz"
     output:
-        trimmed1 = temp_unless("<sp>trimmed-reads/trimmed-{idx}_R1.fastq.gz", keep_trimmed_fastq),
-        trimmed2 = temp_unless("<sp>trimmed-reads/trimmed-{idx}_R2.fastq.gz", keep_trimmed_fastq)
-    log: "<sp>logs/reads_trimming-{idx}.log"
+        trimmed1 = temp_unless("{anypath}trimmed-reads/trimmed-{idx}_R1.fastq.gz", keep_trimmed_fastq),
+        trimmed2 = temp_unless("{anypath}trimmed-reads/trimmed-{idx}_R2.fastq.gz", keep_trimmed_fastq)
+    log: "{anypath}logs/reads_trimming-{idx}.log"
     params:
         nextseq_arg = '--nextseq-trim 20' if is_nextseq_or_novaseq() else '',
         length_arg = f'--length {maxlen}' if maxlen > 0 else '',
@@ -62,12 +62,13 @@ rule reads_trimming:
     shell:
         "cutadapt {params.nextseq_arg} -j {threads} {params.length_arg} {params.minlen_arg} {params.qual_arg} -O 3 {params.adapter_arg} -o {output.trimmed1} -p {output.trimmed2} {input.read1} {input.read2} > {log}"
 
+
 rule trimming_stat:
     localrule: True
     input:
-        "<sp>logs/reads_trimming-{idx}.log"
+        "{anypath}logs/reads_trimming-{idx}.log"
     output:
-        "<sp>logs/trimming_stat-{idx}.json"
+        "{anypath}logs/trimming_stat-{idx}.json"
     run:
         import json
 
