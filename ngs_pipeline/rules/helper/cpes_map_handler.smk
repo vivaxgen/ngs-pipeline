@@ -41,7 +41,7 @@ def get_final_bam_file(w):
     """ return the final bam file for further processing """
     #return "maps/mapped-filter-dup-{idx}.bam"
     #return "maps/mapped-filter(rr+ff+rf)-{idx}.bam"
-    return config.get("final_bam_file","<sp>maps/mapped-filter-dup:rm-{idx}.bam")
+    return "<sp>maps/" + config.get("final_bam_file", "mapped-filter-dup:rm-{idx}.bam")
 
 
 rule map_final_link:
