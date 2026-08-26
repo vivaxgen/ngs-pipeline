@@ -2,7 +2,7 @@
 from ngs_pipeline import cerr
 from ngs_pipeline.rules import dbgmsg
 
-def _expand_sp(w, pattern):
+def _expand_sp_xxx(w, pattern):
     """ expand the given pattern with the sample prefix, sample name and/or index if necessary. """
 
     if "<sp>" in pattern:
@@ -15,24 +15,71 @@ def _expand_sp(w, pattern):
             if "{sample}" in pattern:
                 if "{pfx}" in pattern:
                     # if the pattern contains {sample}, we need to expand it with the sample name as well
-                    dbgmsg(f"expanding pattern: {pattern} with pfx: {w.pfx}, sample: {get_sample(w)} and indexes: {idxs}", 4)
-                    return expand(pattern, pfx=w.pfx, sample=get_sample(w), idx=idxs)
+                    dbgmsg(f"expanding pattern: {pattern} with pfx: {w.pfx}, sample: {get_sample(w)} and indexes: {idxs}", 3)
+                    return expand(pattern, pfx=w.pfx, sample=get_sample(w), idx=idxs, allow_missing=True)
 
                 dbgmsg(f"expanding pattern: {pattern} with sample: {get_sample(w)} and indexes: {idxs}", 3)
-                return expand(pattern, sample=get_sample(w), idx=idxs)
-                
+                return expand(pattern, sample=get_sample(w), idx=idxs, allow_missing=True)
+
             # just expand the pattern with the list of indexes for the given sample
             dbgmsg(f"expanding pattern: {pattern} with indexes: {idxs}", 3)
-            return expand(pattern, idx=idxs)
+            return expand(pattern, idx=idxs, allow_missing=True)
         # if the pattern does not contain {idx}, we just return the pattern with the sample prefix and sample name
         return [pattern.format(pfx=w.pfx, sample=get_sample(w))]
+
 
     if "{idx}" in pattern:
         # if the pattern contains {idx}, we need to expand it with the list of indexes for the given sample
         idxs = get_indexes(w)
-        return expand(pattern, idx=idxs)
+        res = expand(pattern, idx=idxs, allow_missing=True)
+        dbgmsg(f"expanding pattern: {pattern} with indexes: {idxs} => {res}", 3)
+        return res
     
     # if the pattern does not contain <sp> or {idx}, we just return the pattern as is
+    return pattern
+
+
+def _expand_sp(w, pattern):
+    """ expand the given pattern with the sample prefix, sample name and/or index if necessary. """
+
+    has_sp = "<sp>" in pattern
+    has_idx = "{idx}" in pattern
+    has_sample = "{sample}" in pattern
+    has_pfx = "{pfx}" in pattern
+
+    if has_sp:
+        # replace <sp> with the sample prefix
+        pattern = pattern.replace("<sp>", SP)
+
+    if has_idx:
+        # if the pattern contains {idx}, we need to expand it with the list of indexes for the given sample
+        idxs = get_indexes(w)
+        if has_sample:
+            if has_pfx:
+                # if the pattern contains {sample}, we need to expand it with the sample name as well
+                res = expand(pattern, pfx=w.pfx, sample=get_sample(w), idx=idxs, allow_missing=True)
+                dbgmsg(f"expanding pattern: {pattern} with pfx: {w.pfx}, sample: {get_sample(w)} and indexes: {idxs} => {res}", 3)
+                return res
+
+            res = expand(pattern, sample=get_sample(w), idx=idxs, allow_missing=True)
+            dbgmsg(f"expanding pattern: {pattern} with sample: {get_sample(w)} and indexes: {idxs} => {res}", 3)
+            return res
+
+        # just expand the pattern with the list of indexes for the given sample
+        res = expand(pattern, idx=idxs, allow_missing=True)
+        dbgmsg(f"expanding pattern: {pattern} with indexes: {idxs} => {res}", 3)
+        return res
+
+    if has_sample:
+        if has_pfx:
+            res = [pattern.format(pfx=w.pfx, sample=get_sample(w))]
+            dbgmsg(f"expanding pattern: {pattern} with pfx: {w.pfx} and sample: {get_sample(w)} => {res}", 3)
+            return res
+
+        res = [pattern.format(sample=get_sample(w))]
+        dbgmsg(f"expanding pattern: {pattern} with sample: {get_sample(w)} => {res}", 3)
+        return res
+
     return pattern
 
 
