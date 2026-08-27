@@ -139,7 +139,7 @@ def process_dictionary(headers: HeaderDB) -> int:
             f"ERROR!\n"
             f"Missing ONT models: {sorted(missing_models)}\n"
             f"Please fetch the missing models using the 'fetch-clair3-models' command.\n"
-            f"eg. ngs-pipeline fetch-clair3-models --model {missing_models[0]}"
+            f"ie. ngs-pl fetch-clair3-models --model {missing_models[0]}"
             f"\n\n\n"
         )
 
