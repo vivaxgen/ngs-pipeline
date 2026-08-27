@@ -17,7 +17,7 @@ rule reads_trimming_lr:
         read = "{anypath}reads/raw-{idx}_R0.fastq.gz",
         model = "{anypath}reads/model-{idx}.txt" if ngs_platform.upper() in ['ONT'] else []
     output:
-        trimmed = temp_unless("{anypath}trimmed-reads/trimmed-{idx}.fastq.gz", keep_trimmed_fastq)
+        trimmed = temp_unless("{anypath}trimmed-reads/trimmed-{idx}_R0.fastq.gz", keep_trimmed_fastq)
     log:
         log1 = "{anypath}logs/reads_trimming-{idx}.log",
         log2 = "{anypath}logs/fastplong-{idx}.json",

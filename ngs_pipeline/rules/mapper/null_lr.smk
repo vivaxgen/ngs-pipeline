@@ -12,6 +12,6 @@ include: "null_pe.smk"
 
 use rule mapping_pe as mapping_lr:
     input:
-        read0 = "<sp>trimmed-reads/trimmed-{idx}.fastq.gz",
+        read0 = "<sp>trimmed-reads/trimmed-{idx}_R0.fastq.gz",
 
 # EOF

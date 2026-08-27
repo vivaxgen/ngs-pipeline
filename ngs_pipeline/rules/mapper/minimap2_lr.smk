@@ -13,7 +13,7 @@ include: "init.smk"
 rule reads_mapping_lr:
     threads: 8
     input:
-        read = "{anypath}trimmed-reads/trimmed-{idx}.fastq.gz"
+        read = "{anypath}trimmed-reads/trimmed-{idx}_R0.fastq.gz"
     output:
         #bam = temp("{pfx}/{sample}/maps/{sample}-{idx}.bam")
         bam = temp_unless("{anypath}maps/mapped-{idx}.bam", keep_paired_bam),
