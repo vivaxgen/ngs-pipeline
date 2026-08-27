@@ -10,7 +10,7 @@ __license__ = "MIT"
 # snakeutils.py
 # [https://github.com/trmznt/py-snakeutils]
 
-__version__ = "2026.08.21.01"
+__version__ = "2026.08.28.01"
 
 # this module provides wrapper to execute Snakemake file from Python code
 
@@ -611,6 +611,7 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
     p.add_argument(
         "-v", "--verbosity", action="count", default=0, help="increase verbosity level"
     )
+    p.add_argument("--debug-dag", default=False, action="store_true", help="debug DAG")
 
     # continuation of previous run
     p.add_argument(
@@ -895,6 +896,10 @@ class SnakeExecutor(object):
             # add compatible additional arguments from command line
             if self.args.keep_incomplete:
                 argv.append("--keep-incomplete")
+
+            # add debug-dag argument if requested
+            if self.args.debug_dag:
+                argv.append("--debug-dag")
 
             # add mitigation for WSL2 filesystem time-skew issue
 
