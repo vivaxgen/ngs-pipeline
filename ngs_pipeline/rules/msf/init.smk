@@ -33,9 +33,12 @@ def get_sample(w):
 def get_indexes(w):
     # return the list of indexes for the given sample
     # check if sample is in the list of samples, if not raise error
-    if w.sample not in read_files.samples():
-        raise ValueError(f"sample {w.sample} not found in the list of samples")
-    return read_files.get_indexes(w.sample)
+    sample = get_sample(w)
+    if sample in read_files.samples():
+        dbgmsg(f"sample {sample} found in the list of samples", 3)
+        return read_files.get_indexes(sample)
+
+    raise ValueError(f"sample {sample} not found in the list of samples")
 
 
 def expand_index(w, pattern):
