@@ -43,13 +43,14 @@ def _expand_sp(w, pattern):
     """ expand the given pattern with the sample prefix, sample name and/or index if necessary. """
 
     has_sp = "<sp>" in pattern
-    has_idx = "{idx}" in pattern
-    has_sample = "{sample}" in pattern
-    has_pfx = "{pfx}" in pattern
 
     if has_sp:
         # replace <sp> with the sample prefix
         pattern = pattern.replace("<sp>", SP)
+
+    has_idx = "{idx}" in pattern
+    has_sample = "{sample}" in pattern
+    has_pfx = "{pfx}" in pattern
 
     if has_idx:
         # if the pattern contains {idx}, we need to expand it with the list of indexes for the given sample
