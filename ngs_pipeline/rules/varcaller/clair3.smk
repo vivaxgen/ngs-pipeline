@@ -60,9 +60,7 @@ rule clair3:
         # generate-null-gvcf params
         dict_file = f"{refseq.removesuffix('.fasta')}.dict",
         # XXX: fix this in case region is not defined, eg. hasattr(w, "region") and w.region != complete_region
-        contig = lambda w: (f"--contig {w.region}"
-                            if getattr(w, 'region', None) and getattr(w, 'region') != complete_region
-                            else "")
+        contig = lambda w: f"--contig {w.get('region')}" if w.get('region', None) != complete_region else "",
         # contig = lambda w: f"--contig {w.region}" if w.region != complete_region else "",
     shell:
         "run_clair3"

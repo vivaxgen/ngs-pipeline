@@ -29,6 +29,11 @@ rule panelseq:
         f"{refseq}.fai",
         refmap,
 
+all_variant_vcf = [config.get(k) for k in config.keys() if k.startswith("target_variants_vcf")]
+
+rule variant_vcf:
+    input:
+        *[f"{get_abspath(vcf)}.csi" for vcf in all_variant_vcf]
 
 rule snpEff_db:
     input:
