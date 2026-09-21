@@ -44,6 +44,7 @@ rule freebayes:
         monomorphic = '--report-monomorphic' if target_variants else '',
         freebayes_extra_flags = config.get('freebayes_extra_flags', ''),
         min_read_qual = min_read_qual,
+        haplotype_length = config.get('freebayes_haplotype_length', 0),
     run:
         import os
         import pandas as pd
@@ -58,7 +59,7 @@ rule freebayes:
                     shell(f"bgzip {output.vcf.replace('.vcf.gz', '.vcf')}")
         if not os.path.exists(output.vcf):
             shell(
-                "freebayes -f {refseq} {params.target} {params.vcf_target} {params.input_allele_only} {params.monomorphic} --haplotype-length 0 "
+                "freebayes -f {refseq} {params.target} {params.vcf_target} {params.input_allele_only} {params.monomorphic} --haplotype-length {params.haplotype_length} "
                 "--min-base-quality {params.min_read_qual} {params.freebayes_extra_flags} {input.bam} "
                 "| bcftools sort -o {output.vcf}"
             )

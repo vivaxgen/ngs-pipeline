@@ -33,7 +33,8 @@ all_variant_vcf = [config.get(k) for k in config.keys() if k.startswith("target_
 
 rule variant_vcf:
     input:
-        *[f"{get_abspath(vcf)}.csi" for vcf in all_variant_vcf]
+        *[f"{get_abspath(vcf)}.csi" for vcf in all_variant_vcf],
+        *[f"{get_abspath(vcf)}.tbi" for vcf in all_variant_vcf],
 
 rule snpEff_db:
     input:
