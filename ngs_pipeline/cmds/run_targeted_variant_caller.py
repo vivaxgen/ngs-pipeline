@@ -93,6 +93,10 @@ def run_targeted_variant_caller(args, optional_config={}):
     # check exixtence of output directory
     if pathlib.Path(args.outdir).exists():
         while True:
+            if args.rerun:
+                import shutil
+                shutil.rmtree(args.outdir)
+                break
             resp = input(
                 f"Output directory {args.outdir} already exists.\n"
                 f"Continue/overwrite/abort [c/o/a]: "
