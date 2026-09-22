@@ -82,6 +82,9 @@ rule clair3:
         "  {params.contig} --dict {params.dict_file};"
         "  [ -f {output.idx} ] || tabix -p vcf {output.vcf};"
         "fi"
+        "if [ ! -s {output.idx} ]; then"
+        "  tabix -p vcf -f {output.vcf};"
+        "fi"
 
 
 rule clair3_symlink:
