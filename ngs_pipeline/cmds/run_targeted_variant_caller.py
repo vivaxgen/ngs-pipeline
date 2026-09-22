@@ -74,7 +74,9 @@ def init_argparser():
     p.add_argument(
         "--remove-prefix", default=None, help="prefix to remove from original filename"
     )
-
+    p.add_argument(
+        "--resume", action="store_true", default=False, help="resume from previous run"
+    )
     p.add_argument("-i", "--manifest", default=None, help="manifest file  as input")
     p.add_argument(
         "infiles", nargs="*", help="FASTQ input files, eg. sample-1.fastq.gz"
@@ -96,6 +98,8 @@ def run_targeted_variant_caller(args, optional_config={}):
             if args.rerun:
                 import shutil
                 shutil.rmtree(args.outdir)
+                break
+            if args.resume:
                 break
             resp = input(
                 f"Output directory {args.outdir} already exists.\n"

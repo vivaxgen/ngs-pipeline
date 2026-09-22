@@ -81,7 +81,7 @@ rule clair3:
         "  ngs-pl generate-null-gvcf -o {output.vcf} -s {params.sample}"
         "  {params.contig} --dict {params.dict_file};"
         "  [ -f {output.idx} ] || tabix -p vcf {output.vcf};"
-        "fi"
+        "fi; "
         "if [ ! -s {output.idx} ]; then"
         "  tabix -p vcf -f {output.vcf};"
         "fi"
