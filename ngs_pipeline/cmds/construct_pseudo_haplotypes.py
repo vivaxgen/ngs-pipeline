@@ -226,6 +226,8 @@ def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, 
 
     while True:
         aln = next(alignments, None)
+        if aln is None:
+            break
         if aln.is_unmapped or aln.is_secondary or aln.is_supplementary:
             continue
         print(f"Processing alignment: {total}", end="\r", flush=True, file=os.sys.stderr)
