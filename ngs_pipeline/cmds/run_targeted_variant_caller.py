@@ -70,6 +70,12 @@ def init_argparser():
         default=0,
         help="the number of underscore to remove from the beginning of the filename",
     )
+    p.add_argument(
+        "--skip",
+        default=[],
+        action="append",
+        help="skip samples with the given name (can be used multiple times)",
+    )
 
     p.add_argument(
         "--remove-prefix", default=None, help="prefix to remove from original filename"
@@ -147,7 +153,7 @@ def run_targeted_variant_caller(args, optional_config={}):
         underscore_prefix=args.remove_underscore_prefix,
         remove_prefix=args.remove_prefix,
         mode=mode,
-        skip_list=[],
+        skip_list=args.skip,
         manifest_file=args.manifest,
         sort_by_size=True,
     )
