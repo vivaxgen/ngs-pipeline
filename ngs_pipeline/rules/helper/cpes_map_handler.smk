@@ -51,7 +51,7 @@ rule map_final_link:
     output:
         bam = temp("<sp>maps/mapped-final-{idx}.bam")
     shell:
-        "ln -f '{input.bam}' '{output.bam}'"
+        "cp --reflink=auto '{input.bam}' '{output.bam}'"
 
 
 def get_filter_options(w):
