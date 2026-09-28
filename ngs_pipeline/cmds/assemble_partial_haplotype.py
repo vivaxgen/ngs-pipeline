@@ -31,7 +31,7 @@ def scan_for_seed(haplotypes: list[str], strict=False) -> list[str]:
     for hap in haplotypes:
         if set(list(hap)) == {"?"}:
             continue
-        elif hap.count("?") == len(hap) - 1:
+        elif hap.count("?") == len(hap) - 1 and len(hap) > 1:
             continue
         elif seeds == []:
             seeds.append(hap)
@@ -58,7 +58,7 @@ def assign_to_groups(hap_df, seeds, strict=False) -> list[dict]:
         if set(list(haplotype)) == {"?"}:
             continue
         # remove single SNP
-        if haplotype.count("?") == len(haplotype) - 1:
+        if haplotype.count("?") == len(haplotype) - 1 and len(haplotype) > 1:
             continue
         
         compatible_count = 0
