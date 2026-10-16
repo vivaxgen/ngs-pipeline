@@ -5,7 +5,7 @@ from ngs_pipeline import cerr
 from ngs_pipeline.rules import dbgmsg
 
 # generic parameters
-
+include: "helper/shell_delay.smk"
 # get base directories
 ngs_pipeline_basedir = config['NGS_PIPELINE_BASE']
 ngsenv_basedir = config['NGSENV_BASEDIR']

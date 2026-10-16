@@ -10,7 +10,7 @@ rule mapped_bam_link:
     output:
         bam = temp_unless(get_mapped_bam_file(), keep_paired_bam),
     shell:
-        "ln -f {input.bam} {output.bam}"
+        "cp --reflink=auto {input.bam} {output.bam}"
 
 
 # EOF

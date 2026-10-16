@@ -646,6 +646,12 @@ def init_argparser(desc: str = "", p: ArgumentParser | None = None) -> ArgumentP
         action="store_true",
         help="run without cluster support (eg. only on local node), useful for debugging",
     )
+    p.add_argument(
+        "--shell-min-delay",
+        type=int,
+        default=0,
+        help="sleep SECONDS before every shell command to absorb clock skew default 0",
+    )
 
     # general options
     p.arg_dict["target"] = p.register_argument(
@@ -902,6 +908,7 @@ class SnakeExecutor(object):
                 argv.append("--debug-dag")
 
             # add mitigation for WSL2 filesystem time-skew issue
+            config["shell_min_delay"] = self.args.shell_min_delay or 0
 
             # extend the arguments with additional arguments from the function call
             argv.extend(shlex.split(additional_cli_args))

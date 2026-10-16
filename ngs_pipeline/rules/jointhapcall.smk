@@ -5,7 +5,7 @@
 # we use Clair3 variant calling result and GATK GenotypeGVCFs to perform
 # joint-variant calling
 
-include: "jointvarcall_gatk.smk"
+include: "jointvarcall_glnexus.smk"
 
 # directory notes
 # SAMPLE_DIRS is [aboslute_path, absolute_path, ...]

@@ -70,11 +70,19 @@ def init_argparser():
         default=0,
         help="the number of underscore to remove from the beginning of the filename",
     )
+    p.add_argument(
+        "--skip",
+        default=[],
+        action="append",
+        help="skip samples with the given name (can be used multiple times)",
+    )
 
     p.add_argument(
         "--remove-prefix", default=None, help="prefix to remove from original filename"
     )
-
+    p.add_argument(
+        "--restart", action="store_true", default=False, help="restart from scratch"
+    )
     p.add_argument("-i", "--manifest", default=None, help="manifest file  as input")
     p.add_argument(
         "infiles", nargs="*", help="FASTQ input files, eg. sample-1.fastq.gz"
@@ -93,6 +101,12 @@ def run_targeted_variant_caller(args, optional_config={}):
     # check exixtence of output directory
     if pathlib.Path(args.outdir).exists():
         while True:
+            if args.rerun:
+                break
+            if args.restart:
+                import shutil
+                shutil.rmtree(args.outdir)
+                break
             resp = input(
                 f"Output directory {args.outdir} already exists.\n"
                 f"Continue/overwrite/abort [c/o/a]: "
@@ -139,7 +153,7 @@ def run_targeted_variant_caller(args, optional_config={}):
         underscore_prefix=args.remove_underscore_prefix,
         remove_prefix=args.remove_prefix,
         mode=mode,
-        skip_list=[],
+        skip_list=args.skip,
         manifest_file=args.manifest,
         sort_by_size=True,
     )

@@ -41,7 +41,7 @@ rule msf_final_map:
     run:
         # if no target region specified, just hard link the input as output
         if not params.region_opts:
-            shell(f"ln -f {input.bam} {output.bam}")
+            shell(f"cp --reflink=auto {input.bam} {output.bam}")
         else:
             shell(f"samtools view -o {output.bam} {params.region_opts} {input.bam}")
 
