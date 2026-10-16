@@ -41,7 +41,10 @@ def get_final_bam_file(w):
     """ return the final bam file for further processing """
     #return "maps/mapped-filter-dup-{idx}.bam"
     #return "maps/mapped-filter(rr+ff+rf)-{idx}.bam"
-    return "<sp>maps/" + config.get("final_bam_file", "mapped-filter-dup:rm-{idx}.bam")
+    final_bam_file = config.get("final_bam_file", "mapped-filter-dup:rm-{idx}.bam")
+    if "/" in final_bam_file:
+        raise ValueError(f"final_bam_file should not contain a path: {final_bam_file}")
+    return "{anypath}maps/" + final_bam_file
 
 
 rule map_final_link:
@@ -49,7 +52,7 @@ rule map_final_link:
     input:
         bam = get_final_bam_file
     output:
-        bam = temp("<sp>maps/mapped-final-{idx}.bam")
+        bam = temp("{anypath}maps/mapped-final-{idx}.bam")
     shell:
         "ln -f '{input.bam}' '{output.bam}'"
 
@@ -91,14 +94,14 @@ rule bam_filtering:
     # note: input file should be name-sorted or name-collated (ie. directly from mapper)
     # output will be coordinate-sorted and indexed
     input:
-        bam = "<sp>maps/{stages}-{idx}.bam",
+        bam = "{anypath}maps/{stages}-{idx}.bam",
         # no need for index file because the operation is not coordinate-based
     output:
-        bam = "<sp>maps/{stages}-filter{options}-{idx}.bam",
-        idx = "<sp>maps/{stages}-filter{options}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-filter{options}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-filter{options}-{idx}.bam.bai",
     log:
-        log1 = "<sp>logs/{stages}-filter{options}-{idx}.log",
-        log2 = "<sp>logs/{stages}-filter{options}-{idx}.json",
+        log1 = "{anypath}logs/{stages}-filter{options}-{idx}.log",
+        log2 = "{anypath}logs/{stages}-filter{options}-{idx}.json",
     params:
         sample = get_sample,
         args = get_filter_options,
@@ -111,8 +114,8 @@ rule bam_filtering:
 
 use rule bam_filtering as bam_filtering_tmp with:
     output:
-        bam = temp("<sp>maps/{stages}-filter{options}_-{idx}.bam"),
-        idx = temp("<sp>maps/{stages}-filter{options}_-{idx}.bam.bai")
+        bam = temp("{anypath}maps/{stages}-filter{options}_-{idx}.bam"),
+        idx = temp("{anypath}maps/{stages}-filter{options}_-{idx}.bam.bai")
 
 
 def get_dup_options(w):
@@ -130,14 +133,14 @@ def get_dup_options(w):
 
 rule bam_deduplicating:
     input:
-        bam = "<sp>maps/{stages}-{idx}.bam",
-        idx = "<sp>maps/{stages}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-{idx}.bam.bai",
     output:
-        bam = "<sp>maps/{stages}-dup{options}-{idx}.bam",
-        idx = "<sp>maps/{stages}-dup{options}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-dup{options}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-dup{options}-{idx}.bam.bai",
     log:
-        log1 = "<sp>logs/{stages}-dup{options}-{idx}.log",
-        log2 = "<sp>logs/{stages}-dup{options}-{idx}.json",
+        log1 = "{anypath}logs/{stages}-dup{options}-{idx}.log",
+        log2 = "{anypath}logs/{stages}-dup{options}-{idx}.json",
     params:
         sample = get_sample,
         args = get_dup_options,
@@ -149,8 +152,8 @@ rule bam_deduplicating:
 
 use rule bam_deduplicating as bam_deduplicating_tmp with:
     output:
-        bam = temp("<sp>maps/{stages}-dup{options}_-{idx}.bam"),
-        idx = temp("<sp>maps/{stages}-dup{options}_-{idx}.bam.bai")
+        bam = temp("{anypath}maps/{stages}-dup{options}_-{idx}.bam"),
+        idx = temp("{anypath}maps/{stages}-dup{options}_-{idx}.bam.bai")
 
 
 def get_target_options(w):
@@ -164,14 +167,14 @@ def get_target_options(w):
 
 rule bam_targeting:
     input:
-        bam = "<sp>maps/{stages}-{idx}.bam",
-        idx = "<sp>maps/{stages}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-{idx}.bam.bai",
     output:
-        bam = "<sp>maps/{stages}-target{options}-{idx}.bam",
-        idx = "<sp>maps/{stages}-target{options}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-target{options}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-target{options}-{idx}.bam.bai",
     log:
-        log1 = "<sp>logs/{stages}-target{options}-{idx}.log",
-        log2 = "<sp>logs/{stages}-target{options}-{idx}.json",
+        log1 = "{anypath}logs/{stages}-target{options}-{idx}.log",
+        log2 = "{anypath}logs/{stages}-target{options}-{idx}.json",
     params:
         sample = get_sample,
         args = get_target_options,
@@ -183,8 +186,8 @@ rule bam_targeting:
 
 use rule bam_targeting as bam_targeting_tmp with:
     output:
-        bam = temp("<sp>maps/{stages}-target{options}_-{idx}.bam"),
-        idx = temp("<sp>maps/{stages}-target{options}_-{idx}.bam.bai")
+        bam = temp("{anypath}maps/{stages}-target{options}_-{idx}.bam"),
+        idx = temp("{anypath}maps/{stages}-target{options}_-{idx}.bam.bai")
     
 
 def get_clip_options(w):
@@ -198,12 +201,13 @@ def get_clip_options(w):
 
 rule bam_clipping:
     input:
-        bam = "<sp>maps/{stages}-{idx}.bam",
-        idx = "<sp>maps/{stages}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-{idx}.bam.bai",
     output:
-        bam = "<sp>maps/{stages}-clip{options}-{idx}.bam",
-        idx = "<sp>maps/{stages}-clip{options}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-clip{options}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-clip{options}-{idx}.bam.bai",
     params:
+        sample = get_sample,
         args = get_clip_options,
     shell:
         "samtools view {params.args} '{input.bam}' | samtools sort -@4 -o '{output.bam}' && samtools index '{output.bam}'"
@@ -212,22 +216,25 @@ rule bam_clipping:
 rule bam_sorting:
     # note: options is pos or name
     input:
-        bam = "<sp>maps/{stages}-{idx}.bam",
-        idx = "<sp>maps/{stages}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-{idx}.bam",
     output:
-        bam = "<sp>maps/{stages}-sort{options}-{idx}.bam",
-        idx = "<sp>maps/{stages}-sort{options}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-sort{options}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-sort{options}-{idx}.bam.bai",
+    params:
+        sample = get_sample,
     shell:
-        "samtools sort -@4 -o '{output.bam}' '{input}' && samtools index '{output.bam}'"
+        "samtools sort -@4 -o '{output.bam}' '{input.bam}' && samtools index '{output.bam}'"
 
 
 rule bam_collate:
     input:
-        bam = "<sp>maps/{stages}-{idx}.bam",
-        idx = "<sp>maps/{stages}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-{idx}.bam.bai",
     output:
-        bam = "<sp>maps/{stages}-collate{options}-{idx}.bam",
-        idx = "<sp>maps/{stages}-collate{options}-{idx}.bam.bai",
+        bam = "{anypath}maps/{stages}-collate{options}-{idx}.bam",
+        idx = "{anypath}maps/{stages}-collate{options}-{idx}.bam.bai",
+    params:
+        sample = get_sample,
     shell:
         "samtools collate -o '{output.bam}' '{input.bam}'"
 
@@ -253,25 +260,6 @@ rule map_merge_final:
         sleep(2)
         shell('samtools index {output}')
 
-
-rule collect_mapping_stats:
-    # XXX: this one need fixing
-    # probably use such:
-    # ngs-pl collect-stats -o {output} --mindepth {min_depth} 
-    threads: 1
-    input:
-        trims = expand_sp('<sp>logs/trimming_stat-{idx}.json'),
-        maps = expand_sp('<sp>logs/{sample}-{idx}.stats.txt'),
-        depths = expand_sp('<sp>logs/mapped-final-{idx}.depths.txt.gz'),
-    params:
-        sample = get_sample,
-        trimmed = lambda wildcards, input: '--trimmed ' + ' --trimmed '.join(input.trims),
-        mapped = lambda wildcards, input: '--mapped ' + ' --mapped '.join(input.maps),
-        depthed = lambda wildcards, input: '--depth ' + ' --depth '.join(input.depths),
-    output:
-        '<sp>logs/stats.tsv_xxx'
-    shell:
-        "touch {output}"
 
 ruleorder: bam_filtering_tmp > bam_filtering > index_bai
 
@@ -321,7 +309,7 @@ def parse_pipeline_logs(w):
             stage = match.group(1)     # e.g., 'filter', 'dup', 'target'
             options = match.group(2)   # e.g., ':ff', ':rm'
             
-            # Check if this rule variant produces logs (clipping/sorting do not define logs)
+            # Check if this rule variant produces stat-able logs (clipping/sorting do not define stat-able logs)
             if stage in ["filter", "dup", "target"]:
                 # Reconstruct the prefix string up to this point
                 stages_prefix = current_string[:match.start()]
@@ -334,12 +322,12 @@ def parse_pipeline_logs(w):
                     options_str = options
                     
                 # Construct the paths to both log types defined in your rules
-                collected_logs[f"{stage}{options_str}-{idx}"] = f"<sp>logs/{stages_prefix}-{stage}{options_str}-{idx}.stats.txt"
+                collected_logs[f"{stage}{options_str}-{idx}"] = f"{{anypath}}logs/{stages_prefix}-{stage}{options_str}-{idx}.stats.txt"
 
             # Move one step backward in the transformation grammar
             current_string = current_string[:match.start()]
 
-    print("Collected logs:", collected_logs)
+    dbgmsg(f"Collected logs: {collected_logs}", 3)
     return collected_logs
 
 
@@ -364,13 +352,13 @@ rule collect_pipeline_logs:
     input:
         # Pass our recursive parser directly as an input function,
         unpack(parse_pipeline_logs),
-        trims = expand_sp('<sp>logs/trimming_stat-{idx}.json'),
-        maps = expand_sp('<sp>logs/mapped-{idx}.stats.txt'),
-        depths = expand_sp('<sp>logs/mapped-final-{idx}.depths.txt.gz'),
+        trims = expand_sp('{anypath}logs/trimming_stat-{idx}.json'),
+        maps = expand_sp('{anypath}logs/mapped-{idx}.stats.txt'),
+        depths = expand_sp('{anypath}logs/mapped-final-{idx}.depths.txt.gz'),
     output:
-        collected = '<sp>logs/stats.tsv'
+        collected = '{anypath}logs/stats.tsv'
     log:
-        log1 = '<sp>logs/stats-collect.log',
+        log1 = '{anypath}logs/stats-collect.log',
     params:
         sample = get_sample,
         args = construct_log_args,
