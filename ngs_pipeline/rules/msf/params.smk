@@ -31,7 +31,8 @@ else:
 outdir = config['outdir']
 
 # read quality-related configuration
-min_read_qual = config['min_read_qual']
+min_read_quality = int(config.get('min_read_quality', 15)) # should not be needed anymore
+min_read_qual = min_read_quality  # for backward compatibility
 max_read_len = config.get('max_read_len', 0)
 min_read_len = config.get('min_read_len', 0)
 headcrop = config.get('headcrop', 0)
