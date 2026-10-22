@@ -1,5 +1,5 @@
 from ngs_pipeline import cerr, cexit, arg_parser
-import os 
+import os
 
 def init_argparser():
     p = arg_parser()
@@ -43,10 +43,29 @@ def init_argparser():
     )
     p.add_argument("-o", "--outfile", required = True, help="Output filename")
     p.add_argument("infile", help="Input BAM file (collated/group by name)")
+    p.add_argument(
+        "-j", "--procs", type=int, default=1,
+        help="Number of worker processes, default = 1",
+    )
+    p.add_argument(
+        "--chunk_size", type=int, default=100,
+        help="Number of alignments dispatched per worker task, default = 100",
+    )
     return p
 
 # FASTP default
 WARNED_NO_PAIR_INFO = False
+
+_LOG = None
+_LOG_ENABLED = False
+
+def _log(msg):
+    if not _LOG_ENABLED:
+        return
+    if _LOG is None:
+        print(msg)
+    else:
+        _LOG.append(msg)
 
 def check_alignment_covers_variants(aln, aln_mate, variants):
     if aln_mate is None:
@@ -202,7 +221,7 @@ def deconstruct_haplotypes_alleles_to_SNPs_alleles(haplotypes, counts= None, sep
         counts = np.array(counts)
     else:
         counts = np.ones(len(haplotypes), dtype=int)
-    
+
     observed_haplotypes = np.array([list(a) for a in haplotypes])
     assert observed_haplotypes.shape[0] == counts.shape[0]
     n_snps = observed_haplotypes.shape[1]
@@ -217,8 +236,27 @@ def deconstruct_haplotypes_alleles_to_SNPs_alleles(haplotypes, counts= None, sep
         alleles.append(snp_alleles)
     return alleles
 
-def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, GOOD_QUAL=30, BAD_QUAL=14, pileup=False, single=False, allow_indels=False, sep=""):
-    from collections import Counter
+def _iter_chunks(alignments, chunk_size, single):
+    chunk = []
+    last_name = None
+    n = 0
+    for aln in alignments:
+        if aln.is_unmapped or aln.is_secondary or aln.is_supplementary:
+            continue
+        name = aln.query_name
+        if len(chunk) >= chunk_size and (single or name != last_name): # reached chunk size, new read name
+            yield chunk
+            chunk = []
+        chunk.append(aln.to_string())
+        last_name = name
+        n += 1
+        if n % chunk_size == 0:
+            print(f"Reading alignment: {n}", end="\r", flush=True, file=os.sys.stderr)
+    if chunk:
+        yield chunk
+
+def scan_alignments(variants, alignments, min_mapq=30, min_qual=20, GOOD_QUAL=30,
+                    BAD_QUAL=14, single=False, allow_indels=False, sep=""):
     haplotypes = []
     tagged = 0 # alignments with tags
     total = 0  # alignments processed
@@ -226,25 +264,20 @@ def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, 
 
     while True:
         aln = next(alignments, None)
-        if aln is None:
-            break
-        if aln.is_unmapped or aln.is_secondary or aln.is_supplementary:
-            continue
-        print(f"Processing alignment: {total}", end="\r", flush=True, file=os.sys.stderr)
         match single:
             case True:
                 if aln is None:
                     break
                 if aln.mapping_quality < min_mapq:
-                    print(f"check_single | {aln.query_name} | low mapping quality, skipping")
+                    _log(f"check_single | {aln.query_name} | low mapping quality, skipping")
                     continue
                 total += 1
                 match check_alignment_covers_variants(aln, None, variants):
                     case False, _:
-                        print(f"check_single | {aln.query_name} | no interested variants")
+                        _log(f"check_single | {aln.query_name} | no interested variants")
                         continue
                     case True, covered_blocks:
-                        print(f"check_single | {aln.query_name} | {len(covered_blocks)} interested variant blocks")
+                        _log(f"check_single | {aln.query_name} | {len(covered_blocks)} interested variant blocks")
                         for covered_variants in covered_blocks:
                             haplotype = build_haplotype_from_variants_single(aln, covered_variants, min_qual, allow_indels, sep)
                             if haplotype is not None:
@@ -263,17 +296,17 @@ def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, 
                         aln.query_name == prev_aln.query_name and
                         aln.reference_name == prev_aln.reference_name):
                         if aln.mapping_quality < min_mapq or prev_aln.mapping_quality < min_mapq:
-                            print(f"check_pair | {prev_aln.query_name} | low mapping quality, skipping")
+                            _log(f"check_pair | {prev_aln.query_name} | low mapping quality, skipping")
                             prev_aln = None
                             continue
                         total += 1
                         match check_alignment_covers_variants(prev_aln, aln, variants):
                             case False, _:
-                                print(f"check_pair | {prev_aln.query_name} | no interested variants")
+                                _log(f"check_pair | {prev_aln.query_name} | no interested variants")
                                 prev_aln = None
                                 continue
                             case True, covered_blocks:
-                                print(f"check_pair | {aln.query_name} | {len(covered_blocks)} interested variant blocks")
+                                _log(f"check_pair | {aln.query_name} | {len(covered_blocks)} interested variant blocks")
                                 for covered_variants in covered_blocks:
                                     haplotype = build_haplotype_from_variants(prev_aln, aln, covered_variants, min_qual, GOOD_QUAL, BAD_QUAL)
                                     if haplotype is not None:
@@ -281,12 +314,59 @@ def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, 
                                 tagged += 1
                                 prev_aln = None
                                 continue
-                    case _: 
+                    case _:
                         total += 1
-                        print(f"check_pair | {prev_aln.query_name} | mate not following or different reference")
+                        _log(f"check_pair | {prev_aln.query_name} | mate not following or different reference")
                         prev_aln = aln
                         continue
-    
+
+    return haplotypes, tagged, total
+
+_WORKER = {}
+
+def _worker_init(header_dict, variants, params, log_enabled):
+    import pysam
+    _WORKER['header'] = pysam.AlignmentHeader.from_dict(header_dict)
+    _WORKER['variants'] = variants
+    _WORKER['params'] = params
+    _WORKER['log_enabled'] = log_enabled
+
+def _worker_run(chunk):
+    import pysam
+    global _LOG, _LOG_ENABLED
+    _LOG_ENABLED = _WORKER['log_enabled']
+    _LOG = [] if _LOG_ENABLED else None
+    header = _WORKER['header']
+    alns = (pysam.AlignedSegment.fromstring(rec, header) for rec in chunk)
+    haplotypes, tagged, total = scan_alignments(_WORKER['variants'], alns, **_WORKER['params'])
+    logs, _LOG = _LOG or [], None
+    return haplotypes, tagged, total, logs
+
+def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, GOOD_QUAL=30, BAD_QUAL=14, pileup=False, single=False, allow_indels=False, sep="", procs=1, chunk_size=20000, header=None, log_enabled=False):
+    from collections import Counter
+    haplotypes = []
+    tagged = 0 # alignments with tags
+    total = 0  # alignments processed
+    prev_aln = None
+
+    params = dict(min_mapq=min_mapq, min_qual=min_qual, GOOD_QUAL=GOOD_QUAL,
+                  BAD_QUAL=BAD_QUAL, single=single, allow_indels=allow_indels, sep=sep)
+
+    if procs <= 1:
+        haplotypes, tagged, total = scan_alignments(variants, alignments, **params)
+    else:
+        import multiprocessing as mp
+        haplotypes, tagged, total = [], 0, 0
+        with mp.Pool(procs, initializer=_worker_init,
+                     initargs=(header.to_dict(), variants, params, log_enabled)) as pool:
+            for hap, t, n, logs in pool.map(_worker_run,
+                                             _iter_chunks(alignments, chunk_size, single)):
+                haplotypes.extend(hap)
+                tagged += t
+                total += n
+                for line in logs:
+                    print(line)
+
     hap_counts = Counter(haplotypes)
     pileup_df = variants.copy(deep =True)
     pileup_df.loc[:, ("alleles", "counts")] = "", ""
@@ -317,10 +397,12 @@ def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, 
 def main(args):
     import pandas as pd
     import pysam
+    global _LOG_ENABLED
 
     if (args.allow_indels and args.sep == "") and not args.single:
         cerr("Unexpected use case")
-    
+
+    _LOG_ENABLED = args.log is not None
     if args.log is not None:
         log_fh = open(args.log, "w+")
         os.sys.stdout = log_fh
@@ -329,9 +411,9 @@ def main(args):
     variants = pd.read_table(args.variants_list, sep="\t", header=None, names=["chrom", "pos0", "pos", "marker"], dtype={"chrom": str, "pos0": int, "pos": int, "marker": str})
     if variants.isnull().values.any():
         cexit("Variants input file contains N/A values, please check!")
-    
+
     haps, read_pair_processed, reads_processed, SNPs = construct_pseudo_haplotypes(variants, bam, min_mapq=args.min_mapq, min_qual=args.min_qual, GOOD_QUAL=args.GOOD_QUAL, BAD_QUAL=args.BAD_QUAL, pileup=args.pileup,
-        single=args.single, allow_indels=args.allow_indels, sep=args.sep)
+        single=args.single, allow_indels=args.allow_indels, sep=args.sep,procs=args.procs, chunk_size=args.chunk_size, header=bam.header, log_enabled=_LOG_ENABLED)
     if args.pileup and SNPs is not None:
         if args.pileout is None:
             args.pileout = args.outfile + ".pileup.tsv"
@@ -341,7 +423,7 @@ def main(args):
         [(args.sample, marker, hap, count) for (marker, hap), count in haps.items()],
         columns=["sample", "marker", "haplotype", "count"]
     )
-    
+
     # fill in marker if not in result_df
     missing_markers = set(variants['marker']) - set(result_df['marker'])
     if len(missing_markers) > 0:
@@ -351,7 +433,7 @@ def main(args):
     result_df.sort_values(["marker", "count", "haplotype"]).to_csv(args.outfile, sep="\t", index=False)
     print(f"### Total reads processed | {reads_processed}")
     print(f"### Read pairs with haplotypes constructed | {read_pair_processed}")
-    
+
     if args.log is not None:
         log_fh.close()
     bam.close()

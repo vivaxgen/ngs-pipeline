@@ -149,8 +149,8 @@ rule clair3_fix_gvcf:
         gvcf = replace_sp("<sp>gvcf/{sample}-{region}.g.vcf.gz"),
         tbi = replace_sp("<sp>gvcf/{sample}-{region}.g.vcf.gz.tbi"),
     log:
-        log1 = "<sp>logs/clair3_fix_gvcf-{region}.log",
-        log2 = "<sp>logs/clair3_fix_gvcf-{region}.err",
+        log1 = "<sp>logs/clair3_fix_gvcf-{sample}-{region}.log",
+        log2 = "<sp>logs/clair3_fix_gvcf-{sample}-{region}.err",
     params:
         sample = get_sample,
         dict_file = f"{refseq.removesuffix('.fasta')}.dict",
