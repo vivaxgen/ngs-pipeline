@@ -66,7 +66,7 @@ wildcard_constraints:
     idx = r'\d+',
     sample = r'[.\w-]+',    # dot, alphanumerics, underscore and dash
     reg = r'[.\w-]+',       # dot, alphanumerics, underscore and dash
-
+    region = r"[.\w-]+"
 
 class RegPartition(object):
 
