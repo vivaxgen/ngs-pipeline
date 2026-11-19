@@ -24,8 +24,9 @@ rule reads_mapping_lr:
         threads = lambda wildcards, threads: threads - 1,
         flags = config.get('minimap2_flags', ''),
         extra_flags = config.get('minimap2_extra_flags', ''),
+        keep_comment = "-y" if config.get('minimap2_keep_comment', True) else "",
     shell:
-        "minimap2 -t {params.threads} -a {refmap} -y"
+        "minimap2 -t {params.threads} -a {refmap} {params.keep_comment}"
         "  {params.flags} {params.rg} {params.extra_flags}"
         "  {input.read} 2> {log.log1}"
         " | samtools sort -@4 -o {output.bam}"
