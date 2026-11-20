@@ -128,7 +128,7 @@ def get_base_and_qual_at_ref_pos(aln, ref_pos, allow_indels=False):
         for read_pos, _, reference_base in interested_pairs:
             base = aln.query_sequence[read_pos]
             if base.upper() != reference_base.upper():
-                print(f"Substitution: from {reference_base.upper()} to {base} at read position {ref_pos}")
+                _log(f"Substitution: from {reference_base.upper()} to {base} at read position {ref_pos}")
             qual = aln.query_qualities[read_pos]
             bases.append(base)
             quals.append(qual)
@@ -140,7 +140,7 @@ def get_base_and_qual_at_ref_pos(aln, ref_pos, allow_indels=False):
         return "-", 0 # covered, but deletion
     base = aln.query_sequence[read_pos]
     if base.upper() != reference_base.upper():
-        print(f"Substitution: from {reference_base.upper()} to {base} at read position {ref_pos}")
+        _log(f"Substitution: from {reference_base.upper()} to {base} at read position {ref_pos}")
     qual = aln.query_qualities[read_pos]
     return base, qual
 
@@ -172,14 +172,14 @@ def build_haplotype_from_variants_single(aln, covered_variants, min_qual, allow_
             if qual < min_qual:
                 base = "?"
             haplotype.append(base)
-    print(f"# haplotype_construction_single | {marker}: {''.join(haplotype)} | aln: {aln.query_name}")
+    _log(f"# haplotype_construction_single | {marker}: {''.join(haplotype)} | aln: {aln.query_name}")
     return marker, sep.join(haplotype)
 
 def build_haplotype_from_variants(aln, aln_mate, covered_variants, min_qual, GOOD_QUAL, BAD_QUAL, sep = ""):
     try:
         r1, r2 = check_pair_info_fix(aln, aln_mate)
     except Exception as e:
-        print(f"# haplotype_construction | {aln.query_name}: cannot determine read1/read2, skipping")
+        _log(f"# haplotype_construction | {aln.query_name}: cannot determine read1/read2, skipping")
         return None
 
     haplotype = []
@@ -210,7 +210,7 @@ def build_haplotype_from_variants(aln, aln_mate, covered_variants, min_qual, GOO
                 else:
                     # prefer read1
                     haplotype.append(b1)
-    print(f"# haplotype_construction | {marker}: {''.join(haplotype)} | alns: {r1.query_name}")
+    _log(f"# haplotype_construction | {marker}: {''.join(haplotype)} | alns: {r1.query_name}")
     return marker, sep.join(haplotype)
 
 def deconstruct_haplotypes_alleles_to_SNPs_alleles(haplotypes, counts= None, sep = ""):
@@ -359,8 +359,8 @@ def construct_pseudo_haplotypes(variants, alignments, min_mapq=30, min_qual=20, 
         haplotypes, tagged, total = [], 0, 0
         with mp.Pool(procs, initializer=_worker_init,
                      initargs=(header.to_dict(), variants, params, log_enabled)) as pool:
-            for hap, t, n, logs in pool.map(_worker_run,
-                                             _iter_chunks(alignments, chunk_size, single)):
+            for hap, t, n, logs in pool.imap(_worker_run,
+                                              _iter_chunks(alignments, chunk_size, single)):
                 haplotypes.extend(hap)
                 tagged += t
                 total += n
@@ -404,7 +404,7 @@ def main(args):
 
     _LOG_ENABLED = args.log is not None
     if args.log is not None:
-        log_fh = open(args.log, "w+")
+        log_fh = open(args.log, "w+", buffering=1)  # line-buffered so progress is visible while running
         os.sys.stdout = log_fh
 
     bam = pysam.AlignmentFile(args.infile, "rb")
@@ -431,8 +431,8 @@ def main(args):
         missing_df = pd.DataFrame([(args.sample, marker, args.sep.join("?" * len_), 0) for marker, len_ in marker_len.items()], columns=["sample", "marker", "haplotype", "count"])
         result_df = pd.concat([result_df, missing_df], ignore_index=True)
     result_df.sort_values(["marker", "count", "haplotype"]).to_csv(args.outfile, sep="\t", index=False)
-    print(f"### Total reads processed | {reads_processed}")
-    print(f"### Read pairs with haplotypes constructed | {read_pair_processed}")
+    _log(f"### Total reads processed | {reads_processed}")
+    _log(f"### Read pairs with haplotypes constructed | {read_pair_processed}")
 
     if args.log is not None:
         log_fh.close()
